@@ -29,6 +29,7 @@ interface FloorPlanCanvasProps {
   onPolygonSelect: (propertyId: string, isShiftClick: boolean) => void;
   onPolygonCreated: (newProperty: Omit<Property, 'id'>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
+  showGrid: boolean;
   snapToGrid: boolean;
   gridSize: number;
   showMeasurements: boolean;
@@ -114,7 +115,7 @@ function PropertyPolygon({
     { x: 0, y: 0 }
   );
 
-  const fillColor = statusColors[property.status];
+  const fillColor = statusColors[property.status as keyof typeof statusColors] || '#cccccc';
   let fillOpacity = 0.3;
   let strokeWidth = 1;
   let strokeColor = fillColor;
@@ -319,6 +320,7 @@ export function FloorPlanCanvas({
   onPolygonSelect,
   onPolygonCreated,
   onPolygonUpdated,
+  showGrid,
   snapToGrid,
   gridSize,
   showMeasurements,
@@ -527,7 +529,7 @@ export function FloorPlanCanvas({
               property={property}
               isSelected={selectedPropertyIds.includes(property.id)}
               isHovered={hoveredProperty === property.id}
-              showLabels={showLabels}
+              showLabels={true}
               isNodeEditMode={isNodeEditMode && primarySelectedPolygon === property.id}
               onHover={onPolygonHover}
               onSelect={onPolygonSelect}
@@ -638,3 +640,5 @@ export function FloorPlanCanvas({
     </div>
   );
 }
+
+    
