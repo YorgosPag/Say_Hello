@@ -5,6 +5,7 @@
 import { useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import type { Property } from '@/types/property-viewer';
+import type { Suggestion } from '@/types/suggestions';
 
 import { ViewerToolbar } from './ViewerToolbar';
 import { FloorCanvasWrapper } from './FloorCanvasWrapper';
@@ -96,6 +97,7 @@ export interface FloorPlanViewerProps {
   gridSize: number;
   showMeasurements: boolean;
   scale: number;
+  suggestionToDisplay: Suggestion | null;
 }
 
 
@@ -116,6 +118,7 @@ export function FloorPlanViewer({
   gridSize,
   showMeasurements,
   scale,
+  suggestionToDisplay
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showLabels, setShowLabels] = useState(true);
@@ -173,6 +176,7 @@ export function FloorPlanViewer({
               gridSize={gridSize}
               showMeasurements={showMeasurements}
               scale={scale}
+              suggestionToDisplay={suggestionToDisplay}
             />
         </FloorCanvasWrapper>
 

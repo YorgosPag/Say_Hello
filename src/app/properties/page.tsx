@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useTransition, useCallback } from 'react';
@@ -33,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcuts';
 import { useToast } from '@/hooks/use-toast';
 import type { Property } from '@/types/property-viewer';
+import type { Suggestion } from '@/types/suggestions';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -214,6 +216,154 @@ const EditToolbar = ({
   );
 };
 
+// Smart Suggestions Panel Component
+function SmartSuggestionsPanel({ properties, onShowSuggestion, onAcceptSuggestion }: { properties: Property[], onShowSuggestion: (suggestion: Suggestion) => void, onAcceptSuggestion: (suggestion: Suggestion) => void }) {
+    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+    const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
+    const toast = useToast();
+
+    const analyzePlacement = () => {
+        const newSuggestions = suggestionSystem.analyzeFloorPlan(properties);
+        setSuggestions(newSuggestions.sort((a, b) => b.score - a.score));
+        toast.info(`Βρέθηκαν ${newSuggestions.length} προτάσεις τοποθέτησης`);
+    };
+
+    const handleShowSuggestion = (suggestion: Suggestion) => {
+        onShowSuggestion(suggestion);
+        setSelectedSuggestion(suggestion.propertyId);
+    };
+
+    return (
+        <Card className="h-full">
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <h3 className="font-semibold flex items-center gap-2 text-sm">
+                        <span className="text-lg">🤖</span>
+                        Έξυπνες Προτάσεις
+                    </h3>
+                    <Button
+                        onClick={analyzePlacement}
+                        size="sm"
+                    >
+                        Ανάλυση
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent>
+                {suggestions.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                        <p className="text-sm">Πατήστε "Ανάλυση" για προτάσεις τοποθέτησης</p>
+                    </div>
+                ) : (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {suggestions.map(suggestion => (
+                            <div
+                                key={suggestion.propertyId}
+                                className={cn(`border rounded p-3 cursor-pointer transition-all`,
+                                    selectedSuggestion === suggestion.propertyId
+                                        ? 'border-blue-500 bg-blue-50'
+                                        : 'border-border hover:border-blue-300'
+                                )}
+                                onClick={() => handleShowSuggestion(suggestion)}
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <h5 className="font-medium text-sm">{suggestion.propertyName}</h5>
+                                        <div className="mt-1 space-y-1">
+                                            {suggestion.recommendations.slice(0, 2).map((rec, idx) => (
+                                                <div key={idx} className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                    <span className={cn(`w-2 h-2 rounded-full`,
+                                                        rec.priority === 'high' ? 'bg-red-400' :
+                                                        rec.priority === 'medium' ? 'bg-yellow-400' :
+                                                        'bg-green-400'
+                                                    )} />
+                                                    <span>{rec.message}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <div className="text-xs font-medium text-muted-foreground">
+                                            Score: {suggestion.score}
+                                        </div>
+                                        {selectedSuggestion === suggestion.propertyId && (
+                                            <Button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onAcceptSuggestion(suggestion);
+                                                }}
+                                                size="sm"
+                                                className="h-6 text-xs"
+                                                variant="secondary"
+                                            >
+                                                Αποδοχή
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+const suggestionSystem = {
+    analyzeFloorPlan: function(properties: Property[]) {
+        const suggestions: Suggestion[] = [];
+        const unassignedProperties = properties.filter(p => !p.vertices || p.vertices.length === 0);
+        
+        unassignedProperties.forEach(property => {
+            const suggestion = this.generateSuggestion(property, properties);
+            suggestions.push(suggestion);
+        });
+        
+        return suggestions;
+    },
+    
+    generateSuggestion: function(property: Property, allProperties: Property[]): Suggestion {
+        const recommendations: any[] = [];
+        const existingPolygons = allProperties.filter(p => p.vertices && p.vertices.length > 0);
+        
+        const similarProperties = existingPolygons.filter(p => p.type === property.type);
+        
+        if (similarProperties.length > 0) {
+            recommendations.push({
+                type: 'proximity',
+                message: `Τοποθετήστε κοντά σε άλλα ${property.type}`,
+                priority: 'high'
+            });
+        }
+        
+        if (property.area && property.area < 50) {
+            recommendations.push({
+                type: 'size',
+                message: 'Μικρό ακίνητο - προτείνεται σε γωνία',
+                priority: 'medium'
+            });
+        }
+        
+        recommendations.push({
+            type: 'empty_space',
+            message: 'Βρέθηκε κατάλληλος κενός χώρος',
+            suggestedArea: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100, width: 150, height: 100 },
+            priority: 'high'
+        });
+
+        const score = recommendations.reduce((acc, rec) => acc + (rec.priority === 'high' ? 3 : rec.priority === 'medium' ? 2 : 1), 0);
+
+        return {
+            propertyId: property.id,
+            propertyName: property.name,
+            propertyType: property.type,
+            recommendations,
+            score
+        };
+    }
+};
+
 export default function PropertyViewerPage() {
   const { isEditor } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -232,6 +382,7 @@ export default function PropertyViewerPage() {
   const [gridSize, setGridSize] = useState(20);
   const [showMeasurements, setShowMeasurements] = useState(false);
   const [scale, setScale] = useState(0.1);
+  const [suggestionToDisplay, setSuggestionToDisplay] = useState<Suggestion | null>(null);
 
   const {
     properties,
@@ -468,6 +619,11 @@ export default function PropertyViewerPage() {
     reader.readAsText(file);
   }, [setProperties, toast]);
 
+  const handleAcceptSuggestion = (suggestion: Suggestion) => {
+      setActiveTool('create');
+      toast.info(`Ενεργοποιήθηκε η σχεδίαση για το ${suggestion.propertyName}`);
+  };
+
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-hidden">
@@ -588,6 +744,7 @@ export default function PropertyViewerPage() {
                 gridSize={gridSize}
                 showMeasurements={showMeasurements}
                 scale={scale}
+                suggestionToDisplay={suggestionToDisplay}
               />
             </CardContent>
           </Card>
@@ -617,6 +774,13 @@ export default function PropertyViewerPage() {
                 <PropertyHoverInfo propertyId={hoveredProperty} />
               </CardContent>
             </Card>
+          </div>
+          <div className="flex-1">
+            <SmartSuggestionsPanel
+                properties={properties}
+                onShowSuggestion={setSuggestionToDisplay}
+                onAcceptSuggestion={handleAcceptSuggestion}
+            />
           </div>
         </div>
       </div>

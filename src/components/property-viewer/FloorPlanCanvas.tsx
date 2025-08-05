@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { PolygonEditor } from "./PolygonEditor";
 import type { Property } from '@/types/property-viewer';
 import type { LayerState } from './SidebarPanel';
+import type { Suggestion } from '@/types/suggestions';
+
 
 import { GridOverlay } from './FloorPlanCanvas/GridOverlay';
 import { PropertyPolygon } from './FloorPlanCanvas/PropertyPolygon';
@@ -44,6 +46,7 @@ interface FloorPlanCanvasProps {
   gridSize: number;
   showMeasurements: boolean;
   scale: number;
+  suggestionToDisplay: Suggestion | null;
 }
 
 
@@ -62,6 +65,7 @@ export function FloorPlanCanvas({
   gridSize,
   showMeasurements,
   scale,
+  suggestionToDisplay
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -240,6 +244,25 @@ export function FloorPlanCanvas({
             );
         })}
 
+        {suggestionToDisplay && suggestionToDisplay.recommendations.map((rec, index) => {
+            if (rec.suggestedArea) {
+                return (
+                    <rect
+                        key={index}
+                        x={rec.suggestedArea.x}
+                        y={rec.suggestedArea.y}
+                        width={rec.suggestedArea.width || 100}
+                        height={rec.suggestedArea.height || 100}
+                        fill="rgba(59, 130, 246, 0.2)"
+                        stroke="#3B82F6"
+                        strokeWidth="2"
+                        strokeDasharray="5 5"
+                        className="pointer-events-none animate-pulse"
+                    />
+                );
+            }
+            return null;
+        })}
 
         {isNodeEditMode && (
           <PolygonEditor
