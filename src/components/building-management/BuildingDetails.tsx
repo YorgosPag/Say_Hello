@@ -70,12 +70,6 @@ import type { Building } from './BuildingsPageContent';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StorageTab } from './StorageTab';
 
-interface BuildingDetailsProps {
-  building: Building;
-  getStatusColor: (status: string) => string;
-  getStatusLabel: (status: string) => string;
-}
-
 const GeneralTabContent = ({ building }: { building: Building }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
