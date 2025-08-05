@@ -34,7 +34,7 @@ export function StorageTab({ building }: StorageTabProps) {
   const [filterType, setFilterType] = useState<StorageType | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<any>('all');
   const [filterFloor, setFilterFloor] = useState<string>('all');
-  const [selectedUnit, setSelectedUnit] = useState<StorageUnit | null>(null);
+  const [editingUnit, setEditingUnit] = useState<StorageUnit | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState<StorageType>('storage');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -47,25 +47,25 @@ export function StorageTab({ building }: StorageTabProps) {
   const stats = useMemo(() => calculateStats(filteredUnits), [filteredUnits]);
 
   const handleAddNew = (type: StorageType) => {
-    setSelectedUnit(null);
+    setEditingUnit(null);
     setFormType(type);
     setShowForm(true);
   };
 
   const handleEdit = (unit: StorageUnit) => {
-    setSelectedUnit(unit);
+    setEditingUnit(unit);
     setFormType(unit.type);
     setShowForm(true);
   };
 
   const handleSave = (unit: StorageUnit) => {
-    if (selectedUnit) {
+    if (editingUnit) {
       setUnits(units => units.map(u => u.id === unit.id ? unit : u));
     } else {
       setUnits(units => [...units, { ...unit, id: `new_${Date.now()}` }]);
     }
     setShowForm(false);
-    setSelectedUnit(null);
+    setEditingUnit(null);
   };
 
   const handleDelete = (unitId: string) => {
@@ -113,12 +113,12 @@ export function StorageTab({ building }: StorageTabProps) {
 
       {showForm && (
         <StorageForm
-          unit={selectedUnit}
+          unit={editingUnit}
           building={building}
           onSave={handleSave}
           onCancel={() => {
             setShowForm(false);
-            setSelectedUnit(null);
+            setEditingUnit(null);
           }}
           formType={formType}
         />
