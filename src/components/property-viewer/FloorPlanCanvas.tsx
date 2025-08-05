@@ -307,6 +307,7 @@ export function FloorPlanCanvas({
     // If clicking on empty space and not creating, deselect
     if (event.target === event.currentTarget && !isCreatingPolygon) {
       onPolygonSelect(null);
+      return;
     }
 
     if (isCreatingPolygon) {
@@ -315,11 +316,27 @@ export function FloorPlanCanvas({
           x: event.clientX - rect.left,
           y: event.clientY - rect.top
         };
+
+        // Check if user is closing the polygon by clicking on the first vertex
+        if (creatingVertices.length > 2) {
+            const firstVertex = creatingVertices[0];
+            const distance = Math.sqrt(
+                Math.pow(newVertex.x - firstVertex.x, 2) +
+                Math.pow(newVertex.y - firstVertex.y, 2)
+            );
+
+            // If click is close enough to the start point, close the polygon
+            if (distance < 10) { // 10px threshold
+                onPolygonCreated(creatingVertices);
+                setCreatingVertices([]); // Reset for next polygon
+                return; // Stop further execution
+            }
+        }
         
         setCreatingVertices(prev => [...prev, newVertex]);
         console.log('Added vertex:', newVertex);
       }
-  }, [isCreatingPolygon, onPolygonSelect]);
+  }, [isCreatingPolygon, onPolygonSelect, creatingVertices, onPolygonCreated]);
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
@@ -405,6 +422,18 @@ export function FloorPlanCanvas({
                 fill="#7c3aed"
               />
             ))}
+            {/* Draw a handle on the starting point to indicate it can be closed */}
+            {creatingVertices.length > 2 && (
+               <circle
+                cx={creatingVertices[0].x}
+                cy={creatingVertices[0].y}
+                r="6"
+                fill="rgba(124, 58, 237, 0.5)"
+                stroke="#7c3aed"
+                strokeWidth={2}
+                className="cursor-pointer animate-pulse"
+               />
+            )}
           </g>
         )}
 
@@ -474,3 +503,5 @@ export function FloorPlanCanvas({
     </div>
   );
 }
+
+    
