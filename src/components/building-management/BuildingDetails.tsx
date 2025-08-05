@@ -68,29 +68,7 @@ import TimelineTabContent from './tabs/TimelineTabContent';
 import MapTabContent from './tabs/MapTabContent';
 import AnalyticsTabContent from './tabs/AnalyticsTabContent';
 import PhotosTabContent from './tabs/PhotosTabContent';
-
-const VideosTabContent = () => (
-  <div className="space-y-6">
-    <div className="flex items-center justify-between">
-      <h3 className="text-lg font-semibold">Videos Κτιρίου</h3>
-      <Button>
-        <Upload className="w-4 h-4 mr-2" />
-        Ανέβασμα Video
-      </Button>
-    </div>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {[1, 2, 3].map((index) => (
-        <div key={index} className="aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border hover:border-blue-400 transition-colors cursor-pointer group">
-          <div className="text-center">
-            <Video className="w-8 h-8 text-muted-foreground group-hover:text-blue-500 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">Προσθήκη Video</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+import VideosTabContent from './tabs/VideosTabContent';
 
 const PlaceholderTab = ({ title, icon: Icon }: { title: string; icon: any }) => (
   <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed border-border rounded-lg bg-muted/50">
