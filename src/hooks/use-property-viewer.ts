@@ -1,22 +1,8 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-
-interface Property {
-  id: string;
-  name: string;
-  type: string;
-  building: string;
-  floor: number;
-  status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'reserved';
-  price?: number;
-  area?: number;
-  project: string;
-  description?: string;
-  buildingId: string;
-  floorId: string;
-  vertices: Array<{x: number, y: number}>;
-}
+import type { Property } from '@/types/property-viewer';
 
 interface Floor {
   id: string;
@@ -250,6 +236,7 @@ function useUndoableState<T>(initialState: T) {
 interface UsePropertyViewerReturn {
   // Data
   properties: Property[];
+  setProperties: (newState: Property[], description: string) => void;
   projects: Project[];
   buildings: Building[];
   floors: Floor[];
@@ -373,6 +360,7 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
   return {
     // Data
     properties,
+    setProperties,
     projects: mockProjects,
     buildings: mockBuildings,
     floors: mockFloors,

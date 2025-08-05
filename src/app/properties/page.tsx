@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useTransition, useCallback } from 'react';
@@ -15,6 +16,8 @@ import {
   MousePointer,
   Undo,
   Redo,
+  Upload,
+  Download,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
@@ -27,6 +30,7 @@ import { usePropertyViewer } from '@/hooks/use-property-viewer';
 import { cn } from '@/lib/utils';
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcuts';
 import { useToast } from '@/hooks/use-toast';
+import type { Property } from '@/types/property-viewer';
 
 const EditToolbar = ({
   activeTool,
@@ -35,6 +39,8 @@ const EditToolbar = ({
   onRedo,
   canUndo,
   canRedo,
+  onExport,
+  onImport,
 }: {
   activeTool: string | null;
   onToolChange: (tool: 'create' | 'edit_nodes' | null) => void;
@@ -42,6 +48,8 @@ const EditToolbar = ({
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  onExport: () => void;
+  onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
   const handleToolClick = (tool: 'create' | 'edit_nodes') => {
     if (activeTool === tool) {
@@ -100,6 +108,35 @@ const EditToolbar = ({
             <Redo className="mr-2 h-4 w-4" />
             Redo
           </Button>
+
+          <Separator orientation="vertical" className="h-6 mx-2" />
+          
+          <input
+            type="file"
+            accept=".json"
+            onChange={onImport}
+            className="hidden"
+            id="import-json-input"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => document.getElementById('import-json-input')?.click()}
+            title="Import JSON"
+          >
+             <Upload className="mr-2 h-4 w-4" />
+            Import
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onExport}
+            title="Export JSON"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+
         </div>
       </CardContent>
     </Card>
@@ -120,6 +157,7 @@ export default function PropertyViewerPage() {
 
   const {
     properties,
+    setProperties,
     selectedProperty,
     hoveredProperty,
     selectedFloor,
@@ -194,6 +232,72 @@ export default function PropertyViewerPage() {
   const handlePolygonUpdated = useCallback((polygonId: string, vertices: Array<{ x: number; y: number }>) => {
     saveHistory('Επεξεργασία Polygon');
   }, [saveHistory]);
+  
+  const handleExport = useCallback(() => {
+    if (!properties || properties.length === 0) {
+      toast.warning('Δεν υπάρχουν δεδομένα για εξαγωγή.');
+      return;
+    }
+
+    const dataToExport = {
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      properties: properties,
+    };
+
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(dataToExport, null, 2)
+    )}`;
+    
+    const link = document.createElement('a');
+    link.href = jsonString;
+    link.download = `properties_export_${Date.now()}.json`;
+    link.click();
+    
+    toast.success('Τα δεδομένα εξήχθησαν με επιτυχία.');
+  }, [properties, toast]);
+  
+  const handleImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result;
+        if (typeof text !== 'string') {
+          throw new Error('Could not read file content.');
+        }
+        const data = JSON.parse(text);
+
+        // Basic validation
+        if (!data.properties || !Array.isArray(data.properties)) {
+          throw new Error('Invalid JSON format: "properties" array not found.');
+        }
+        
+        // TODO: Add more robust validation with Zod or similar
+        const importedProperties = data.properties as Property[];
+        
+        setProperties(importedProperties, 'Εισαγωγή από JSON');
+        toast.success(`${importedProperties.length} ακίνητα εισήχθησαν με επιτυχία.`);
+
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error(`Σφάλμα εισαγωγής: ${error.message}`);
+        } else {
+          toast.error('Προέκυψε ένα άγνωστο σφάλμα κατά την εισαγωγή.');
+        }
+      } finally {
+         // Reset file input to allow importing the same file again
+        if(event.target) {
+            event.target.value = '';
+        }
+      }
+    };
+    reader.readAsText(file);
+  }, [setProperties, toast]);
 
 
   return (
@@ -283,6 +387,8 @@ export default function PropertyViewerPage() {
               onRedo={redo}
               canUndo={canUndo}
               canRedo={canRedo}
+              onExport={handleExport}
+              onImport={handleImport}
             />
           )}
           <Card className="flex-1 h-full">
