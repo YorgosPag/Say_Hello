@@ -2,7 +2,8 @@ import {
   Home,
   Settings,
   Users,
-  Building
+  Building,
+  Library
 } from "lucide-react"
 import type { MenuItem } from "@/types/sidebar"
 
@@ -12,6 +13,12 @@ export const mainMenuItems: MenuItem[] = [
     icon: Home,
     href: "/",
     badge: null,
+  },
+  {
+    title: "Ευρετήριο Ακινήτων",
+    icon: Library,
+    href: "/properties",
+    badge: "Νέο",
   },
   {
     title: "Επαφές",
