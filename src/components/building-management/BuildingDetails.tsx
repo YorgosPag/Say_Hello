@@ -347,60 +347,58 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
       {/* Project Files */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Αρχεία Έργου
-          </CardTitle>
+            <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Αρχεία Έργου
+            </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Συγγραφή Υποχρεώσεων</Label>
-              <div className="flex gap-2">
-                <Input 
-                  defaultValue="\Server\shared\6. erga\Paleologou\Paleol_Gen\Paleol_Gen_Pinak Syggr\pal syggrafi.doc" 
-                  className="bg-muted"
-                  disabled
-                />
-                <Button variant="outline" size="icon">
-                  <Folder className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="icon">
-                  <Eye className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="icon">
-                  <Download className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            
-            {/* Additional Files */}
-            <div className="border rounded-lg p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-sm">Συνημμένα Αρχεία</h4>
-                <Button variant="outline" size="sm">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Προσθήκη Αρχείου
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="flex items-center gap-2 p-2 border rounded">
-                  <FileText className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm">Κανονισμός Κτιρίου.pdf</span>
-                  <Button variant="ghost" size="sm" className="ml-auto">
-                    <Download className="w-3 h-3" />
-                  </Button>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label>Συγγραφή Υποχρεώσεων</Label>
+                    <div className="flex gap-2">
+                        <Input
+                            type="text"
+                            defaultValue="\Server\shared\6. erga\Paleologou\Paleol_Gen\Paleol_Gen_Pinak Syggr\pal syggrafi.doc"
+                            className="bg-muted"
+                            disabled
+                        />
+                        <Button variant="outline" size="icon">
+                            <Folder className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon">
+                            <Eye className="w-4 h-4" />
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 p-2 border rounded">
-                  <FileText className="w-4 h-4 text-green-500" />
-                  <span className="text-sm">Άδεια Οικοδομής.pdf</span>
-                  <Button variant="ghost" size="sm" className="ml-auto">
-                    <Download className="w-3 h-3" />
-                  </Button>
+
+                {/* Additional Files */}
+                <div className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Συνημμένα Αρχεία</h4>
+                    <Button variant="outline" size="sm">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Προσθήκη Αρχείου
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="flex items-center gap-2 p-2 border rounded">
+                      <FileText className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm">Κανονισμός Κτιρίου.pdf</span>
+                      <Button variant="ghost" size="sm" className="ml-auto">
+                        <Download className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 border rounded">
+                      <FileText className="w-4 h-4 text-green-500" />
+                      <span className="text-sm">Άδεια Οικοδομής.pdf</span>
+                      <Button variant="ghost" size="sm" className="ml-auto">
+                        <Download className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
             </div>
-          </div>
         </CardContent>
       </Card>
 
