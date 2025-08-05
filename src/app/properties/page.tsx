@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcuts';
 import { useToast } from '@/hooks/use-toast';
 import type { Property } from '@/types/property-viewer';
+import { Separator } from '@/components/ui/separator';
 
 const EditToolbar = ({
   activeTool,
