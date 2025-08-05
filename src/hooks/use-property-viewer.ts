@@ -245,14 +245,14 @@ interface UsePropertyViewerReturn {
   isLoading: boolean;
   
   // Selected states
-  selectedProperty: string | null;
+  selectedProperties: string[];
   hoveredProperty: string | null;
   selectedFloor: string | null;
   selectedBuilding: string | null;
   selectedProject: string | null;
   
   // Setters
-  setSelectedProperty: (propertyId: string | null) => void;
+  setSelectedProperties: (value: React.SetStateAction<string[]>) => void;
   setHoveredProperty: (propertyId: string | null) => void;
   setSelectedFloor: (floorId: string | null) => void;
   setSelectedBuilding: (buildingId: string | null) => void;
@@ -272,7 +272,6 @@ interface UsePropertyViewerReturn {
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  saveHistory: (description: string) => void;
 }
 
 export function usePropertyViewer(): UsePropertyViewerReturn {
@@ -287,7 +286,7 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
     canRedo 
   } = useUndoableState<Property[]>(mockProperties);
 
-  const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
+  const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [hoveredProperty, setHoveredProperty] = useState<string | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<string | null>("floor-1");
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>("building-1");
@@ -301,11 +300,6 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
     }, 500);
     return () => clearTimeout(timer);
   }, []);
-
-  const saveHistory = (description: string) => {
-    setProperties(properties, description);
-  };
-
 
   // Computed values
   const currentProject = useMemo(() => {
@@ -324,17 +318,6 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
     if (!currentFloor) return [];
     return properties.filter(p => p.floorId === currentFloor.id);
   }, [currentFloor, properties]);
-
-  // Auto-select first property when floor changes
-  useEffect(() => {
-    if (floorProperties.length > 0 && !selectedProperty) {
-      setSelectedProperty(floorProperties[0].id);
-    } else if (selectedProperty && !floorProperties.find(p => p.id === selectedProperty)) {
-      setSelectedProperty(floorProperties.length > 0 ? floorProperties[0].id : null);
-    } else if (floorProperties.length === 0) {
-      setSelectedProperty(null);
-    }
-  }, [floorProperties, selectedProperty]);
 
   // Auto-update building when floor changes
   useEffect(() => {
@@ -369,14 +352,14 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
     isLoading,
     
     // Selected states
-    selectedProperty,
+    selectedProperties,
     hoveredProperty,
     selectedFloor,
     selectedBuilding,
     selectedProject,
     
     // Setters
-    setSelectedProperty,
+    setSelectedProperties,
     setHoveredProperty,
     setSelectedFloor,
     setSelectedBuilding,
@@ -396,6 +379,5 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
     redo,
     canUndo,
     canRedo,
-    saveHistory,
   };
 }

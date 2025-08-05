@@ -40,8 +40,8 @@ interface FloorData {
 
 interface LayerManagerProps {
   floorData: FloorData;
-  selectedPolygon: string | null;
-  onPolygonSelect: (polygonId: string | null) => void;
+  selectedPolygonIds: string[];
+  onPolygonSelect: (polygonId: string, isShiftClick: boolean) => void;
   onDuplicate: (propertyId: string) => void;
   onDelete: (propertyId: string) => void;
 }
@@ -105,7 +105,7 @@ function PropertyLayerItem({
   property: Property;
   isSelected: boolean;
   layerState: LayerState;
-  onSelect: () => void;
+  onSelect: (isShiftClick: boolean) => void;
   onToggleVisibility: () => void;
   onToggleLock: () => void;
   onOpacityChange: (opacity: number) => void;
@@ -116,6 +116,12 @@ function PropertyLayerItem({
   const [isExpanded, setIsExpanded] = useState(isSelected);
   const statusInfo = statusConfig[property.status];
   const IconComponent = propertyTypeIcons[property.type as keyof typeof propertyTypeIcons] || Home;
+  
+  // Sync expanded state with selection if it's the only one selected
+  useEffect(() => {
+    setIsExpanded(isSelected);
+  }, [isSelected]);
+
 
   return (
     <div className={cn(
@@ -139,7 +145,7 @@ function PropertyLayerItem({
         
         <div 
           className="flex items-center gap-2 flex-1 cursor-pointer"
-          onClick={onSelect}
+          onClick={(e) => onSelect(e.shiftKey)}
         >
           <IconComponent className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-medium truncate">{property.name}</span>
@@ -175,7 +181,7 @@ function PropertyLayerItem({
       </div>
 
       {/* Type and Status */}
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex items-center justify-between text-xs pl-7">
         <span className="text-muted-foreground">{property.type}</span>
         <Badge 
           variant="outline" 
@@ -187,7 +193,7 @@ function PropertyLayerItem({
 
       {/* Expanded Details */}
       {isExpanded && (
-        <div className="space-y-3 pt-2 border-t">
+        <div className="space-y-3 pt-2 border-t ml-7">
           {/* Color */}
           <div className="flex items-center gap-2">
             <Label className="text-xs">Χρώμα:</Label>
@@ -266,7 +272,7 @@ function PropertyLayerItem({
 
 export function LayerManager({
   floorData,
-  selectedPolygon,
+  selectedPolygonIds,
   onPolygonSelect,
   onDuplicate,
   onDelete
@@ -330,7 +336,7 @@ export function LayerManager({
   };
 
   const handleEdit = (propertyId: string) => {
-    onPolygonSelect(propertyId);
+    onPolygonSelect(propertyId, false);
     // Additional edit logic here
   };
 
@@ -433,9 +439,9 @@ export function LayerManager({
               <PropertyLayerItem
                 key={property.id}
                 property={property}
-                isSelected={selectedPolygon === property.id}
+                isSelected={selectedPolygonIds.includes(property.id)}
                 layerState={layerStates[property.id] || { visible: true, locked: false, opacity: 0.7 }}
-                onSelect={() => onPolygonSelect(property.id)}
+                onSelect={(isShiftClick) => onPolygonSelect(property.id, isShiftClick)}
                 onToggleVisibility={() => handleToggleVisibility(property.id)}
                 onToggleLock={() => handleToggleLock(property.id)}
                 onOpacityChange={(opacity) => handleOpacityChange(property.id, opacity)}

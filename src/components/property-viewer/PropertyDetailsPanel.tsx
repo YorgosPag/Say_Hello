@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,12 +18,13 @@ import {
   FileText,
   Eye,
   Edit3,
-  ExternalLink
+  ExternalLink,
+  Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PropertyDetailsProps {
-  propertyId: string | null;
+  propertyIds: string[];
 }
 
 interface PropertyDetails {
@@ -371,17 +373,28 @@ function PropertyDetailsContent({ property }: { property: PropertyDetails }) {
   );
 }
 
-export function PropertyDetailsPanel({ propertyId }: PropertyDetailsProps) {
-  if (!propertyId) {
+export function PropertyDetailsPanel({ propertyIds }: PropertyDetailsProps) {
+  if (propertyIds.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
         <Home className="h-8 w-8 mb-2" />
-        <p className="text-sm text-center">Επιλέξτε ένα ακίνητο από τη λίστα</p>
+        <p className="text-sm text-center">Επιλέξτε ένα ακίνητο</p>
         <p className="text-xs text-center">για να δείτε τα στοιχεία του</p>
       </div>
     );
   }
 
+  if (propertyIds.length > 1) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+        <Layers className="h-8 w-8 mb-2" />
+        <p className="text-sm font-medium text-center">{propertyIds.length} ακίνητα επιλέχθηκαν</p>
+        <p className="text-xs text-center mt-2">Επιλέξτε ένα μόνο ακίνητο για να δείτε τις λεπτομέρειες.</p>
+      </div>
+    );
+  }
+
+  const propertyId = propertyIds[0];
   const property = mockPropertyDetails[propertyId];
   
   if (!property) {

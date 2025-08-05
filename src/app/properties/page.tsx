@@ -236,21 +236,32 @@ export default function PropertyViewerPage() {
   const {
     properties,
     setProperties,
-    selectedProperty,
+    selectedProperties,
+    setSelectedProperties,
     hoveredProperty,
     selectedFloor,
     isLoading,
-    setSelectedProperty,
     setHoveredProperty,
     setSelectedFloor,
     undo,
     redo,
     canUndo,
     canRedo,
-    saveHistory,
   } = usePropertyViewer();
 
   const [clipboard, setClipboard] = useState<Property | null>(null);
+
+  const handlePropertySelect = useCallback((propertyId: string, isShiftClick: boolean) => {
+      if (isShiftClick) {
+          setSelectedProperties(prev => 
+              prev.includes(propertyId)
+                ? prev.filter(id => id !== propertyId)
+                : [...prev, propertyId]
+          );
+      } else {
+          setSelectedProperties([propertyId]);
+      }
+  }, [setSelectedProperties]);
 
   // Keyboard shortcuts for Undo/Redo
   useKeyboardShortcut('z', undo, { metaKey: true, ctrlKey: true, shiftKey: false });
@@ -280,19 +291,19 @@ export default function PropertyViewerPage() {
   }, [properties, searchQuery]);
 
   useEffect(() => {
-    if (filteredProperties.length > 0 && !selectedProperty) {
-      setSelectedProperty(filteredProperties[0].id);
+    const firstSelected = selectedProperties[0];
+    if (filteredProperties.length > 0 && selectedProperties.length === 0) {
+      // setSelectedProperties([filteredProperties[0].id]);
     } else if (
-      selectedProperty &&
-      !filteredProperties.find((p) => p.id === selectedProperty)
+      firstSelected &&
+      !filteredProperties.find((p) => p.id === firstSelected)
     ) {
-      setSelectedProperty(
-        filteredProperties.length > 0 ? filteredProperties[0].id : null
+      // Logic to handle when a selected property is filtered out
+      setSelectedProperties(
+        selectedProperties.filter(id => filteredProperties.some(p => p.id === id))
       );
-    } else if (filteredProperties.length === 0) {
-      setSelectedProperty(null);
     }
-  }, [filteredProperties, selectedProperty, setSelectedProperty]);
+  }, [filteredProperties, selectedProperties, setSelectedProperties]);
 
   const toggleEditMode = () => {
     if (!isEditor) return;
@@ -312,8 +323,8 @@ export default function PropertyViewerPage() {
     setProperties(newProperties, 'Δημιουργία Polygon');
     toast.success('Το Polygon δημιουργήθηκε');
     setActiveTool(null);
-    setSelectedProperty(propertyToAdd.id);
-    }, [properties, setProperties, toast, setSelectedProperty]
+    setSelectedProperties([propertyToAdd.id]);
+    }, [properties, setProperties, toast, setSelectedProperties]
   );
   
   const handlePolygonUpdated = useCallback((polygonId: string, vertices: Array<{ x: number; y: number }>) => {
@@ -324,13 +335,13 @@ export default function PropertyViewerPage() {
   }, [properties, setProperties]);
 
   const handleCopy = useCallback(() => {
-    if (!selectedProperty) return;
-    const propertyToCopy = properties.find(p => p.id === selectedProperty);
+    if (selectedProperties.length !== 1) return;
+    const propertyToCopy = properties.find(p => p.id === selectedProperties[0]);
     if (propertyToCopy) {
       setClipboard(propertyToCopy);
       toast.success(`Το ακίνητο "${propertyToCopy.name}" αντιγράφηκε.`);
     }
-  }, [selectedProperty, properties, toast]);
+  }, [selectedProperties, properties, toast]);
 
   const handlePaste = useCallback(() => {
     if (!clipboard) return;
@@ -350,9 +361,9 @@ export default function PropertyViewerPage() {
 
     const newProperties = [...properties, newProperty];
     setProperties(newProperties, `Επικόλληση ${newProperty.name}`);
-    setSelectedProperty(newId);
+    setSelectedProperties([newId]);
     toast.success(`Το ακίνητο "${newProperty.name}" επικολλήθηκε.`);
-  }, [clipboard, properties, setProperties, selectedFloor, toast, setSelectedProperty]);
+  }, [clipboard, properties, setProperties, selectedFloor, toast, setSelectedProperties]);
   
   const handleDuplicate = useCallback((propertyId: string) => {
      const propertyToDuplicate = properties.find(p => p.id === propertyId);
@@ -368,29 +379,28 @@ export default function PropertyViewerPage() {
 
     const newProperties = [...properties, newProperty];
     setProperties(newProperties, `Διπλασιασμός ${propertyToDuplicate.name}`);
-    setSelectedProperty(newId);
+    setSelectedProperties([newId]);
     toast.success(`Ο διπλασιασμός του "${propertyToDuplicate.name}" έγινε με επιτυχία.`);
-  }, [properties, setProperties, toast, setSelectedProperty]);
+  }, [properties, setProperties, toast, setSelectedProperties]);
 
-  const handleDelete = useCallback((propertyId: string) => {
-    const propertyToDelete = properties.find(p => p.id === propertyId);
-    if (!propertyToDelete) return;
-    
-    const newProperties = properties.filter(p => p.id !== propertyId);
-    setProperties(newProperties, `Διαγραφή ${propertyToDelete.name}`);
+  const handleDeleteSelected = useCallback(() => {
+    if (selectedProperties.length === 0) return;
 
-    if(selectedProperty === propertyId) {
-        setSelectedProperty(null);
-    }
-    toast.error(`Το ακίνητο "${propertyToDelete.name}" διαγράφηκε.`);
-  }, [properties, setProperties, toast, selectedProperty, setSelectedProperty]);
+    const newProperties = properties.filter(p => !selectedProperties.includes(p.id));
+    setProperties(newProperties, `Διαγραφή ${selectedProperties.length} ακινήτων`);
+
+    toast.error(`Διαγράφηκαν ${selectedProperties.length} ακίνητα.`);
+    setSelectedProperties([]);
+  }, [properties, setProperties, toast, selectedProperties, setSelectedProperties]);
 
 
   useKeyboardShortcut('c', handleCopy, { metaKey: true, ctrlKey: true });
   useKeyboardShortcut('v', handlePaste, { metaKey: true, ctrlKey: true });
-  useKeyboardShortcut('d', () => selectedProperty && handleDuplicate(selectedProperty), { metaKey: true, ctrlKey: true });
-  useKeyboardShortcut('Delete', () => selectedProperty && handleDelete(selectedProperty), { metaKey: false, ctrlKey: false });
-  useKeyboardShortcut('Backspace', () => selectedProperty && handleDelete(selectedProperty), { metaKey: false, ctrlKey: false });
+  useKeyboardShortcut('d', () => {
+      if (selectedProperties.length === 1) handleDuplicate(selectedProperties[0])
+  }, { metaKey: true, ctrlKey: true });
+  useKeyboardShortcut('Delete', handleDeleteSelected, { metaKey: false, ctrlKey: false });
+  useKeyboardShortcut('Backspace', handleDeleteSelected, { metaKey: false, ctrlKey: false });
   
   const handleExport = useCallback(() => {
     if (!properties || properties.length === 0) {
@@ -528,8 +538,8 @@ export default function PropertyViewerPage() {
             <CardContent className="flex-1 p-0 overflow-hidden">
               <PropertyList
                 properties={filteredProperties}
-                selectedPropertyId={selectedProperty}
-                onSelectProperty={setSelectedProperty}
+                selectedPropertyIds={selectedProperties}
+                onSelectProperty={handlePropertySelect}
                 isLoading={isLoading || isPending}
               />
             </CardContent>
@@ -563,16 +573,16 @@ export default function PropertyViewerPage() {
           <Card className="flex-1 h-full">
             <CardContent className="p-0 h-full">
               <FloorPlanViewer
-                selectedPropertyId={selectedProperty}
+                selectedPropertyIds={selectedProperties}
                 selectedFloorId={selectedFloor}
                 onSelectFloor={setSelectedFloor}
                 onHoverProperty={setHoveredProperty}
                 activeTool={activeTool}
-                onSelectProperty={setSelectedProperty}
+                onSelectProperty={handlePropertySelect}
                 onPolygonCreated={handlePolygonCreated}
                 onPolygonUpdated={handlePolygonUpdated}
                 onDuplicate={handleDuplicate}
-                onDelete={handleDelete}
+                onDelete={handleDeleteSelected}
                 showGrid={showGrid}
                 snapToGrid={snapToGrid}
                 gridSize={gridSize}
@@ -592,7 +602,7 @@ export default function PropertyViewerPage() {
                 <h3 className="text-sm font-semibold">Επιλεγμένο Ακίνητο</h3>
               </CardHeader>
               <CardContent className="flex-1">
-                <PropertyDetailsPanel propertyId={selectedProperty} />
+                <PropertyDetailsPanel propertyIds={selectedProperties} />
               </CardContent>
             </Card>
           </div>

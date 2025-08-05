@@ -29,13 +29,13 @@ import { LayerManager } from "./LayerManager";
 import type { Property } from '@/types/property-viewer';
 
 interface FloorPlanViewerProps {
-  selectedPropertyId: string | null;
+  selectedPropertyIds: string[];
   selectedFloorId: string | null;
   onSelectFloor: (floorId: string | null) => void;
   onHoverProperty: (propertyId: string | null) => void;
   hoveredPropertyId?: string | null;
   activeTool: 'create' | 'edit_nodes' | 'measure' | null;
-  onSelectProperty: (propertyId: string | null) => void;
+  onSelectProperty: (propertyId: string, isShiftClick: boolean) => void;
   onPolygonCreated: (newProperty: Omit<Property, 'id'>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
   onDuplicate: (propertyId: string) => void;
@@ -114,16 +114,8 @@ const mockFloors: FloorData[] = [
   }
 ];
 
-const statusColors = {
-  'for-sale': '#10b981',    // Green
-  'for-rent': '#3b82f6',    // Blue
-  'sold': '#ef4444',        // Red
-  'rented': '#f97316',      // Orange
-  'reserved': '#eab308',    // Yellow
-};
-
 export function FloorPlanViewer({
-  selectedPropertyId,
+  selectedPropertyIds,
   selectedFloorId,
   onSelectFloor,
   onHoverProperty,
@@ -142,11 +134,12 @@ export function FloorPlanViewer({
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showLabels, setShowLabels] = useState(true);
-  const [selectedPolygon, setSelectedPolygon] = useState<string | null>(null);
   const [floors, setFloors] = useState<FloorData[]>(mockFloors);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const currentFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
+
+  const primarySelectedPolygon = activeTool === 'edit_nodes' ? selectedPropertyIds[selectedPropertyIds.length - 1] : null;
 
   const handleZoomIn = useCallback(() => {
     setZoom(prev => Math.min(prev * 1.2, 5));
@@ -164,10 +157,6 @@ export function FloorPlanViewer({
     onHoverProperty(propertyId);
   }, [onHoverProperty]);
 
-  const handlePolygonSelect = useCallback((propertyId: string | null) => {
-    onSelectProperty(propertyId)
-    setSelectedPolygon(propertyId);
-  }, [onSelectProperty]);
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -176,27 +165,6 @@ export function FloorPlanViewer({
       console.log("Uploading floor plan:", file.name);
     }
   }, []);
-
-  const handleLocalPolygonCreated = (vertices: Array<{ x: number; y: number }>) => {
-    if (!currentFloor) return;
-    
-    const newProperty: Omit<Property, 'id'> = {
-      name: `Νέο Ακίνητο ${currentFloor.properties.length + 1}`,
-      type: 'Διαμέρισμα 2Δ',
-      status: 'for-sale',
-      vertices,
-      price: 0,
-      area: 0,
-      building: currentFloor.buildingId,
-      floor: currentFloor.level,
-      project: 'Default Project',
-      buildingId: currentFloor.buildingId,
-      floorId: currentFloor.id,
-    };
-    
-    onPolygonCreated(newProperty);
-  };
-
 
   return (
     <div className="h-full flex flex-col">
@@ -304,15 +272,12 @@ export function FloorPlanViewer({
             >
               <FloorPlanCanvas
                 floorData={currentFloor}
-                selectedProperty={selectedPropertyId}
+                selectedPropertyIds={selectedPropertyIds}
                 hoveredProperty={hoveredPropertyId}
-                selectedPolygon={selectedPolygon}
-                showGrid={showGrid}
-                showLabels={showLabels}
                 activeTool={activeTool}
                 onPolygonHover={handlePolygonHover}
-                onPolygonSelect={handlePolygonSelect}
-                onPolygonCreated={handleLocalPolygonCreated}
+                onPolygonSelect={onSelectProperty}
+                onPolygonCreated={onPolygonCreated}
                 onPolygonUpdated={onPolygonUpdated}
                 snapToGrid={snapToGrid}
                 gridSize={gridSize}
@@ -340,8 +305,8 @@ export function FloorPlanViewer({
                 <TabsContent value="layers" className="mt-0 h-[calc(100%-3rem)]">
                   <LayerManager
                     floorData={currentFloor}
-                    selectedPolygon={selectedPolygon}
-                    onPolygonSelect={setSelectedPolygon}
+                    selectedPolygonIds={selectedPropertyIds}
+                    onPolygonSelect={onSelectProperty}
                     onDuplicate={onDuplicate}
                     onDelete={onDelete}
                   />
@@ -350,10 +315,10 @@ export function FloorPlanViewer({
                 <TabsContent value="properties" className="mt-0 h-[calc(100%-3rem)] p-4">
                   <div className="space-y-4">
                     <h4 className="font-medium">Ιδιότητες Polygon</h4>
-                    {selectedPolygon ? (
+                    {primarySelectedPolygon ? (
                       <div className="space-y-3">
                         <p className="text-sm text-muted-foreground">
-                          Επιλεγμένο: {selectedPolygon}
+                          Επιλεγμένο: {primarySelectedPolygon}
                         </p>
                         {/* Property editing controls will go here */}
                       </div>

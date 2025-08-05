@@ -1,3 +1,4 @@
+
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,8 +23,8 @@ interface Property {
 
 interface PropertyListProps {
   properties: Property[];
-  selectedPropertyId: string | null;
-  onSelectProperty: (propertyId: string) => void;
+  selectedPropertyIds: string[];
+  onSelectProperty: (propertyId: string, isShiftClick: boolean) => void;
   isLoading: boolean;
 }
 
@@ -89,7 +90,7 @@ function PropertyListItem({
 }: { 
   property: Property; 
   isSelected: boolean; 
-  onSelect: () => void;
+  onSelect: (isShiftClick: boolean) => void;
 }) {
   const statusInfo = statusConfig[property.status];
   const IconComponent = propertyTypeIcons[property.type as keyof typeof propertyTypeIcons] || Home;
@@ -102,7 +103,7 @@ function PropertyListItem({
           ? "ring-2 ring-primary border-primary shadow-md" 
           : "hover:border-primary/50"
       )}
-      onClick={onSelect}
+      onClick={(e) => onSelect(e.shiftKey)}
     >
       <CardContent className="p-3 space-y-2">
         {/* Header */}
@@ -161,7 +162,7 @@ function PropertyListItem({
 
 export function PropertyList({ 
   properties, 
-  selectedPropertyId, 
+  selectedPropertyIds, 
   onSelectProperty, 
   isLoading 
 }: PropertyListProps) {
@@ -186,8 +187,8 @@ export function PropertyList({
           <PropertyListItem
             key={property.id}
             property={property}
-            isSelected={selectedPropertyId === property.id}
-            onSelect={() => onSelectProperty(property.id)}
+            isSelected={selectedPropertyIds.includes(property.id)}
+            onSelect={(isShiftClick) => onSelectProperty(property.id, isShiftClick)}
           />
         ))}
       </div>

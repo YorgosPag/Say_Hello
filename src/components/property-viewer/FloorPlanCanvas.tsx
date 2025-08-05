@@ -22,14 +22,11 @@ interface Point {
 
 interface FloorPlanCanvasProps {
   floorData: FloorData;
-  selectedProperty: string | null;
+  selectedPropertyIds: string[];
   hoveredProperty: string | null;
-  selectedPolygon: string | null;
-  showGrid: boolean;
-  showLabels: boolean;
   activeTool: 'create' | 'edit_nodes' | 'measure' | null;
   onPolygonHover: (propertyId: string | null) => void;
-  onPolygonSelect: (propertyId: string | null) => void;
+  onPolygonSelect: (propertyId: string, isShiftClick: boolean) => void;
   onPolygonCreated: (newProperty: Omit<Property, 'id'>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
   snapToGrid: boolean;
@@ -92,20 +89,18 @@ function PropertyPolygon({
   property,
   isSelected,
   isHovered,
-  isPolygonSelected,
   showLabels,
-  isEditMode,
+  isNodeEditMode,
   onHover,
   onSelect
 }: {
   property: Property;
   isSelected: boolean;
   isHovered: boolean;
-  isPolygonSelected: boolean;
   showLabels: boolean;
-  isEditMode: boolean;
+  isNodeEditMode: boolean;
   onHover: (propertyId: string | null) => void;
-  onSelect: (propertyId: string | null) => void;
+  onSelect: (propertyId: string, isShiftClick: boolean) => void;
 }) {
   const pathData = property.vertices
     .map((vertex, index) => `${index === 0 ? 'M' : 'L'} ${vertex.x} ${vertex.y}`)
@@ -128,14 +123,10 @@ function PropertyPolygon({
   if (isSelected) {
     fillOpacity = 0.5;
     strokeWidth = 3;
-    strokeColor = '#1f2937';
+    strokeColor = isNodeEditMode ? '#7c3aed' : '#1f2937';
   } else if (isHovered) {
     fillOpacity = 0.4;
     strokeWidth = 2;
-  } else if (isPolygonSelected && isEditMode) { // Only show selection in edit mode
-    fillOpacity = 0.6;
-    strokeWidth = 2;
-    strokeColor = '#7c3aed';
   }
 
   return (
@@ -147,15 +138,15 @@ function PropertyPolygon({
         fillOpacity={fillOpacity}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
-        strokeDasharray={isEditMode ? "5,5" : "none"}
+        strokeDasharray={isNodeEditMode && isSelected ? "5,5" : "none"}
         className="cursor-pointer transition-all duration-200"
         onMouseEnter={() => onHover(property.id)}
         onMouseLeave={() => onHover(null)}
-        onClick={() => onSelect(property.id)}
+        onClick={(e) => onSelect(property.id, e.shiftKey)}
       />
 
-      {/* Selection highlight for edit mode */}
-      {isPolygonSelected && isEditMode && (
+      {/* Pulsing selection highlight for the primary editable polygon */}
+      {isSelected && isNodeEditMode && (
         <path
           d={pathData}
           fill="none"
@@ -209,7 +200,7 @@ function PropertyPolygon({
       )}
 
       {/* Hover tooltip */}
-      {isHovered && !isEditMode && (
+      {isHovered && !isNodeEditMode && (
         <g className="hover-tooltip">
           <rect
             x={centroid.x + 40}
@@ -321,11 +312,8 @@ function PolygonMeasurementInfo({ polygon, scale }: { polygon: Property; scale: 
 
 export function FloorPlanCanvas({
   floorData,
-  selectedProperty,
+  selectedPropertyIds,
   hoveredProperty,
-  selectedPolygon,
-  showGrid,
-  showLabels,
   activeTool,
   onPolygonHover,
   onPolygonSelect,
@@ -347,6 +335,9 @@ export function FloorPlanCanvas({
   const isCreatingPolygon = activeTool === 'create';
   const isNodeEditMode = activeTool === 'edit_nodes';
   const isMeasuring = activeTool === 'measure';
+
+  // The primary polygon for editing is the last one selected
+  const primarySelectedPolygon = isNodeEditMode ? selectedPropertyIds[selectedPropertyIds.length - 1] : null;
 
   const snapPoint = useCallback((point: Point) => {
     if (!snapToGrid) return point;
@@ -375,7 +366,8 @@ export function FloorPlanCanvas({
 
   const handleCanvasClick = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
     if (event.target !== event.currentTarget && !isCreatingPolygon) {
-      return;
+        // Clicks on polygons are handled by the polygons themselves
+        return;
     }
 
     const rect = event.currentTarget.getBoundingClientRect();
@@ -413,7 +405,7 @@ export function FloorPlanCanvas({
     }
     // Default action (deselect)
     else {
-      onPolygonSelect(null);
+      onPolygonSelect('', false); // Deselect all by passing empty ID
     }
   }, [isCreatingPolygon, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart]);
 
@@ -533,11 +525,10 @@ export function FloorPlanCanvas({
           <g key={property.id}>
             <PropertyPolygon
               property={property}
-              isSelected={selectedProperty === property.id}
+              isSelected={selectedPropertyIds.includes(property.id)}
               isHovered={hoveredProperty === property.id}
-              isPolygonSelected={selectedPolygon === property.id}
               showLabels={showLabels}
-              isEditMode={isNodeEditMode}
+              isNodeEditMode={isNodeEditMode && primarySelectedPolygon === property.id}
               onHover={onPolygonHover}
               onSelect={onPolygonSelect}
             />
@@ -550,7 +541,7 @@ export function FloorPlanCanvas({
         {isNodeEditMode && (
           <PolygonEditor
             floorData={floorData}
-            selectedPolygon={selectedPolygon}
+            selectedPolygon={primarySelectedPolygon}
             onPolygonUpdate={onPolygonUpdated}
             snapToGrid={snapToGrid}
             gridSize={gridSize}
