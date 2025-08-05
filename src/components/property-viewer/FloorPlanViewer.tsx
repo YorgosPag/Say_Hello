@@ -26,12 +26,13 @@ import { PolygonEditor } from "./PolygonEditor";
 import { LayerManager } from "./LayerManager";
 
 interface FloorPlanViewerProps {
-  selectedProperty: string | null;
-  selectedFloor: string | null;
-  onSelectFloor: (floorId: string) => void;
+  selectedPropertyId: string | null;
+  selectedFloorId: string | null;
+  onSelectFloor: (floorId: string | null) => void;
   onHoverProperty: (propertyId: string | null) => void;
-  hoveredProperty: string | null;
+  hoveredPropertyId: string | null;
   isEditMode: boolean;
+  onSelectProperty: (propertyId: string | null) => void;
 }
 
 interface FloorData {
@@ -113,20 +114,23 @@ const statusColors = {
 };
 
 export function FloorPlanViewer({
-  selectedProperty,
-  selectedFloor,
+  selectedPropertyId,
+  selectedFloorId,
   onSelectFloor,
   onHoverProperty,
-  hoveredProperty,
-  isEditMode
+  hoveredPropertyId,
+  isEditMode,
+  onSelectProperty
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [selectedPolygon, setSelectedPolygon] = useState<string | null>(null);
+  const [isCreatingPolygon, setIsCreatingPolygon] = useState(false);
+  const [floors, setFloors] = useState<FloorData[]>(mockFloors);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const currentFloor = mockFloors.find(f => f.id === selectedFloor) || mockFloors[0];
+  const currentFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
 
   const handleZoomIn = useCallback(() => {
     setZoom(prev => Math.min(prev * 1.2, 5));
@@ -145,8 +149,9 @@ export function FloorPlanViewer({
   }, [onHoverProperty]);
 
   const handlePolygonSelect = useCallback((propertyId: string | null) => {
+    onSelectProperty(propertyId)
     setSelectedPolygon(propertyId);
-  }, []);
+  }, [onSelectProperty]);
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -155,6 +160,35 @@ export function FloorPlanViewer({
       console.log("Uploading floor plan:", file.name);
     }
   }, []);
+
+  const handlePolygonCreated = (vertices: Array<{ x: number; y: number }>) => {
+    const newProperty: PropertyPolygon = {
+      id: `new-prop-${Date.now()}`,
+      name: `Νέο Ακίνητο ${currentFloor.properties.length + 1}`,
+      type: 'Διαμέρισμα 2Δ',
+      status: 'for-sale',
+      color: '#10b981',
+      vertices,
+      price: 0,
+      area: 0
+    };
+    
+    setFloors(prevFloors => {
+      return prevFloors.map(floor => {
+        if (floor.id === currentFloor.id) {
+          return {
+            ...floor,
+            properties: [...floor.properties, newProperty]
+          };
+        }
+        return floor;
+      });
+    });
+
+    setIsCreatingPolygon(false);
+    onSelectProperty(newProperty.id);
+  };
+
 
   return (
     <div className="h-full flex flex-col">
@@ -170,7 +204,7 @@ export function FloorPlanViewer({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {mockFloors.map((floor) => (
+                {floors.map((floor) => (
                   <SelectItem key={floor.id} value={floor.id}>
                     {floor.name} ({floor.level >= 0 ? '+' : ''}{floor.level})
                   </SelectItem>
@@ -254,10 +288,16 @@ export function FloorPlanViewer({
                 Φόρτωση
               </Button>
               {isEditMode && (
+                <>
+                <Button variant="outline" size="sm" onClick={() => setIsCreatingPolygon(true)}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Δημιουργία
+                </Button>
                 <Button variant="outline" size="sm">
                   <Save className="h-4 w-4 mr-2" />
                   Αποθήκευση
                 </Button>
+                </>
               )}
             </div>
           </div>
@@ -276,14 +316,16 @@ export function FloorPlanViewer({
             >
               <FloorPlanCanvas
                 floorData={currentFloor}
-                selectedProperty={selectedProperty}
-                hoveredProperty={hoveredProperty}
+                selectedProperty={selectedPropertyId}
+                hoveredProperty={hoveredPropertyId}
                 selectedPolygon={selectedPolygon}
                 showGrid={showGrid}
                 showLabels={showLabels}
                 isEditMode={isEditMode}
                 onPolygonHover={handlePolygonHover}
                 onPolygonSelect={handlePolygonSelect}
+                isCreatingPolygon={isCreatingPolygon}
+                onPolygonCreated={handlePolygonCreated}
               />
               
               {isEditMode && (
@@ -344,5 +386,3 @@ export function FloorPlanViewer({
     </div>
   );
 }
-
-    
