@@ -70,20 +70,20 @@ import AnalyticsTabContent from './tabs/AnalyticsTabContent';
 import PhotosTabContent from './tabs/PhotosTabContent';
 import VideosTabContent from './tabs/VideosTabContent';
 import PlaceholderTab from './tabs/PlaceholderTab';
+import { getStatusColor, getStatusLabel } from './BuildingCard/BuildingCardUtils';
+
 
 interface BuildingDetailsProps {
   building: Building | null;
-  getStatusColor: (status: string) => string;
-  getStatusLabel: (status: string) => string;
 }
 
-export function BuildingDetails({ building, getStatusColor, getStatusLabel }: BuildingDetailsProps) {
+export function BuildingDetails({ building }: BuildingDetailsProps) {
     if (!building) {
         return (
           <div className="flex-1 flex flex-col items-center justify-center bg-card border rounded-lg min-w-0 shadow-sm text-center p-8">
             <Building2 className="w-16 h-16 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold text-foreground">Επιλέξτε ένα κτίριο</h2>
-            <p className="text-muted-foreground">Επιλέξτε ένα κτίριο από τη λίστα για να δείτε τις λεπτομέρείές του.</p>
+            <p className="text-muted-foreground">Επιλέξτε ένα κτίριο από τη λίστα για να δείτε τις λεπτομέρειές του.</p>
           </div>
         );
     }

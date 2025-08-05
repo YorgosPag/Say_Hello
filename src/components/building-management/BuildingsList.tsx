@@ -31,22 +31,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Building } from './BuildingsPageContent';
+import { getStatusColor, getStatusLabel, getCategoryIcon, getCategoryLabel, formatDate, formatCurrency } from './BuildingCard/BuildingCardUtils';
 
 
 interface BuildingsListProps {
   buildings: Building[];
   selectedBuilding: Building;
   onSelectBuilding?: (building: Building) => void;
-  getStatusColor: (status: string) => string;
-  getStatusLabel: (status: string) => string;
 }
 
 export function BuildingsList({ 
   buildings, 
   selectedBuilding, 
   onSelectBuilding,
-  getStatusColor,
-  getStatusLabel 
 }: BuildingsListProps) {
   const [favorites, setFavorites] = useState<number[]>([1]);
   const [sortBy, setSortBy] = useState<'name' | 'progress' | 'value' | 'area'>('name');
@@ -58,19 +55,6 @@ export function BuildingsList({
         ? prev.filter(id => id !== buildingId)
         : [...prev, buildingId]
     );
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('el-GR', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('el-GR');
   };
 
   const sortedBuildings = [...buildings].sort((a, b) => {
@@ -107,26 +91,6 @@ export function BuildingsList({
         : (bValue as number) - (aValue as number);
     }
   });
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'residential': return <Home className="w-4 h-4" />;
-      case 'commercial': return <Building2 className="w-4 h-4" />;
-      case 'mixed': return <Users className="w-4 h-4" />;
-      case 'industrial': return <Building2 className="w-4 h-4" />;
-      default: return <Building2 className="w-4 h-4" />;
-    }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'residential': return 'Κατοικίες';
-      case 'commercial': return 'Εμπορικό';
-      case 'mixed': return 'Μικτή Χρήση';
-      case 'industrial': return 'Βιομηχανικό';
-      default: return category;
-    }
-  };
 
   return (
     <div className="w-[420px] bg-card border-r flex flex-col shrink-0 shadow-sm">
@@ -199,137 +163,139 @@ export function BuildingsList({
       {/* Buildings List */}
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-2">
-          {sortedBuildings.map((building) => (
-            <div
-              key={building.id}
-              className={cn(
-                "relative p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md group",
-                selectedBuilding?.id === building.id
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-sm"
-                  : "border-border hover:border-blue-300 bg-card hover:bg-accent/50"
-              )}
-              onClick={() => onSelectBuilding?.(building)}
-            >
-              {/* Favorite Star */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFavorite(building.id);
-                }}
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+          {sortedBuildings.map((building) => {
+            const CategoryIcon = getCategoryIcon(building.category);
+            return (
+              <div
+                key={building.id}
+                className={cn(
+                  "relative p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md group",
+                  selectedBuilding?.id === building.id
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-sm"
+                    : "border-border hover:border-blue-300 bg-card hover:bg-accent/50"
+                )}
+                onClick={() => onSelectBuilding?.(building)}
               >
-                <Star
-                  className={cn(
-                    "w-4 h-4 transition-colors",
-                    favorites.includes(building.id)
-                      ? "text-yellow-500 fill-yellow-500"
-                      : "text-gray-400 hover:text-yellow-500"
-                  )}
-                />
-              </button>
+                {/* Favorite Star */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite(building.id);
+                  }}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Star
+                    className={cn(
+                      "w-4 h-4 transition-colors",
+                      favorites.includes(building.id)
+                        ? "text-yellow-500 fill-yellow-500"
+                        : "text-gray-400 hover:text-yellow-500"
+                    )}
+                  />
+                </button>
 
-              {/* Building Header */}
-              <div className="mb-3">
-                <div className="flex items-start gap-2 mb-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    {getCategoryIcon(building.category)}
-                    <h4 className="font-medium text-sm text-foreground leading-tight line-clamp-2">
-                      {building.name}
-                    </h4>
+                {/* Building Header */}
+                <div className="mb-3">
+                  <div className="flex items-start gap-2 mb-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <CategoryIcon className="w-4 h-4" />
+                      <h4 className="font-medium text-sm text-foreground leading-tight line-clamp-2">
+                        {building.name}
+                      </h4>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge 
+                      variant="secondary" 
+                      className={cn("text-xs", getStatusColor(building.status).replace('bg-', 'bg-') + ' text-white')}
+                    >
+                      {getStatusLabel(building.status)}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {getCategoryLabel(building.category)}
+                    </Badge>
+                  </div>
+
+                  {building.address && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate">{building.address}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-muted-foreground">Πρόοδος</span>
+                    <span className="font-medium">{building.progress}%</span>
+                  </div>
+                  <Progress value={building.progress} className="h-2" />
+                </div>
+
+                {/* Building Stats */}
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <p className="text-muted-foreground">Επιφάνεια</p>
+                    <p className="font-medium">{building.totalArea.toLocaleString('el-GR')} m²</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Όροφοι</p>
+                    <p className="font-medium">{building.floors}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Μονάδες</p>
+                    <p className="font-medium">{building.units}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Αξία</p>
+                    <p className="font-medium">{formatCurrency(building.totalValue)}</p>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge 
-                    variant="secondary" 
-                    className={cn("text-xs", getStatusColor(building.status).replace('bg-', 'bg-') + ' text-white')}
-                  >
-                    {getStatusLabel(building.status)}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {getCategoryLabel(building.category)}
-                  </Badge>
-                </div>
 
-                {building.address && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                    <MapPin className="w-3 h-3" />
-                    <span className="truncate">{building.address}</span>
+                {/* Completion Date */}
+                {building.completionDate && (
+                  <div className="mt-3 pt-3 border-t border-border/50">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="w-3 h-3" />
+                      <span>Παράδοση: {formatDate(building.completionDate)}</span>
+                    </div>
                   </div>
                 )}
+
+                {/* Action Menu */}
+                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                        <MoreVertical className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Προβολή
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Επεξεργασία
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleFavorite(building.id); }}>
+                        <Star className="w-4 h-4 mr-2" />
+                        {favorites.includes(building.id) ? 'Αφαίρεση από αγαπημένα' : 'Προσθήκη στα αγαπημένα'}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Selected Indicator */}
+                {selectedBuilding?.id === building.id && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-full" />
+                )}
               </div>
-
-              {/* Progress Bar */}
-              <div className="mb-3">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Πρόοδος</span>
-                  <span className="font-medium">{building.progress}%</span>
-                </div>
-                <Progress value={building.progress} className="h-2" />
-              </div>
-
-              {/* Building Stats */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <p className="text-muted-foreground">Επιφάνεια</p>
-                  <p className="font-medium">{building.totalArea.toLocaleString('el-GR')} m²</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Όροφοι</p>
-                  <p className="font-medium">{building.floors}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Μονάδες</p>
-                  <p className="font-medium">{building.units}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Αξία</p>
-                  <p className="font-medium">{formatCurrency(building.totalValue)}</p>
-                </div>
-              </div>
-
-              {/* Completion Date */}
-              {building.completionDate && (
-                <div className="mt-3 pt-3 border-t border-border/50">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Calendar className="w-3 h-3" />
-                    <span>Παράδοση: {formatDate(building.completionDate)}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Menu */}
-              <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <MoreVertical className="w-3 h-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Eye className="w-4 h-4 mr-2" />
-                      Προβολή
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Επεξεργασία
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleFavorite(building.id); }}>
-                      <Star className="w-4 h-4 mr-2" />
-                      {favorites.includes(building.id) ? 'Αφαίρεση από αγαπημένα' : 'Προσθήκη στα αγαπημένα'}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Selected Indicator */}
-              {selectedBuilding?.id === building.id && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-full" />
-              )}
-            </div>
-          ))}
+          )})}
         </div>
       </ScrollArea>
     </div>

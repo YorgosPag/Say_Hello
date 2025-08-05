@@ -27,6 +27,8 @@ import {
   CheckSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getStatusColor, getStatusLabel, getCategoryLabel } from './BuildingCard/BuildingCardUtils';
+
 
 // Enhanced building type with comprehensive data
 export type Building = {
@@ -156,36 +158,6 @@ export function BuildingsPageContent() {
     averageProgress: buildings.length > 0 ? Math.round(buildings.reduce((sum, b) => sum + b.progress, 0) / buildings.length) : 0,
     totalUnits: buildings.reduce((sum, b) => sum + b.units, 0)
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'construction': return 'bg-blue-500';
-      case 'planned': return 'bg-yellow-500';
-      case 'completed': return 'bg-gray-500';
-      default: return 'bg-gray-400';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'active': return 'Ενεργό';
-      case 'construction': return 'Υπό Κατασκευή';
-      case 'planned': return 'Σχεδιασμένο';
-      case 'completed': return 'Ολοκληρωμένο';
-      default: return status;
-    }
-  };
-
-    const getCategoryLabel = (category: string) => {
-        switch (category) {
-            case 'residential': return 'Κατοικίες';
-            case 'commercial': return 'Εμπορικό';
-            case 'mixed': return 'Μικτή Χρήση';
-            case 'industrial': return 'Βιομηχανικό';
-            default: return category;
-        }
-    };
 
     const groupedByType = filteredBuildings.reduce((acc, building) => {
         const type = building.category;
@@ -422,8 +394,6 @@ export function BuildingsPageContent() {
                                 building={building}
                                 isSelected={selectedBuilding?.id === building.id}
                                 onClick={() => setSelectedBuilding(building)}
-                                getStatusColor={getStatusColor}
-                                getStatusLabel={getStatusLabel}
                             />
                         ))}
                     </div>
@@ -440,8 +410,6 @@ export function BuildingsPageContent() {
                                         building={building}
                                         isSelected={selectedBuilding?.id === building.id}
                                         onClick={() => setSelectedBuilding(building)}
-                                        getStatusColor={getStatusColor}
-                                        getStatusLabel={getStatusLabel}
                                     />
                                 ))}
                             </div>
@@ -460,8 +428,6 @@ export function BuildingsPageContent() {
                                         building={building}
                                         isSelected={selectedBuilding?.id === building.id}
                                         onClick={() => setSelectedBuilding(building)}
-                                        getStatusColor={getStatusColor}
-                                        getStatusLabel={getStatusLabel}
                                     />
                                 ))}
                             </div>
