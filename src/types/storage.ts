@@ -1,6 +1,6 @@
 // Storage unit types and interfaces for building management system
 
-export type StorageType = 'storage';
+export type StorageType = 'storage' | 'parking';
 
 export type StorageStatus = 'available' | 'sold' | 'reserved' | 'maintenance';
 
@@ -185,6 +185,13 @@ export const commonStorageFeatures: Record<StorageType, string[]> = {
     'Υδραυλικές εγκαταστάσεις',
     'Κλιματισμός',
     'Συναγερμός'
+  ],
+  parking: [
+    'Πρίζα φόρτισης EV',
+    'Κλειστό',
+    'Φωτισμός',
+    'Ασφάλεια',
+    'Εύκολη πρόσβαση'
   ]
 };
 
@@ -198,7 +205,8 @@ export const statusLabels: Record<StorageStatus, string> = {
 
 // Type labels in Greek
 export const typeLabels: Record<StorageType, string> = {
-  storage: 'Αποθήκη'
+  storage: 'Αποθήκη',
+  parking: 'Θέση Στάθμευσης'
 };
 
 // Standard floor names
@@ -216,4 +224,5 @@ export const standardFloors: string[] = [
   '6ος Όροφος',
   '7ος Όροφος',
   '8ος Όροφος',
-  '9ος Όροφος
+  '9ος Όροφος'
+];

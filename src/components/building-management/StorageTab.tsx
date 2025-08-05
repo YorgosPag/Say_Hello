@@ -19,6 +19,7 @@ import {
   Package
 } from 'lucide-react';
 import { StorageUnit, StorageType, StorageStatus } from '@/types/storage';
+import { cn } from '@/lib/utils';
 
 // Mock data based on the hierarchy you described
 const mockStorageUnits: StorageUnit[] = [
@@ -69,6 +70,22 @@ const mockStorageUnits: StorageUnit[] = [
     linkedProperty: null,
     coordinates: { x: 30, y: 10 },
     features: ['Φυσικός φωτισμός']
+  },
+  {
+    id: 'P_1',
+    code: 'P_1',
+    type: 'parking',
+    floor: 'Υπόγειο',
+    area: 12.5,
+    price: 10000,
+    status: 'available',
+    description: 'Standard parking space',
+    building: 'ΚΤΙΡΙΟ Α',
+    project: 'Παλαιολόγου',
+    company: 'Ν.Χ.Γ. ΠΑΓΩΝΗΣ & ΣΙΑ Ο.Ε.',
+    linkedProperty: null,
+    coordinates: { x: 50, y: 50 },
+    features: ['Πρίζα φόρτισης EV']
   }
 ];
 
@@ -82,32 +99,37 @@ interface StorageTabProps {
 }
 
 export function StorageTab({ building }: StorageTabProps) {
-  const [storageUnits, setStorageUnits] = useState<StorageUnit[]>(mockStorageUnits.filter(u => u.type === 'storage'));
+  const [units, setUnits] = useState<StorageUnit[]>(mockStorageUnits);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<StorageType | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<StorageStatus | 'all'>('all');
   const [filterFloor, setFilterFloor] = useState<string>('all');
   const [selectedUnit, setSelectedUnit] = useState<StorageUnit | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [formType, setFormType] = useState<StorageType>('storage');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Filter storage units
-  const filteredUnits = storageUnits.filter(unit => {
+  const filteredUnits = units.filter(unit => {
     const matchesSearch = unit.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          unit.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === 'all' || unit.type === filterType;
     const matchesStatus = filterStatus === 'all' || unit.status === filterStatus;
     const matchesFloor = filterFloor === 'all' || unit.floor === filterFloor;
     
-    return matchesSearch && matchesStatus && matchesFloor;
+    return matchesSearch && matchesType && matchesStatus && matchesFloor;
   });
 
-  // Calculate statistics
+  // Calculate statistics for the filtered units
   const stats = {
-    total: storageUnits.length,
-    available: storageUnits.filter(u => u.status === 'available').length,
-    sold: storageUnits.filter(u => u.status === 'sold').length,
-    reserved: storageUnits.filter(u => u.status === 'reserved').length,
-    totalValue: storageUnits.reduce((sum, u) => sum + u.price, 0),
-    totalArea: storageUnits.reduce((sum, u) => sum + u.area, 0)
+    total: filteredUnits.length,
+    available: filteredUnits.filter(u => u.status === 'available').length,
+    sold: filteredUnits.filter(u => u.status === 'sold').length,
+    reserved: filteredUnits.filter(u => u.status === 'reserved').length,
+    totalValue: filteredUnits.reduce((sum, u) => sum + u.price, 0),
+    totalArea: filteredUnits.reduce((sum, u) => sum + u.area, 0),
+    storageCount: filteredUnits.filter(u => u.type === 'storage').length,
+    parkingCount: filteredUnits.filter(u => u.type === 'parking').length
   };
 
   const getStatusColor = (status: StorageStatus) => {
@@ -131,35 +153,37 @@ export function StorageTab({ building }: StorageTabProps) {
   };
 
   const getTypeIcon = (type: StorageType) => {
-    return <Package className="w-4 h-4" />;
+    return type === 'storage' ? <Package className="w-4 h-4" /> : <Car className="w-4 h-4" />;
   };
 
   const getTypeLabel = (type: StorageType) => {
-    return 'Αποθήκη';
+    return type === 'storage' ? 'Αποθήκη' : 'Θέση Στάθμευσης';
   };
 
-  const handleAddNew = () => {
+  const handleAddNew = (type: StorageType) => {
     setSelectedUnit(null);
+    setFormType(type);
     setShowForm(true);
   };
 
   const handleEdit = (unit: StorageUnit) => {
     setSelectedUnit(unit);
+    setFormType(unit.type);
     setShowForm(true);
   };
 
   const handleSave = (unit: StorageUnit) => {
     if (selectedUnit) {
-      setStorageUnits(units => units.map(u => u.id === unit.id ? unit : u));
+      setUnits(units => units.map(u => u.id === unit.id ? unit : u));
     } else {
-      setStorageUnits(units => [...units, { ...unit, id: `new_${Date.now()}` }]);
+      setUnits(units => [...units, { ...unit, id: `new_${Date.now()}` }]);
     }
     setShowForm(false);
     setSelectedUnit(null);
   };
 
   const handleDelete = (unitId: string) => {
-    setStorageUnits(units => units.filter(u => u.id !== unitId));
+    setUnits(units => units.filter(u => u.id !== unitId));
   };
 
   return (
@@ -169,10 +193,10 @@ export function StorageTab({ building }: StorageTabProps) {
         <div>
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Archive className="w-5 h-5" />
-            Αποθήκες
+            Αποθήκες & Parking
           </h3>
           <p className="text-sm text-muted-foreground">
-            Διαχείριση αποθηκών κτιρίου {building.name}
+            Διαχείριση αποθηκών και θέσεων στάθμευσης του κτιρίου {building.name}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -190,37 +214,35 @@ export function StorageTab({ building }: StorageTabProps) {
           >
             <MapPin className="w-4 h-4 mr-2" /> Χάρτης
           </Button>
-          <Button onClick={handleAddNew} className="bg-blue-600 hover:bg-blue-700">
+           <Button onClick={() => handleAddNew('storage')} className="bg-blue-600 hover:bg-blue-700">
             <Plus className="w-4 h-4 mr-2" />
             Νέα Αποθήκη
+          </Button>
+          <Button onClick={() => handleAddNew('parking')} className="bg-orange-600 hover:bg-orange-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Νέα Θέση Στάθμευσης
           </Button>
         </div>
       </div>
 
       {/* Statistics Dashboard */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-xs text-muted-foreground">Σύνολο</div>
+            <div className="text-2xl font-bold text-blue-600">{stats.storageCount}</div>
+            <div className="text-xs text-muted-foreground">Αποθήκες</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-orange-600">{stats.parkingCount}</div>
+            <div className="text-xs text-muted-foreground">Θέσεις Στάθμευσης</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-green-600">{stats.available}</div>
-            <div className="text-xs text-muted-foreground">Διαθέσιμες</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.sold}</div>
-            <div className="text-xs text-muted-foreground">Πωλημένες</div>
-          </CardContent>
-        </Card>
-         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-600">{stats.reserved}</div>
-            <div className="text-xs text-muted-foreground">Κρατημένες</div>
+            <div className="text-xs text-muted-foreground">Διαθέσιμα</div>
           </CardContent>
         </Card>
         <Card>
@@ -231,21 +253,13 @@ export function StorageTab({ building }: StorageTabProps) {
             <div className="text-xs text-muted-foreground">Συνολική Αξία</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-indigo-600">
-              {stats.totalArea.toFixed(0)}m²
-            </div>
-            <div className="text-xs text-muted-foreground">Συνολική Επιφάνεια</div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="relative md:col-span-2">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 placeholder="Αναζήτηση κωδικού ή περιγραφής..."
@@ -254,6 +268,16 @@ export function StorageTab({ building }: StorageTabProps) {
                 className="pl-10"
               />
             </div>
+
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as StorageType | 'all')}
+              className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+            >
+              <option value="all">Όλοι οι τύποι</option>
+              <option value="storage">Αποθήκες</option>
+              <option value="parking">Θέσεις Στάθμευσης</option>
+            </select>
 
             <select
               value={filterStatus}
@@ -265,17 +289,6 @@ export function StorageTab({ building }: StorageTabProps) {
               <option value="sold">Πωλημένες</option>
               <option value="reserved">Κρατημένες</option>
               <option value="maintenance">Συντήρηση</option>
-            </select>
-
-            <select
-              value={filterFloor}
-              onChange={(e) => setFilterFloor(e.target.value)}
-              className="h-10 px-3 rounded-md border border-input bg-background text-sm"
-            >
-              <option value="all">Όλοι οι όροφοι</option>
-              <option value="Υπόγειο">Υπόγειο</option>
-              <option value="Ισόγειο">Ισόγειο</option>
-              <option value="1ος">1ος Όροφος</option>
             </select>
 
             <Button variant="outline" className="flex items-center gap-2">
@@ -300,13 +313,13 @@ export function StorageTab({ building }: StorageTabProps) {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Χάρτης Αποθηκών</CardTitle>
+            <CardTitle>Χάρτης Αποθηκών & Parking</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-96 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
               <div className="text-center">
                 <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Χάρτης αποθηκών</p>
+                <p className="text-gray-500">Χάρτης αποθηκών & θέσεων στάθμευσης</p>
                 <p className="text-sm text-gray-400 mt-2">Θα αναπτυχθεί σύντομα</p>
               </div>
             </div>
@@ -324,6 +337,7 @@ export function StorageTab({ building }: StorageTabProps) {
             setShowForm(false);
             setSelectedUnit(null);
           }}
+          formType={formType}
         />
       )}
     </div>

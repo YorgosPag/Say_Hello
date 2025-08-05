@@ -18,7 +18,8 @@ import {
   Package,
   Zap,
   Shield,
-  Lightbulb
+  Lightbulb,
+  Car
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -172,8 +173,9 @@ export function StorageCard({
 
       <CardContent className="p-4 space-y-4">
         <div>
-          <h4 className="font-semibold text-foreground truncate group-hover:text-primary">
-            {unit.code}
+          <h4 className="font-semibold text-foreground truncate group-hover:text-primary flex items-center gap-2">
+            {getTypeIcon(unit.type)}
+            <span>{unit.code}</span>
           </h4>
           <p className="text-sm text-muted-foreground h-10 line-clamp-2">
             {unit.description}

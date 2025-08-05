@@ -1878,6 +1878,12 @@ const PlaceholderTab = ({ title, icon: Icon }: { title: string; icon: any }) => 
   </div>
 );
 
+interface BuildingDetailsProps {
+  building: Building | null;
+  getStatusColor: (status: string) => string;
+  getStatusLabel: (status: string) => string;
+}
+
 export function BuildingDetails({ building, getStatusColor, getStatusLabel }: BuildingDetailsProps) {
     if (!building) {
         return (
@@ -1942,7 +1948,7 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
               </TabsTrigger>
               <TabsTrigger value="storage" className="flex items-center gap-2">
                 <Archive className="w-4 h-4" />
-                Αποθήκες
+                Αποθήκες & Parking
               </TabsTrigger>
               <TabsTrigger value="contracts" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />

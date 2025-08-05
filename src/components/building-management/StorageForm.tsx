@@ -21,7 +21,8 @@ import {
   Trash2,
   AlertCircle,
   CheckCircle,
-  Info
+  Info,
+  Car
 } from 'lucide-react';
 import type { StorageUnit, StorageType, StorageStatus } from '@/types/storage';
 import { cn } from '@/lib/utils';
@@ -36,12 +37,13 @@ interface StorageFormProps {
   };
   onSave: (unit: StorageUnit) => void;
   onCancel: () => void;
+  formType: StorageType;
 }
 
-export function StorageForm({ unit, building, onSave, onCancel }: StorageFormProps) {
+export function StorageForm({ unit, building, onSave, onCancel, formType }: StorageFormProps) {
   const [formData, setFormData] = useState<Partial<StorageUnit>>({
     code: '',
-    type: 'storage',
+    type: formType,
     floor: 'Υπόγειο',
     area: 0,
     price: 0,
@@ -84,15 +86,24 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
       'Ασφάλεια',
       'Πρόσβαση ανελκυστήρα',
       'Υδραυλικές εγκαταστάσεις'
+    ],
+    parking: [
+      'Πρίζα φόρτισης EV',
+      'Κλειστό',
+      'Φωτισμός',
+      'Ασφάλεια',
+      'Εύκολη πρόσβαση'
     ]
   };
 
-  // Load existing unit data
+  // Load existing unit data or set type for new
   useEffect(() => {
     if (unit) {
       setFormData(unit);
+    } else {
+      setFormData(prev => ({ ...prev, type: formType }));
     }
-  }, [unit]);
+  }, [unit, formType]);
 
   // Auto-calculate price based on area and type
   useEffect(() => {
@@ -101,7 +112,7 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
       
       // Simulate price calculation delay
       const timeout = setTimeout(() => {
-        const basePricePerSqm = 400; // Only for storage
+        const basePricePerSqm = formData.type === 'storage' ? 400 : 800;
         const floorMultiplier = formData.floor === 'Υπόγειο' ? 1.0 : 
                               formData.floor === 'Ισόγειο' ? 1.2 : 1.1;
         
@@ -113,11 +124,11 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
 
       return () => clearTimeout(timeout);
     }
-  }, [formData.area, formData.floor, unit]);
+  }, [formData.area, formData.floor, formData.type, unit]);
 
   // Generate auto code
   const generateAutoCode = () => {
-    const typePrefix = 'A';
+    const typePrefix = formData.type === 'storage' ? 'A' : 'P';
     const floorPrefix = formData.floor === 'Υπόγειο' ? 'B' : 
                        formData.floor === 'Ισόγειο' ? 'G' : 'F';
     const randomNum = Math.floor(Math.random() * 99) + 1;
@@ -153,7 +164,7 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
       const unitToSave: StorageUnit = {
         id: unit?.id || `${formData.type}_${Date.now()}`,
         code: formData.code!,
-        type: 'storage',
+        type: formData.type!,
         floor: formData.floor!,
         area: formData.area!,
         price: formData.price!,
@@ -206,19 +217,33 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
     }
   };
 
+  const formTitle = unit 
+    ? (formType === 'storage' ? 'Επεξεργασία Αποθήκης' : 'Επεξεργασία Θέσης Στάθμευσης')
+    : (formType === 'storage' ? 'Νέα Αποθήκη' : 'Νέα Θέση Στάθμευσης');
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+        <div className={cn(
+            "p-6 border-b",
+            formType === 'storage' 
+              ? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20"
+              : "bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20"
+          )}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg shadow-sm bg-purple-100 text-purple-700">
-                <Package className="w-5 h-5" />
+              <div className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg shadow-sm",
+                formType === 'storage' 
+                  ? "bg-purple-100 text-purple-700"
+                  : "bg-orange-100 text-orange-700"
+              )}>
+                {formType === 'storage' ? <Package className="w-5 h-5" /> : <Car className="w-5 h-5" />}
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  {unit ? 'Επεξεργασία Αποθήκης' : 'Νέα Αποθήκη'}
+                  {formTitle}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {building.name} - {building.project}
@@ -251,7 +276,7 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
                         value={formData.code || ''}
                         onChange={(e) => updateField('code', e.target.value)}
                         className={cn(errors.code && "border-red-500")}
-                        placeholder="π.χ. A_B01"
+                        placeholder={formType === 'storage' ? "π.χ. A_B01" : "π.χ. P_01"}
                       />
                       <Button 
                         type="button" 
@@ -286,7 +311,7 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
                     value={formData.description || ''}
                     onChange={(e) => updateField('description', e.target.value)}
                     className={cn(errors.description && "border-red-500")}
-                    placeholder="Περιγραφή της αποθήκης..."
+                    placeholder={`Περιγραφή για ${formType === 'storage' ? 'την αποθήκη' : 'τη θέση στάθμευσης'}...`}
                     rows={2}
                   />
                   {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
@@ -364,7 +389,7 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
                       placeholder="π.χ. Δ2.1"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Κωδικός ακινήτου που συνοδεύει αυτή την αποθήκη
+                      Κωδικός ακινήτου που συνοδεύει αυτή την μονάδα
                     </p>
                   </div>
 
@@ -411,7 +436,7 @@ export function StorageForm({ unit, building, onSave, onCancel }: StorageFormPro
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Συνήθη Χαρακτηριστικά</Label>
                   <div className="flex flex-wrap gap-2">
-                    {commonFeatures.storage.map(feature => (
+                    {(commonFeatures[formType] || []).map(feature => (
                       <Button
                         key={feature}
                         type="button"
