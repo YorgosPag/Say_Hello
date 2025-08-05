@@ -31,8 +31,10 @@ interface FloorPlanCanvasProps {
   showGrid: boolean;
   showLabels: boolean;
   isEditMode: boolean;
+  isCreatingPolygon: boolean;
   onPolygonHover: (propertyId: string | null) => void;
   onPolygonSelect: (propertyId: string | null) => void;
+  onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
 }
 
 const statusColors = {
@@ -275,11 +277,14 @@ export function FloorPlanCanvas({
   showGrid,
   showLabels,
   isEditMode,
+  isCreatingPolygon,
   onPolygonHover,
-  onPolygonSelect
+  onPolygonSelect,
+  onPolygonCreated,
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [creatingVertices, setCreatingVertices] = useState<Array<{ x: number; y: number }>>([]);
 
   // Handle container resize
   useEffect(() => {
@@ -299,11 +304,30 @@ export function FloorPlanCanvas({
   }, []);
 
   const handleCanvasClick = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    // If clicking on empty space, deselect
-    if (event.target === event.currentTarget) {
+    // If clicking on empty space and not creating, deselect
+    if (event.target === event.currentTarget && !isCreatingPolygon) {
       onPolygonSelect(null);
     }
-  }, [onPolygonSelect]);
+
+    if (isCreatingPolygon) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const newVertex = {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top
+        };
+        
+        setCreatingVertices(prev => [...prev, newVertex]);
+        console.log('Added vertex:', newVertex);
+      }
+  }, [isCreatingPolygon, onPolygonSelect]);
+
+  const handleCanvasDoubleClick = useCallback(() => {
+    if (isCreatingPolygon && creatingVertices.length >= 3) {
+      onPolygonCreated(creatingVertices);
+      setCreatingVertices([]);
+    }
+  }, [isCreatingPolygon, creatingVertices, onPolygonCreated]);
+
 
   const handleCanvasMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
     // Clear hover if moving over empty space
@@ -315,7 +339,9 @@ export function FloorPlanCanvas({
   return (
     <div 
       ref={containerRef} 
-      className="w-full h-full relative overflow-hidden bg-white"
+      className={cn("w-full h-full relative overflow-hidden bg-white", {
+        "cursor-crosshair": isCreatingPolygon,
+      })}
     >
       {/* Floor plan background */}
       {floorData.floorPlanUrl && (
@@ -333,6 +359,7 @@ export function FloorPlanCanvas({
         height={dimensions.height}
         className="absolute inset-0 cursor-default"
         onClick={handleCanvasClick}
+        onDoubleClick={handleCanvasDoubleClick}
         onMouseMove={handleCanvasMouseMove}
       >
         {/* Grid */}
@@ -342,7 +369,7 @@ export function FloorPlanCanvas({
           height={dimensions.height}
         />
 
-        {/* Properties */}
+        {/* Existing Properties */}
         {floorData.properties.map((property) => (
           <PropertyPolygon
             key={property.id}
@@ -357,8 +384,32 @@ export function FloorPlanCanvas({
           />
         ))}
 
+        {/* Polygon being created */}
+        {isCreatingPolygon && creatingVertices.length > 0 && (
+          <g>
+            {/* Draw lines between vertices */}
+            <polyline
+              points={creatingVertices.map(v => `${v.x},${v.y}`).join(' ')}
+              fill="none"
+              stroke="#7c3aed"
+              strokeWidth="2"
+              strokeDasharray="4 4"
+            />
+            {/* Draw vertices */}
+            {creatingVertices.map((vertex, index) => (
+              <circle
+                key={index}
+                cx={vertex.x}
+                cy={vertex.y}
+                r="4"
+                fill="#7c3aed"
+              />
+            ))}
+          </g>
+        )}
+
         {/* Edit mode indicators */}
-        {isEditMode && (
+        {isEditMode && !isCreatingPolygon && (
           <g className="edit-indicators">
             <text
               x={20}
@@ -368,6 +419,20 @@ export function FloorPlanCanvas({
               className="select-none font-medium"
             >
               ✏️ Λειτουργία Επεξεργασίας
+            </text>
+          </g>
+        )}
+
+        {isCreatingPolygon && (
+           <g className="creating-indicators">
+            <text
+              x={20}
+              y={30}
+              fontSize="12"
+              fill="#7c3aed"
+              className="select-none font-medium"
+            >
+              ✏️ Δημιουργία Polygon: Κάντε κλικ για να προσθέσετε σημεία. Διπλό κλικ για ολοκλήρωση.
             </text>
           </g>
         )}
@@ -409,4 +474,3 @@ export function FloorPlanCanvas({
     </div>
   );
 }
-    
