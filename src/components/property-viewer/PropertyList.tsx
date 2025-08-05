@@ -174,7 +174,7 @@ export function PropertyList({
 
   if (properties.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
         <Home className="h-8 w-8 mb-2" />
         <p className="text-sm">Δεν βρέθηκαν ακίνητα</p>
         <p className="text-xs">Δοκιμάστε να αλλάξετε τα φίλτρα</p>
