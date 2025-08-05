@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Settings, Eye, Edit3, Plus, Save } from "lucide-react";
+import { Search, Filter, Settings, Eye, Edit3, Plus, Save, Square, MousePointer } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { PropertyViewerFilters } from "@/components/property-viewer/PropertyViewerFilters";
@@ -12,6 +12,49 @@ import { FloorPlanViewer } from "@/components/property-viewer/FloorPlanViewer";
 import { PropertyDetailsPanel } from "@/components/property-viewer/PropertyDetailsPanel";
 import { PropertyHoverInfo } from "@/components/property-viewer/PropertyHoverInfo";
 import { usePropertyViewer } from "@/hooks/use-property-viewer";
+import { cn } from "@/lib/utils";
+
+const EditToolbar = ({ activeTool, onToolChange }: { activeTool: string | null, onToolChange: (tool: 'create' | 'edit_nodes' | null) => void }) => {
+    
+    const handleToolClick = (tool: 'create' | 'edit_nodes') => {
+        if (activeTool === tool) {
+            onToolChange(null); // Deselect if clicking the same tool
+        } else {
+            onToolChange(tool);
+        }
+    };
+
+    return (
+        <Card className="mb-4">
+            <CardContent className="p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Button
+                        onClick={() => handleToolClick('create')}
+                        variant={activeTool === 'create' ? 'default' : 'outline'}
+                        size="sm"
+                    >
+                        <Square className="mr-2 h-4 w-4" />
+                        Σχεδίαση Polygon
+                    </Button>
+                    <Button
+                        onClick={() => handleToolClick('edit_nodes')}
+                        variant={activeTool === 'edit_nodes' ? 'default' : 'outline'}
+                        size="sm"
+                    >
+                        <MousePointer className="mr-2 h-4 w-4" />
+                        Επεξεργασία Κόμβων
+                    </Button>
+                </div>
+                
+                <div className="text-sm text-muted-foreground">
+                    {activeTool === 'create' && "Click για κόμβους, διπλό click ή click στο πρώτο σημείο για κλείσιμο"}
+                    {activeTool === 'edit_nodes' && "Click σε polygon για επεξεργασία • Shift+Click για διαγραφή • Right Click σε ακμή για νέο κόμβο"}
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 
 export default function PropertyViewerPage() {
   const { isEditor } = useAuth();
@@ -20,7 +63,7 @@ export default function PropertyViewerPage() {
   const [isPending, startTransition] = useTransition();
   const [isEditMode, setIsEditMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [isCreatingPolygon, setIsCreatingPolygon] = useState(false);
+  const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | null>(null);
 
   const {
     properties,
@@ -70,12 +113,14 @@ export default function PropertyViewerPage() {
   const toggleEditMode = () => {
     if (!isEditor) return;
     setIsEditMode(!isEditMode);
+    if (isEditMode) {
+      setActiveTool(null); // Reset tool when exiting edit mode
+    }
   };
   
   const handlePolygonCreated = (vertices: Array<{ x: number; y: number }>) => {
     console.log("New polygon created with vertices:", vertices);
-    // Here you would typically call a service to save the new property
-    setIsCreatingPolygon(false); // Exit creation mode
+    setActiveTool(null); // Exit creation mode after finishing
   };
 
   return (
@@ -156,8 +201,9 @@ export default function PropertyViewerPage() {
         </div>
 
         {/* Floor Plan Viewer - 8/12 */}
-        <div className="col-span-8">
-          <Card className="h-full">
+        <div className="col-span-8 flex flex-col gap-2">
+           {isEditMode && <EditToolbar activeTool={activeTool} onToolChange={setActiveTool} />}
+          <Card className="flex-1 h-full">
             <CardContent className="p-0 h-full">
               <FloorPlanViewer
                 selectedPropertyId={selectedProperty}
@@ -165,10 +211,9 @@ export default function PropertyViewerPage() {
                 onSelectFloor={setSelectedFloor}
                 onHoverProperty={setHoveredProperty}
                 hoveredPropertyId={hoveredProperty}
-                isEditMode={isEditMode}
+                isNodeEditMode={activeTool === 'edit_nodes'}
                 onSelectProperty={setSelectedProperty}
-                isCreatingPolygon={isCreatingPolygon}
-                setIsCreatingPolygon={setIsCreatingPolygon}
+                isCreatingPolygon={activeTool === 'create'}
                 onPolygonCreated={handlePolygonCreated}
               />
             </CardContent>

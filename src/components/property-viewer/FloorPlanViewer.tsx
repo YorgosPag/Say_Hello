@@ -32,10 +32,9 @@ interface FloorPlanViewerProps {
   onSelectFloor: (floorId: string | null) => void;
   onHoverProperty: (propertyId: string | null) => void;
   hoveredPropertyId: string | null;
-  isEditMode: boolean;
+  isNodeEditMode: boolean;
   onSelectProperty: (propertyId: string | null) => void;
   isCreatingPolygon: boolean;
-  setIsCreatingPolygon: (value: boolean) => void;
   onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
 }
 
@@ -123,10 +122,9 @@ export function FloorPlanViewer({
   onSelectFloor,
   onHoverProperty,
   hoveredPropertyId,
-  isEditMode,
+  isNodeEditMode,
   onSelectProperty,
   isCreatingPolygon,
-  setIsCreatingPolygon,
   onPolygonCreated,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
@@ -293,18 +291,6 @@ export function FloorPlanViewer({
                 <Upload className="h-4 w-4 mr-2" />
                 Φόρτωση
               </Button>
-              {isEditMode && (
-                <>
-                <Button variant={isCreatingPolygon ? "default" : "outline"} size="sm" onClick={() => setIsCreatingPolygon(!isCreatingPolygon)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {isCreatingPolygon ? 'Τέλος' : 'Δημιουργία'}
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Save className="h-4 w-4 mr-2" />
-                  Αποθήκευση
-                </Button>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -327,7 +313,7 @@ export function FloorPlanViewer({
                 selectedPolygon={selectedPolygon}
                 showGrid={showGrid}
                 showLabels={showLabels}
-                isEditMode={isEditMode}
+                isEditMode={isNodeEditMode}
                 onPolygonHover={handlePolygonHover}
                 onPolygonSelect={handlePolygonSelect}
                 isCreatingPolygon={isCreatingPolygon}
@@ -337,7 +323,7 @@ export function FloorPlanViewer({
           </div>
 
           {/* Side Panel for Edit Mode */}
-          {isEditMode && (
+          {isNodeEditMode && (
             <div className="w-80 border-l bg-background">
               <Tabs defaultValue="layers" className="h-full">
                 <TabsList className="grid grid-cols-2 m-2">
