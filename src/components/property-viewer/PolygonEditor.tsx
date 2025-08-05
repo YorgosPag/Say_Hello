@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -43,11 +42,13 @@ function VertexHandle({
   vertex,
   index,
   isSelected,
+  isShiftDown,
   onMouseDown
 }: {
   vertex: { x: number; y: number };
   index: number;
   isSelected: boolean;
+  isShiftDown: boolean;
   onMouseDown: (index: number, event: React.MouseEvent) => void;
 }) {
   return (
@@ -55,10 +56,13 @@ function VertexHandle({
       cx={vertex.x}
       cy={vertex.y}
       r={isSelected ? 6 : 4}
-      fill={isSelected ? "#7c3aed" : "#ffffff"}
-      stroke={isSelected ? "#7c3aed" : "#4b5563"}
+      fill={isShiftDown ? "#ef4444" : isSelected ? "#7c3aed" : "#ffffff"}
+      stroke={isShiftDown ? "#ef4444" : isSelected ? "#7c3aed" : "#4b5563"}
       strokeWidth={2}
-      className="cursor-move hover:fill-violet-200 transition-colors"
+      className={cn(
+        "transition-colors",
+        isShiftDown ? "cursor-crosshair" : "cursor-move hover:fill-violet-200"
+      )}
       onMouseDown={(e) => onMouseDown(index, e)}
     />
   );
@@ -170,14 +174,42 @@ function EditablePolygon({
     startPos: { x: 0, y: 0 },
     offset: { x: 0, y: 0 }
   });
-
+  const [isShiftDown, setIsShiftDown] = useState(false);
   const svgRef = useRef<SVGGElement>(null);
 
-  // Handle vertex drag start
+  // Listen for Shift key presses globally
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        setIsShiftDown(true);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift') {
+        setIsShiftDown(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  // Handle vertex drag start or deletion
   const handleVertexMouseDown = useCallback((vertexIndex: number, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     
+    // Shift+Click to delete vertex
+    if (event.shiftKey && property.vertices.length > 3) {
+      onVertexRemove(vertexIndex);
+      return;
+    }
+
     const rect = (event.target as SVGElement).ownerSVGElement?.getBoundingClientRect();
     if (!rect) return;
 
@@ -188,7 +220,7 @@ function EditablePolygon({
       startPos: { x: event.clientX - rect.left, y: event.clientY - rect.top },
       offset: { x: 0, y: 0 }
     });
-  }, []);
+  }, [property.vertices.length, onVertexRemove]);
 
   // Handle edge midpoint click (add vertex)
   const handleEdgeMouseDown = useCallback((edgeIndex: number, event: React.MouseEvent) => {
@@ -223,14 +255,6 @@ function EditablePolygon({
       offset: { x: 0, y: 0 }
     });
   }, [isSelected]);
-
-  // Handle vertex right-click (remove)
-  const handleVertexRightClick = useCallback((vertexIndex: number, event: React.MouseEvent) => {
-    event.preventDefault();
-    if (property.vertices.length > 3) { // Minimum 3 vertices for a polygon
-      onVertexRemove(vertexIndex);
-    }
-  }, [property.vertices.length, onVertexRemove]);
   
   // Handle right-click on edge to add a new vertex
   const handleEdgeRightClick = useCallback((event: React.MouseEvent) => {
@@ -336,20 +360,8 @@ function EditablePolygon({
               vertex={vertex}
               index={index}
               isSelected={true}
+              isShiftDown={isShiftDown}
               onMouseDown={handleVertexMouseDown}
-            />
-          ))}
-
-          {/* Right-click areas for vertex deletion */}
-          {property.vertices.map((vertex, index) => (
-            <circle
-              key={`delete-${index}`}
-              cx={vertex.x}
-              cy={vertex.y}
-              r={8}
-              fill="transparent"
-              className="cursor-pointer"
-              onContextMenu={(e) => handleVertexRightClick(index, e)}
             />
           ))}
 
@@ -520,5 +532,3 @@ export function PolygonEditor({
     </g>
   );
 }
-
-    
