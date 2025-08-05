@@ -25,6 +25,11 @@ interface FloorData {
   properties: PropertyPolygon[];
 }
 
+interface Point {
+    x: number;
+    y: number;
+}
+
 interface FloorPlanCanvasProps {
   floorData: FloorData;
   selectedProperty: string | null;
@@ -32,14 +37,15 @@ interface FloorPlanCanvasProps {
   selectedPolygon: string | null;
   showGrid: boolean;
   showLabels: boolean;
-  isNodeEditMode: boolean;
-  isCreatingPolygon: boolean;
+  activeTool: 'create' | 'edit_nodes' | 'measure' | null;
   onPolygonHover: (propertyId: string | null) => void;
   onPolygonSelect: (propertyId: string | null) => void;
   onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
   snapToGrid: boolean;
   gridSize: number;
+  showMeasurements: boolean;
+  scale: number;
 }
 
 const statusColors = {
@@ -273,6 +279,56 @@ function PropertyPolygon({
   );
 }
 
+// Measurement Info component
+function PolygonMeasurementInfo({ polygon, scale }: { polygon: PropertyPolygon; scale: number }) {
+  const vertices = polygon.vertices;
+  
+  // Calculate Area (Shoelace formula)
+  let area = 0;
+  for (let i = 0; i < vertices.length; i++) {
+    const j = (i + 1) % vertices.length;
+    area += vertices[i].x * vertices[j].y;
+    area -= vertices[j].x * vertices[i].y;
+  }
+  const realArea = Math.abs(area / 2) * scale * scale;
+
+  // Calculate Perimeter
+  let perimeter = 0;
+  for (let i = 0; i < vertices.length; i++) {
+    const j = (i + 1) % vertices.length;
+    perimeter += Math.sqrt(
+      Math.pow(vertices[j].x - vertices[i].x, 2) +
+      Math.pow(vertices[j].y - vertices[i].y, 2)
+    );
+  }
+  const realPerimeter = perimeter * scale;
+
+  const centroid = vertices.reduce(
+    (acc, vertex) => ({
+      x: acc.x + vertex.x / vertices.length,
+      y: acc.y + vertex.y / vertices.length,
+    }),
+    { x: 0, y: 0 }
+  );
+
+  return (
+    <g className="measurement-info pointer-events-none">
+      <text
+        x={centroid.x}
+        y={centroid.y + 25}
+        textAnchor="middle"
+        fontSize="10"
+        fill="#1f2937"
+        className="font-mono"
+        style={{ paintOrder: 'stroke', stroke: 'white', strokeWidth: '3px', strokeLinejoin: 'round' }}
+      >
+        {realArea.toFixed(2)}m² / {realPerimeter.toFixed(2)}m
+      </text>
+    </g>
+  );
+}
+
+
 export function FloorPlanCanvas({
   floorData,
   selectedProperty,
@@ -280,21 +336,29 @@ export function FloorPlanCanvas({
   selectedPolygon,
   showGrid,
   showLabels,
-  isNodeEditMode,
-  isCreatingPolygon,
+  activeTool,
   onPolygonHover,
   onPolygonSelect,
   onPolygonCreated,
   onPolygonUpdated,
   snapToGrid,
   gridSize,
+  showMeasurements,
+  scale,
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [creatingVertices, setCreatingVertices] = useState<Array<{ x: number; y: number }>>([]);
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+  const [creatingVertices, setCreatingVertices] = useState<Point[]>([]);
+  const [mousePosition, setMousePosition] = useState<Point | null>(null);
+  
+  // Measurement tool state
+  const [measurementStart, setMeasurementStart] = useState<Point | null>(null);
 
-  const snapPoint = useCallback((point: { x: number; y: number }) => {
+  const isCreatingPolygon = activeTool === 'create';
+  const isNodeEditMode = activeTool === 'edit_nodes';
+  const isMeasuring = activeTool === 'measure';
+
+  const snapPoint = useCallback((point: Point) => {
     if (!snapToGrid) return point;
     return {
       x: Math.round(point.x / gridSize) * gridSize,
@@ -324,35 +388,44 @@ export function FloorPlanCanvas({
       return;
     }
 
-    if (!isCreatingPolygon) {
-      onPolygonSelect(null);
-      return;
-    }
-
     const rect = event.currentTarget.getBoundingClientRect();
-    let newVertex = {
+    let currentPoint = {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top
     };
+    currentPoint = snapPoint(currentPoint);
 
-    newVertex = snapPoint(newVertex);
+    // Polygon Creation
+    if (isCreatingPolygon) {
+      if (creatingVertices.length > 2) {
+        const firstVertex = creatingVertices[0];
+        const distance = Math.sqrt(
+          Math.pow(currentPoint.x - firstVertex.x, 2) +
+          Math.pow(currentPoint.y - firstVertex.y, 2)
+        );
 
-    if (creatingVertices.length > 2) {
-      const firstVertex = creatingVertices[0];
-      const distance = Math.sqrt(
-        Math.pow(newVertex.x - firstVertex.x, 2) +
-        Math.pow(newVertex.y - firstVertex.y, 2)
-      );
-
-      if (distance < 10) {
-        onPolygonCreated(creatingVertices);
-        setCreatingVertices([]);
-        return;
+        if (distance < 10) {
+          onPolygonCreated(creatingVertices);
+          setCreatingVertices([]);
+          return;
+        }
       }
+      setCreatingVertices(prev => [...prev, currentPoint]);
+    } 
+    // Measurement
+    else if (isMeasuring) {
+        if (!measurementStart) {
+            setMeasurementStart(currentPoint);
+        } else {
+            // Second click finalizes and resets for next measurement
+            setMeasurementStart(null);
+        }
     }
-    
-    setCreatingVertices(prev => [...prev, newVertex]);
-  }, [isCreatingPolygon, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint]);
+    // Default action (deselect)
+    else {
+      onPolygonSelect(null);
+    }
+  }, [isCreatingPolygon, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart]);
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
@@ -367,7 +440,7 @@ export function FloorPlanCanvas({
       onPolygonHover(null);
     }
     
-    if (isCreatingPolygon) {
+    if (isCreatingPolygon || isMeasuring) {
         const rect = event.currentTarget.getBoundingClientRect();
         const currentPos = {
           x: event.clientX - rect.left,
@@ -377,13 +450,64 @@ export function FloorPlanCanvas({
     } else {
         setMousePosition(null);
     }
-  }, [onPolygonHover, isCreatingPolygon, snapPoint]);
+  }, [onPolygonHover, isCreatingPolygon, isMeasuring, snapPoint]);
+
+  const handleRightClick = (event: React.MouseEvent<SVGSVGElement>) => {
+      // Exit creation mode on right click
+      if(isCreatingPolygon && creatingVertices.length > 0) {
+          event.preventDefault();
+          setCreatingVertices([]);
+      }
+      // Exit measurement mode on right click
+      if(isMeasuring && measurementStart) {
+          event.preventDefault();
+          setMeasurementStart(null);
+      }
+  }
+
+  // Calculate measurement display
+  let measurementDisplay = null;
+  if(isMeasuring && measurementStart && mousePosition) {
+    const dist = Math.sqrt(
+      Math.pow(mousePosition.x - measurementStart.x, 2) +
+      Math.pow(mousePosition.y - measurementStart.y, 2)
+    );
+    const realDist = (dist * scale).toFixed(2);
+    const midPoint = {
+        x: (measurementStart.x + mousePosition.x) / 2,
+        y: (measurementStart.y + mousePosition.y) / 2
+    };
+
+    measurementDisplay = (
+      <g className="measurement-tool pointer-events-none">
+        <line
+          x1={measurementStart.x}
+          y1={measurementStart.y}
+          x2={mousePosition.x}
+          y2={mousePosition.y}
+          stroke="#ef4444"
+          strokeWidth="2"
+          strokeDasharray="5 5"
+        />
+        <text
+          x={midPoint.x}
+          y={midPoint.y - 10}
+          textAnchor="middle"
+          fontSize="12"
+          fill="#ef4444"
+          style={{ paintOrder: 'stroke', stroke: 'white', strokeWidth: '3px', strokeLinejoin: 'round' }}
+        >
+          {realDist}m
+        </text>
+      </g>
+    );
+  }
 
   return (
     <div 
       ref={containerRef} 
       className={cn("w-full h-full relative overflow-hidden bg-white", {
-        "cursor-crosshair": isCreatingPolygon,
+        "cursor-crosshair": isCreatingPolygon || isMeasuring,
       })}
     >
       {/* Floor plan background */}
@@ -404,6 +528,7 @@ export function FloorPlanCanvas({
         onClick={handleCanvasClick}
         onDoubleClick={handleCanvasDoubleClick}
         onMouseMove={handleCanvasMouseMove}
+        onContextMenu={handleRightClick}
       >
         {/* Grid */}
         <GridOverlay 
@@ -415,17 +540,21 @@ export function FloorPlanCanvas({
 
         {/* Existing Properties */}
         {floorData.properties.map((property) => (
-          <PropertyPolygon
-            key={property.id}
-            property={property}
-            isSelected={selectedProperty === property.id}
-            isHovered={hoveredProperty === property.id}
-            isPolygonSelected={selectedPolygon === property.id}
-            showLabels={showLabels}
-            isEditMode={isNodeEditMode}
-            onHover={onPolygonHover}
-            onSelect={onPolygonSelect}
-          />
+          <g key={property.id}>
+            <PropertyPolygon
+              property={property}
+              isSelected={selectedProperty === property.id}
+              isHovered={hoveredProperty === property.id}
+              isPolygonSelected={selectedPolygon === property.id}
+              showLabels={showLabels}
+              isEditMode={isNodeEditMode}
+              onHover={onPolygonHover}
+              onSelect={onPolygonSelect}
+            />
+            {showMeasurements && (
+                <PolygonMeasurementInfo polygon={property} scale={scale} />
+            )}
+          </g>
         ))}
 
         {isNodeEditMode && (
@@ -439,20 +568,18 @@ export function FloorPlanCanvas({
         )}
 
         {/* Polygon being created */}
-        {isCreatingPolygon && creatingVertices.length > 0 && (
-          <g>
-            {/* Draw lines between vertices */}
+        {isCreatingPolygon && creatingVertices.length > 0 && mousePosition && (
+          <g className="creation-tool pointer-events-none">
             <polyline
               points={[
                 ...creatingVertices.map(v => `${v.x},${v.y}`),
-                mousePosition ? `${mousePosition.x},${mousePosition.y}` : ''
+                `${mousePosition.x},${mousePosition.y}`
               ].join(' ')}
               fill="none"
               stroke="#7c3aed"
               strokeWidth="2"
               strokeDasharray="4 4"
             />
-            {/* Draw vertices */}
             {creatingVertices.map((vertex, index) => (
               <circle
                 key={index}
@@ -462,7 +589,6 @@ export function FloorPlanCanvas({
                 fill="#7c3aed"
               />
             ))}
-            {/* Draw a handle on the starting point to indicate it can be closed */}
             {creatingVertices.length > 2 && (
                <circle
                 cx={creatingVertices[0].x}
@@ -474,19 +600,24 @@ export function FloorPlanCanvas({
                 className="cursor-pointer animate-pulse"
                />
             )}
-            {/* Snap indicator */}
-            {mousePosition && snapToGrid && (
-                <circle
-                    cx={mousePosition.x}
-                    cy={mousePosition.y}
-                    r="4"
-                    fill="none"
-                    stroke="rgba(255, 0, 0, 0.7)"
-                    strokeWidth="1.5"
-                    strokeDasharray="2 2"
-                />
-            )}
           </g>
+        )}
+        
+        {/* Measurement line and text */}
+        {measurementDisplay}
+        
+        {/* Snap indicator */}
+        {(isCreatingPolygon || (isMeasuring && measurementStart)) && mousePosition && snapToGrid && (
+            <circle
+                cx={mousePosition.x}
+                cy={mousePosition.y}
+                r="4"
+                fill="none"
+                stroke="rgba(255, 0, 0, 0.7)"
+                strokeWidth="1.5"
+                strokeDasharray="2 2"
+                className="pointer-events-none"
+            />
         )}
       </svg>
 

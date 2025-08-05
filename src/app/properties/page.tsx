@@ -18,6 +18,8 @@ import {
   Redo,
   Upload,
   Download,
+  Ruler,
+  EyeOff,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
@@ -52,9 +54,13 @@ const EditToolbar = ({
   onToggleSnap,
   gridSize,
   onGridSizeChange,
+  showMeasurements,
+  onToggleMeasurements,
+  scale,
+  onScaleChange,
 }: {
   activeTool: string | null;
-  onToolChange: (tool: 'create' | 'edit_nodes' | null) => void;
+  onToolChange: (tool: 'create' | 'edit_nodes' | 'measure' | null) => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
@@ -67,8 +73,12 @@ const EditToolbar = ({
   onToggleSnap: () => void;
   gridSize: number;
   onGridSizeChange: (size: number) => void;
+  showMeasurements: boolean;
+  onToggleMeasurements: () => void;
+  scale: number;
+  onScaleChange: (scale: number) => void;
 }) => {
-  const handleToolClick = (tool: 'create' | 'edit_nodes') => {
+  const handleToolClick = (tool: 'create' | 'edit_nodes' | 'measure') => {
     if (activeTool === tool) {
       onToolChange(null); // Deselect if clicking the same tool
     } else {
@@ -78,7 +88,7 @@ const EditToolbar = ({
 
   return (
     <Card className="mb-4">
-      <CardContent className="p-3 flex items-center justify-between">
+      <CardContent className="p-3 flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-2">
           {/* Main tools */}
           <Button
@@ -97,10 +107,18 @@ const EditToolbar = ({
             <MousePointer className="mr-2 h-4 w-4" />
             Επεξεργασία Κόμβων
           </Button>
+           <Button
+            onClick={() => handleToolClick('measure')}
+            variant={activeTool === 'measure' ? 'default' : 'outline'}
+            size="sm"
+          >
+            <Ruler className="mr-2 h-4 w-4" />
+            Μέτρηση
+          </Button>
         </div>
 
         <div className="flex items-center gap-4">
-           {/* Grid and Snap controls */}
+           {/* Grid, Snap and Measurements controls */}
            <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Checkbox id="show-grid" checked={showGrid} onCheckedChange={onToggleGrid} />
@@ -109,6 +127,10 @@ const EditToolbar = ({
             <div className="flex items-center gap-2">
               <Checkbox id="snap-to-grid" checked={snapToGrid} onCheckedChange={onToggleSnap} />
               <Label htmlFor="snap-to-grid">Snap</Label>
+            </div>
+             <div className="flex items-center gap-2">
+              <Checkbox id="show-measurements" checked={showMeasurements} onCheckedChange={onToggleMeasurements} />
+              <Label htmlFor="show-measurements">Εμβαδά</Label>
             </div>
             <div className="flex items-center gap-2 w-32">
                 <Slider
@@ -119,6 +141,18 @@ const EditToolbar = ({
                     step={5}
                 />
                 <span className="text-xs">{gridSize}px</span>
+            </div>
+             <div className="flex items-center gap-2">
+                <Label htmlFor="scale-input" className="text-xs">Κλίμακα:</Label>
+                <Input
+                    id="scale-input"
+                    type="number"
+                    value={scale}
+                    onChange={(e) => onScaleChange(parseFloat(e.target.value))}
+                    step="0.01"
+                    className="w-20 h-7 text-xs"
+                />
+                <span className="text-xs">m/px</span>
             </div>
           </div>
           
@@ -187,7 +221,7 @@ export default function PropertyViewerPage() {
   const [isPending, startTransition] = useTransition();
   const [isEditMode, setIsEditMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | null>(
+  const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | null>(
     null
   );
   const { toast } = useToast();
@@ -196,6 +230,8 @@ export default function PropertyViewerPage() {
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [gridSize, setGridSize] = useState(20);
+  const [showMeasurements, setShowMeasurements] = useState(false);
+  const [scale, setScale] = useState(0.1);
 
   const {
     properties,
@@ -437,6 +473,10 @@ export default function PropertyViewerPage() {
               onToggleSnap={() => setSnapToGrid(!snapToGrid)}
               gridSize={gridSize}
               onGridSizeChange={setGridSize}
+              showMeasurements={showMeasurements}
+              onToggleMeasurements={() => setShowMeasurements(!showMeasurements)}
+              scale={scale}
+              onScaleChange={setScale}
             />
           )}
           <Card className="flex-1 h-full">
@@ -446,14 +486,15 @@ export default function PropertyViewerPage() {
                 selectedFloorId={selectedFloor}
                 onSelectFloor={setSelectedFloor}
                 onHoverProperty={setHoveredProperty}
-                isNodeEditMode={activeTool === 'edit_nodes'}
+                activeTool={activeTool}
                 onSelectProperty={setSelectedProperty}
-                isCreatingPolygon={activeTool === 'create'}
                 onPolygonCreated={handlePolygonCreated}
                 onPolygonUpdated={handlePolygonUpdated}
                 showGrid={showGrid}
                 snapToGrid={snapToGrid}
                 gridSize={gridSize}
+                showMeasurements={showMeasurements}
+                scale={scale}
               />
             </CardContent>
           </Card>

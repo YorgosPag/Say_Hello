@@ -33,14 +33,15 @@ interface FloorPlanViewerProps {
   onSelectFloor: (floorId: string | null) => void;
   onHoverProperty: (propertyId: string | null) => void;
   hoveredPropertyId?: string | null;
-  isNodeEditMode: boolean;
+  activeTool: 'create' | 'edit_nodes' | 'measure' | null;
   onSelectProperty: (propertyId: string | null) => void;
-  isCreatingPolygon: boolean;
   onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
   showGrid: boolean;
   snapToGrid: boolean;
   gridSize: number;
+  showMeasurements: boolean;
+  scale: number;
 }
 
 interface PropertyPolygon {
@@ -127,14 +128,15 @@ export function FloorPlanViewer({
   onSelectFloor,
   onHoverProperty,
   hoveredPropertyId,
-  isNodeEditMode,
+  activeTool,
   onSelectProperty,
-  isCreatingPolygon,
   onPolygonCreated,
   onPolygonUpdated,
   showGrid,
   snapToGrid,
   gridSize,
+  showMeasurements,
+  scale,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showLabels, setShowLabels] = useState(true);
@@ -313,20 +315,21 @@ export function FloorPlanViewer({
                 selectedPolygon={selectedPolygon}
                 showGrid={showGrid}
                 showLabels={showLabels}
-                isNodeEditMode={isNodeEditMode}
+                activeTool={activeTool}
                 onPolygonHover={handlePolygonHover}
                 onPolygonSelect={handlePolygonSelect}
-                isCreatingPolygon={isCreatingPolygon}
                 onPolygonCreated={handleLocalPolygonCreated}
                 onPolygonUpdated={onPolygonUpdated}
                 snapToGrid={snapToGrid}
                 gridSize={gridSize}
+                showMeasurements={showMeasurements}
+                scale={scale}
               />
             </div>
           </div>
 
           {/* Side Panel for Edit Mode */}
-          {isNodeEditMode && (
+          {activeTool === 'edit_nodes' && (
             <div className="w-80 border-l bg-background">
               <Tabs defaultValue="layers" className="h-full">
                 <TabsList className="grid grid-cols-2 m-2">
