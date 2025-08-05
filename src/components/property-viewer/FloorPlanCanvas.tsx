@@ -6,6 +6,13 @@ import { cn } from "@/lib/utils";
 import { PolygonEditor } from "./PolygonEditor";
 import type { Property } from '@/types/property-viewer';
 
+import { GridOverlay } from './FloorPlanCanvas/GridOverlay';
+import { PropertyPolygon } from './FloorPlanCanvas/PropertyPolygon';
+import { CreationOverlay } from './FloorPlanCanvas/CreationOverlay';
+import { MeasurementOverlay } from './FloorPlanCanvas/MeasurementOverlay';
+import { StatusLegend } from './FloorPlanCanvas/StatusLegend';
+import { PropertyCountOverlay } from './FloorPlanCanvas/PropertyCountOverlay';
+
 interface FloorData {
   id: string;
   name: string;
@@ -34,280 +41,6 @@ interface FloorPlanCanvasProps {
   gridSize: number;
   showMeasurements: boolean;
   scale: number;
-}
-
-const statusColors = {
-  'for-sale': '#10b981',    // Green
-  'for-rent': '#3b82f6',    // Blue
-  'sold': '#ef4444',        // Red
-  'rented': '#f97316',      // Orange
-  'reserved': '#eab308',    // Yellow
-};
-
-// Grid component
-function GridOverlay({ showGrid, width, height, gridSize }: { showGrid: boolean; width: number; height: number; gridSize: number }) {
-  if (!showGrid) return null;
-
-  const lines = [];
-
-  // Vertical lines
-  for (let x = 0; x <= width; x += gridSize) {
-    lines.push(
-      <line
-        key={`v-${x}`}
-        x1={x}
-        y1={0}
-        x2={x}
-        y2={height}
-        stroke="#e5e7eb"
-        strokeWidth={0.5}
-        opacity={0.5}
-      />
-    );
-  }
-
-  // Horizontal lines
-  for (let y = 0; y <= height; y += gridSize) {
-    lines.push(
-      <line
-        key={`h-${y}`}
-        x1={0}
-        y1={y}
-        x2={width}
-        y2={y}
-        stroke="#e5e7eb"
-        strokeWidth={0.5}
-        opacity={0.5}
-      />
-    );
-  }
-
-  return <g className="grid-overlay">{lines}</g>;
-}
-
-// Property polygon component
-function PropertyPolygon({
-  property,
-  isSelected,
-  isHovered,
-  showLabels,
-  isNodeEditMode,
-  onHover,
-  onSelect
-}: {
-  property: Property;
-  isSelected: boolean;
-  isHovered: boolean;
-  showLabels: boolean;
-  isNodeEditMode: boolean;
-  onHover: (propertyId: string | null) => void;
-  onSelect: (propertyId: string, isShiftClick: boolean) => void;
-}) {
-  const pathData = property.vertices
-    .map((vertex, index) => `${index === 0 ? 'M' : 'L'} ${vertex.x} ${vertex.y}`)
-    .join(' ') + ' Z';
-
-  const centroid = property.vertices.reduce(
-    (acc, vertex) => ({
-      x: acc.x + vertex.x / property.vertices.length,
-      y: acc.y + vertex.y / property.vertices.length
-    }),
-    { x: 0, y: 0 }
-  );
-
-  const fillColor = statusColors[property.status as keyof typeof statusColors] || '#cccccc';
-  let fillOpacity = 0.3;
-  let strokeWidth = 1;
-  let strokeColor = fillColor;
-
-  // Visual states
-  if (isSelected) {
-    fillOpacity = 0.5;
-    strokeWidth = 3;
-    strokeColor = isNodeEditMode ? '#7c3aed' : '#1f2937';
-  } else if (isHovered) {
-    fillOpacity = 0.4;
-    strokeWidth = 2;
-  }
-
-  return (
-    <g className="property-polygon">
-      {/* Main polygon */}
-      <path
-        d={pathData}
-        fill={fillColor}
-        fillOpacity={fillOpacity}
-        stroke={strokeColor}
-        strokeWidth={strokeWidth}
-        strokeDasharray={isNodeEditMode && isSelected ? "5,5" : "none"}
-        className="cursor-pointer transition-all duration-200"
-        onMouseEnter={() => onHover(property.id)}
-        onMouseLeave={() => onHover(null)}
-        onClick={(e) => onSelect(property.id, e.shiftKey)}
-      />
-
-      {/* Pulsing selection highlight for the primary editable polygon */}
-      {isSelected && isNodeEditMode && (
-        <path
-          d={pathData}
-          fill="none"
-          stroke={'#7c3aed'}
-          strokeWidth={3}
-          strokeDasharray="3,3"
-          opacity={0.8}
-          className="pointer-events-none animate-pulse"
-        />
-      )}
-
-      {/* Label */}
-      {showLabels && (
-        <g className="property-label">
-          {/* Label background */}
-          <rect
-            x={centroid.x - 30}
-            y={centroid.y - 10}
-            width={60}
-            height={20}
-            fill="white"
-            fillOpacity={0.9}
-            stroke="#e5e7eb"
-            strokeWidth={0.5}
-            rx={2}
-            className="pointer-events-none"
-          />
-          {/* Label text */}
-          <text
-            x={centroid.x}
-            y={centroid.y + 3}
-            textAnchor="middle"
-            fontSize="10"
-            fill="#374151"
-            className="pointer-events-none select-none font-medium"
-          >
-            {property.name}
-          </text>
-          {/* Type text */}
-          <text
-            x={centroid.x}
-            y={centroid.y + 15}
-            textAnchor="middle"
-            fontSize="8"
-            fill="#6b7280"
-            className="pointer-events-none select-none"
-          >
-            {property.type}
-          </text>
-        </g>
-      )}
-
-      {/* Hover tooltip */}
-      {isHovered && !isNodeEditMode && (
-        <g className="hover-tooltip">
-          <rect
-            x={centroid.x + 40}
-            y={centroid.y - 25}
-            width={120}
-            height={50}
-            fill="white"
-            fillOpacity={0.95}
-            stroke="#d1d5db"
-            strokeWidth={1}
-            rx={4}
-            className="pointer-events-none drop-shadow-md"
-          />
-          <text
-            x={centroid.x + 50}
-            y={centroid.y - 15}
-            fontSize="10"
-            fill="#111827"
-            className="pointer-events-none select-none font-semibold"
-          >
-            {property.name}
-          </text>
-          <text
-            x={centroid.x + 50}
-            y={centroid.y - 5}
-            fontSize="9"
-            fill="#6b7280"
-            className="pointer-events-none select-none"
-          >
-            {property.type}
-          </text>
-          {property.price && (
-            <text
-              x={centroid.x + 50}
-              y={centroid.y + 5}
-              fontSize="9"
-              fill="#059669"
-              className="pointer-events-none select-none font-medium"
-            >
-              {property.price.toLocaleString('el-GR')}€
-            </text>
-          )}
-          {property.area && (
-            <text
-              x={centroid.x + 50}
-              y={centroid.y + 15}
-              fontSize="8"
-              fill="#6b7280"
-              className="pointer-events-none select-none"
-            >
-              {property.area}τμ
-            </text>
-          )}
-        </g>
-      )}
-    </g>
-  );
-}
-
-// Measurement Info component
-function PolygonMeasurementInfo({ polygon, scale }: { polygon: Property; scale: number }) {
-  const vertices = polygon.vertices;
-  
-  // Calculate Area (Shoelace formula)
-  let area = 0;
-  for (let i = 0; i < vertices.length; i++) {
-    const j = (i + 1) % vertices.length;
-    area += vertices[i].x * vertices[j].y;
-    area -= vertices[j].x * vertices[i].y;
-  }
-  const realArea = Math.abs(area / 2) * scale * scale;
-
-  // Calculate Perimeter
-  let perimeter = 0;
-  for (let i = 0; i < vertices.length; i++) {
-    const j = (i + 1) % vertices.length;
-    perimeter += Math.sqrt(
-      Math.pow(vertices[j].x - vertices[i].x, 2) +
-      Math.pow(vertices[j].y - vertices[i].y, 2)
-    );
-  }
-  const realPerimeter = perimeter * scale;
-
-  const centroid = vertices.reduce(
-    (acc, vertex) => ({
-      x: acc.x + vertex.x / vertices.length,
-      y: acc.y + vertex.y / vertices.length,
-    }),
-    { x: 0, y: 0 }
-  );
-
-  return (
-    <g className="measurement-info pointer-events-none">
-      <text
-        x={centroid.x}
-        y={centroid.y + 25}
-        textAnchor="middle"
-        fontSize="10"
-        fill="#1f2937"
-        className="font-mono"
-        style={{ paintOrder: 'stroke', stroke: 'white', strokeWidth: '3px', strokeLinejoin: 'round' }}
-      >
-        {realArea.toFixed(2)}m² / {realPerimeter.toFixed(2)}m
-      </text>
-    </g>
-  );
 }
 
 
@@ -449,43 +182,6 @@ export function FloorPlanCanvas({
       }
   }
 
-  // Calculate measurement display
-  let measurementDisplay = null;
-  if(isMeasuring && measurementStart && mousePosition) {
-    const dist = Math.sqrt(
-      Math.pow(mousePosition.x - measurementStart.x, 2) +
-      Math.pow(mousePosition.y - measurementStart.y, 2)
-    );
-    const realDist = (dist * scale).toFixed(2);
-    const midPoint = {
-        x: (measurementStart.x + mousePosition.x) / 2,
-        y: (measurementStart.y + mousePosition.y) / 2
-    };
-
-    measurementDisplay = (
-      <g className="measurement-tool pointer-events-none">
-        <line
-          x1={measurementStart.x}
-          y1={measurementStart.y}
-          x2={mousePosition.x}
-          y2={mousePosition.y}
-          stroke="#ef4444"
-          strokeWidth="2"
-          strokeDasharray="5 5"
-        />
-        <text
-          x={midPoint.x}
-          y={midPoint.y - 10}
-          textAnchor="middle"
-          fontSize="12"
-          fill="#ef4444"
-          style={{ paintOrder: 'stroke', stroke: 'white', strokeWidth: '3px', strokeLinejoin: 'round' }}
-        >
-          {realDist}m
-        </text>
-      </g>
-    );
-  }
 
   return (
     <div 
@@ -514,7 +210,6 @@ export function FloorPlanCanvas({
         onMouseMove={handleCanvasMouseMove}
         onContextMenu={handleRightClick}
       >
-        {/* Grid */}
         <GridOverlay 
           showGrid={showGrid}
           width={dimensions.width}
@@ -522,22 +217,18 @@ export function FloorPlanCanvas({
           gridSize={gridSize}
         />
 
-        {/* Existing Properties */}
         {floorData.properties.map((property) => (
-          <g key={property.id}>
-            <PropertyPolygon
-              property={property}
-              isSelected={selectedPropertyIds.includes(property.id)}
-              isHovered={hoveredProperty === property.id}
-              showLabels={true}
-              isNodeEditMode={isNodeEditMode && primarySelectedPolygon === property.id}
-              onHover={onPolygonHover}
-              onSelect={onPolygonSelect}
-            />
-            {showMeasurements && (
-                <PolygonMeasurementInfo polygon={property} scale={scale} />
-            )}
-          </g>
+          <PropertyPolygon
+            key={property.id}
+            property={property}
+            isSelected={selectedPropertyIds.includes(property.id)}
+            isHovered={hoveredProperty === property.id}
+            isNodeEditMode={isNodeEditMode && primarySelectedPolygon === property.id}
+            onHover={onPolygonHover}
+            onSelect={onPolygonSelect}
+            showMeasurements={showMeasurements}
+            scale={scale}
+          />
         ))}
 
         {isNodeEditMode && (
@@ -550,47 +241,22 @@ export function FloorPlanCanvas({
           />
         )}
 
-        {/* Polygon being created */}
-        {isCreatingPolygon && creatingVertices.length > 0 && mousePosition && (
-          <g className="creation-tool pointer-events-none">
-            <polyline
-              points={[
-                ...creatingVertices.map(v => `${v.x},${v.y}`),
-                `${mousePosition.x},${mousePosition.y}`
-              ].join(' ')}
-              fill="none"
-              stroke="#7c3aed"
-              strokeWidth="2"
-              strokeDasharray="4 4"
-            />
-            {creatingVertices.map((vertex, index) => (
-              <circle
-                key={index}
-                cx={vertex.x}
-                cy={vertex.y}
-                r="4"
-                fill="#7c3aed"
-              />
-            ))}
-            {creatingVertices.length > 2 && (
-               <circle
-                cx={creatingVertices[0].x}
-                cy={creatingVertices[0].y}
-                r="6"
-                fill="rgba(124, 58, 237, 0.5)"
-                stroke="#7c3aed"
-                strokeWidth={2}
-                className="cursor-pointer animate-pulse"
-               />
-            )}
-          </g>
+        {isCreatingPolygon && (
+           <CreationOverlay 
+             vertices={creatingVertices}
+             mousePosition={mousePosition}
+           />
         )}
         
-        {/* Measurement line and text */}
-        {measurementDisplay}
+        {isMeasuring && (
+            <MeasurementOverlay 
+                startPoint={measurementStart}
+                endPoint={mousePosition}
+                scale={scale}
+            />
+        )}
         
-        {/* Snap indicator */}
-        {(isCreatingPolygon || (isMeasuring && measurementStart)) && mousePosition && snapToGrid && (
+        {(isCreatingPolygon || isMeasuring) && snapToGrid && mousePosition && (
             <circle
                 cx={mousePosition.x}
                 cy={mousePosition.y}
@@ -604,39 +270,8 @@ export function FloorPlanCanvas({
         )}
       </svg>
 
-      {/* Status legend */}
-      <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm border rounded-lg p-3 shadow-sm">
-        <h4 className="text-xs font-medium mb-2">Κατάσταση Ακινήτων</h4>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: statusColors['for-sale'] }}></div>
-            <span>Προς Πώληση</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: statusColors['for-rent'] }}></div>
-            <span>Προς Ενοικίαση</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: statusColors['sold'] }}></div>
-            <span>Πουλημένο</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: statusColors['rented'] }}></div>
-            <span>Ενοικιασμένο</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: statusColors['reserved'] }}></div>
-            <span>Δεσμευμένο</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Property count */}
-      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm border rounded-lg px-3 py-1 shadow-sm">
-        <span className="text-xs text-muted-foreground">
-          {floorData.properties.length} ακίνητα στον όροφο
-        </span>
-      </div>
+      <StatusLegend />
+      <PropertyCountOverlay count={floorData.properties.length} />
     </div>
   );
 }
