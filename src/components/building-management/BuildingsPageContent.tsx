@@ -22,7 +22,9 @@ import {
   Users,
   TrendingUp,
   Home,
-  Building2
+  Building2,
+  FolderOpen,
+  CheckSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -125,7 +127,7 @@ const projects = [
 
 export function BuildingsPageContent() {
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(buildings[0]);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'byType' | 'byStatus'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCompany, setFilterCompany] = useState('all');
   const [filterProject, setFilterProject] = useState('all');
@@ -175,6 +177,30 @@ export function BuildingsPageContent() {
     }
   };
 
+    const getCategoryLabel = (category: string) => {
+        switch (category) {
+            case 'residential': return 'Κατοικίες';
+            case 'commercial': return 'Εμπορικό';
+            case 'mixed': return 'Μικτή Χρήση';
+            case 'industrial': return 'Βιομηχανικό';
+            default: return category;
+        }
+    };
+
+    const groupedByType = filteredBuildings.reduce((acc, building) => {
+        const type = building.category;
+        if (!acc[type]) acc[type] = [];
+        acc[type].push(building);
+        return acc;
+    }, {} as Record<string, Building[]>);
+
+    const groupedByStatus = filteredBuildings.reduce((acc, building) => {
+        const status = building.status;
+        if (!acc[status]) acc[status] = [];
+        acc[status].push(building);
+        return acc;
+    }, {} as Record<string, Building[]>);
+
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
@@ -215,6 +241,22 @@ export function BuildingsPageContent() {
               >
                 <LayoutGrid className="w-4 h-4" />
               </Button>
+                <Button
+                    variant={viewMode === 'byType' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode('byType')}
+                >
+                    <FolderOpen className="w-4 h-4 mr-2" />
+                    Ομαδοποίηση ανά Τύπο
+                </Button>
+                <Button
+                    variant={viewMode === 'byStatus' ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode('byStatus')}
+                >
+                    <CheckSquare className="w-4 h-4 mr-2" />
+                    Ομαδοποίηση ανά Κατάσταση
+                </Button>
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Νέο Κτίριο
@@ -355,41 +397,79 @@ export function BuildingsPageContent() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {viewMode === 'list' ? (
-          <>
-            <BuildingsList
-              buildings={filteredBuildings}
-              selectedBuilding={selectedBuilding!}
-              onSelectBuilding={setSelectedBuilding}
-              getStatusColor={getStatusColor}
-              getStatusLabel={getStatusLabel}
-            />
-            <BuildingDetails 
-              building={selectedBuilding!} 
-              getStatusColor={getStatusColor}
-              getStatusLabel={getStatusLabel}
-            />
-          </>
-        ) : (
-          <div className="flex-1 p-4 overflow-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredBuildings.map((building) => (
-                <BuildingCard
-                  key={building.id}
-                  building={building}
-                  isSelected={selectedBuilding?.id === building.id}
-                  onClick={() => setSelectedBuilding(building)}
-                  getStatusColor={getStatusColor}
-                  getStatusLabel={getStatusLabel}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        <div className="flex-1 flex overflow-hidden">
+            {viewMode === 'list' ? (
+                <>
+                    <BuildingsList
+                        buildings={filteredBuildings}
+                        selectedBuilding={selectedBuilding!}
+                        onSelectBuilding={setSelectedBuilding}
+                        getStatusColor={getStatusColor}
+                        getStatusLabel={getStatusLabel}
+                    />
+                    <BuildingDetails
+                        building={selectedBuilding!}
+                        getStatusColor={getStatusColor}
+                        getStatusLabel={getStatusLabel}
+                    />
+                </>
+            ) : viewMode === 'grid' ? (
+                <div className="flex-1 p-4 overflow-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {filteredBuildings.map((building) => (
+                            <BuildingCard
+                                key={building.id}
+                                building={building}
+                                isSelected={selectedBuilding?.id === building.id}
+                                onClick={() => setSelectedBuilding(building)}
+                                getStatusColor={getStatusColor}
+                                getStatusLabel={getStatusLabel}
+                            />
+                        ))}
+                    </div>
+                </div>
+            ) : viewMode === 'byType' ? (
+                <div className="flex-1 p-4 overflow-auto">
+                    {Object.entries(groupedByType).map(([type, buildingsOfType]) => (
+                        <div key={type} className="mb-8">
+                            <h2 className="text-xl font-bold mb-4 capitalize border-b pb-2">{getCategoryLabel(type)} ({buildingsOfType.length})</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {buildingsOfType.map((building) => (
+                                    <BuildingCard
+                                        key={building.id}
+                                        building={building}
+                                        isSelected={selectedBuilding?.id === building.id}
+                                        onClick={() => setSelectedBuilding(building)}
+                                        getStatusColor={getStatusColor}
+                                        getStatusLabel={getStatusLabel}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : ( // byStatus
+                <div className="flex-1 p-4 overflow-auto">
+                    {Object.entries(groupedByStatus).map(([status, buildingsOfStatus]) => (
+                        <div key={status} className="mb-8">
+                            <h2 className="text-xl font-bold mb-4 capitalize border-b pb-2">{getStatusLabel(status)} ({buildingsOfStatus.length})</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {buildingsOfStatus.map((building) => (
+                                    <BuildingCard
+                                        key={building.id}
+                                        building={building}
+                                        isSelected={selectedBuilding?.id === building.id}
+                                        onClick={() => setSelectedBuilding(building)}
+                                        getStatusColor={getStatusColor}
+                                        getStatusLabel={getStatusLabel}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
     </div>
   );
 }
-
-    
