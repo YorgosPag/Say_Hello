@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -68,6 +67,8 @@ interface BuildingDetailsProps {
 
 const GeneralTabContent = ({ building }: { building: Building }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [autoSaving, setAutoSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     name: building.name,
     description: building.description || '',
@@ -81,26 +82,87 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
     address: building.address || '',
     city: building.city || ''
   });
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
 
-  const handleSave = () => {
-    // Here you would typically save to your backend
-    setIsEditing(false);
-    console.log('Saving building data:', formData);
+  // Auto-save functionality
+  React.useEffect(() => {
+    if (!isEditing) return;
+    
+    const timeoutId = setTimeout(() => {
+      setAutoSaving(true);
+      // Simulate API call
+      setTimeout(() => {
+        setAutoSaving(false);
+        setLastSaved(new Date());
+        console.log('Auto-saved:', formData);
+      }, 1000);
+    }, 2000); // Auto-save after 2 seconds of no changes
+
+    return () => clearTimeout(timeoutId);
+  }, [formData, isEditing]);
+
+  // Validation
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Το όνομα είναι υποχρεωτικό';
+    }
+    if (formData.totalArea <= 0) {
+      newErrors.totalArea = 'Η επιφάνεια πρέπει να είναι μεγαλύτερη από 0';
+    }
+    if (formData.builtArea > formData.totalArea) {
+      newErrors.builtArea = 'Η δομημένη επιφάνεια δεν μπορεί να υπερβαίνει τη συνολική';
+    }
+    if (formData.floors <= 0) {
+      newErrors.floors = 'Οι όροφοι πρέπει να είναι τουλάχιστον 1';
+    }
+    if (formData.units <= 0) {
+      newErrors.units = 'Οι μονάδες πρέπει να είναι τουλάχιστον 1';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('el-GR', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0
-    }).format(amount);
+  // Smart calculations
+  const costPerSqm = formData.totalArea > 0 ? (formData.totalValue / formData.totalArea) : 0;
+  const buildingRatio = formData.totalArea > 0 ? (formData.builtArea / formData.totalArea * 100) : 0;
+
+  const handleSave = () => {
+    if (validateForm()) {
+      setIsEditing(false);
+      setLastSaved(new Date());
+      console.log('Manual save:', formData);
+    }
+  };
+
+  const updateField = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+
+    // Smart calculations
+    if (field === 'totalArea' && value > 0) {
+      // Auto-update built area to 80% if it's 0
+      if (formData.builtArea === 0) {
+        setFormData(prev => ({ 
+          ...prev, 
+          [field]: value,
+          builtArea: Math.round(value * 0.8)
+        }));
+      }
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Quick Actions */}
+      {/* Smart Header with Auto-save Status */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
             ID: {building.id}
           </Badge>
@@ -110,7 +172,27 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
             {building.category === 'mixed' && 'Μικτή Χρήση'}
             {building.category === 'industrial' && 'Βιομηχανικό'}
           </Badge>
+          
+          {/* Auto-save indicator */}
+          {isEditing && (
+            <div className="flex items-center gap-2 text-xs">
+              {autoSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                  <span className="text-blue-600">Αποθήκευση...</span>
+                </>
+              ) : lastSaved ? (
+                <>
+                  <CheckCircle className="w-3 h-3 text-green-600" />
+                  <span className="text-green-600">
+                    Αποθηκεύτηκε {lastSaved.toLocaleTimeString('el-GR')}
+                  </span>
+                </>
+              ) : null}
+            </div>
+          )}
         </div>
+        
         <div className="flex items-center gap-2">
           {!isEditing ? (
             <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
@@ -129,18 +211,10 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
               </Button>
             </>
           )}
-          <Button variant="outline" size="sm">
-            <Share className="w-4 h-4 mr-2" />
-            Κοινοποίηση
-          </Button>
-          <Button variant="outline" size="sm">
-            <Printer className="w-4 h-4 mr-2" />
-            Εκτύπωση
-          </Button>
         </div>
       </div>
 
-      {/* Building Title and Description */}
+      {/* Smart Form Fields */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -150,60 +224,37 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Τίτλος Κτιρίου</Label>
+            <Label>Τίτλος Κτιρίου *</Label>
             <Input 
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              onChange={(e) => updateField('name', e.target.value)}
               disabled={!isEditing}
-              className={cn(!isEditing && "bg-muted")}
+              className={cn(
+                !isEditing && "bg-muted",
+                errors.name && "border-red-500"
+              )}
             />
+            {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
           </div>
+          
           <div className="space-y-2">
             <Label>Περιγραφή Κτιρίου</Label>
             <Textarea 
               value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              onChange={(e) => updateField('description', e.target.value)}
               disabled={!isEditing}
               className={cn(!isEditing && "bg-muted")}
-              rows={4}
+              rows={3}
+              placeholder="Περιγράψτε το κτίριο..."
             />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Location Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="w-5 h-5" />
-            Τοποθεσία
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Διεύθυνση</Label>
-              <Input 
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Πόλη</Label>
-              <Input 
-                value={formData.city}
-                onChange={(e) => setFormData({...formData, city: e.target.value})}
-                disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
-              />
+            <div className="text-xs text-muted-foreground text-right">
+              {formData.description.length}/500 χαρακτήρες
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Technical Specifications */}
+      {/* Smart Technical Specs with Live Calculations */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -212,142 +263,147 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div className="space-y-2">
-              <Label>Σύνολο Δόμησης (m²)</Label>
+              <Label>Συνολική Επιφάνεια (m²) *</Label>
               <Input 
                 type="number"
                 value={formData.totalArea}
-                onChange={(e) => setFormData({...formData, totalArea: parseFloat(e.target.value)})}
+                onChange={(e) => updateField('totalArea', parseFloat(e.target.value) || 0)}
                 disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
+                className={cn(
+                  !isEditing && "bg-muted",
+                  errors.totalArea && "border-red-500"
+                )}
               />
+              {errors.totalArea && <p className="text-sm text-red-500">{errors.totalArea}</p>}
             </div>
+            
             <div className="space-y-2">
-              <Label>Δομημένη Επιφάνεια (m²)</Label>
+              <Label>Δομημένη Επιφάνεια (m²) *</Label>
               <Input 
                 type="number"
                 value={formData.builtArea}
-                onChange={(e) => setFormData({...formData, builtArea: parseFloat(e.target.value)})}
+                onChange={(e) => updateField('builtArea', parseFloat(e.target.value) || 0)}
                 disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
+                className={cn(
+                  !isEditing && "bg-muted",
+                  errors.builtArea && "border-red-500"
+                )}
               />
+              {errors.builtArea && <p className="text-sm text-red-500">{errors.builtArea}</p>}
+              {formData.totalArea > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Συντελεστής δόμησης: {buildingRatio.toFixed(1)}%
+                </p>
+              )}
             </div>
+            
             <div className="space-y-2">
-              <Label>Αριθμός Ορόφων</Label>
+              <Label>Αριθμός Ορόφων *</Label>
               <Input 
                 type="number"
                 value={formData.floors}
-                onChange={(e) => setFormData({...formData, floors: parseInt(e.target.value)})}
+                onChange={(e) => updateField('floors', parseInt(e.target.value) || 0)}
                 disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
+                className={cn(
+                  !isEditing && "bg-muted",
+                  errors.floors && "border-red-500"
+                )}
               />
+              {errors.floors && <p className="text-sm text-red-500">{errors.floors}</p>}
             </div>
+            
             <div className="space-y-2">
-              <Label>Αριθμός Μονάδων</Label>
+              <Label>Αριθμός Μονάδων *</Label>
               <Input 
                 type="number"
                 value={formData.units}
-                onChange={(e) => setFormData({...formData, units: parseInt(e.target.value)})}
+                onChange={(e) => updateField('units', parseInt(e.target.value) || 0)}
                 disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
+                className={cn(
+                  !isEditing && "bg-muted",
+                  errors.units && "border-red-500"
+                )}
               />
+              {errors.units && <p className="text-sm text-red-500">{errors.units}</p>}
+              {formData.floors > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  ~{(formData.units / formData.floors).toFixed(1)} μονάδες/όροφο
+                </p>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Financial Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5" />
-            Οικονομικά Στοιχεία
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Συνολική Αξία (€)</Label>
-              <Input 
-                type="number"
-                value={formData.totalValue}
-                onChange={(e) => setFormData({...formData, totalValue: parseFloat(e.target.value)})}
-                disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Κόστος ανά m² (€)</Label>
-              <Input 
-                value={formData.totalArea > 0 ? (formData.totalValue / formData.totalArea).toFixed(2) : 0}
-                disabled
-                className="bg-muted"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Προϋπολογισμός Status</Label>
-              <div className="flex items-center gap-2 p-2 rounded-md bg-green-50 dark:bg-green-950/20">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span className="text-sm text-green-700 dark:text-green-400">Εντός Προϋπολογισμού</span>
+          {/* Live Calculations Display */}
+          {formData.totalArea > 0 && formData.totalValue > 0 && (
+            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                💡 Αυτόματοι Υπολογισμοί
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="text-blue-700 dark:text-blue-300">Κόστος/m²:</span>
+                  <p className="font-semibold">{costPerSqm.toLocaleString('el-GR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}€</p>
+                </div>
+                <div>
+                  <span className="text-blue-700 dark:text-blue-300">Συντ. Δόμησης:</span>
+                  <p className="font-semibold">{buildingRatio.toFixed(1)}%</p>
+                </div>
+                <div>
+                  <span className="text-blue-700 dark:text-blue-300">m²/Μονάδα:</span>
+                  <p className="font-semibold">{formData.units > 0 ? (formData.builtArea / formData.units).toFixed(1) : 0} m²</p>
+                </div>
+                <div>
+                  <span className="text-blue-700 dark:text-blue-300">Αξία/Μονάδα:</span>
+                  <p className="font-semibold">{formData.units > 0 ? (formData.totalValue / formData.units).toLocaleString('el-GR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : 0}€</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Timeline */}
+      {/* Progress with Smart Indicators */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Χρονοδιάγραμμα
+            <TrendingUp className="w-5 h-5" />
+            Πρόοδος Έργου
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2">
-              <Label>Ημερομηνία Έναρξης</Label>
-              <Input 
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => setFormData({...formData, startDate: e.target.value})}
-                disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Ημερομηνία Παράδοσης</Label>
-              <Input 
-                type="date"
-                value={formData.completionDate}
-                onChange={(e) => setFormData({...formData, completionDate: e.target.value})}
-                disabled={!isEditing}
-                className={cn(!isEditing && "bg-muted")}
-              />
-            </div>
-          </div>
-          
-          {/* Progress Indicator */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label>Πρόοδος Έργου</Label>
+              <Label>Ποσοστό Ολοκλήρωσης</Label>
               <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                 {building.progress}% Ολοκληρωμένο
               </Badge>
             </div>
             <Progress value={building.progress} className="h-3" />
-            <div className="text-sm text-muted-foreground">
-              {building.progress < 25 && "Αρχικό στάδιο - Προετοιμασία"}
-              {building.progress >= 25 && building.progress < 50 && "Υπό κατασκευή - Κύρια δομή"}
-              {building.progress >= 50 && building.progress < 75 && "Προχωρημένο στάδιο - Ολοκληρώσεις"}
-              {building.progress >= 75 && building.progress < 100 && "Τελικό στάδιο - Παραδοτέα"}
-              {building.progress === 100 && "Ολοκληρωμένο έργο"}
+            
+            {/* Smart Progress Milestones */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2 text-xs">
+              <div className={cn("p-2 rounded text-center", building.progress >= 25 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+                <div className="font-medium">Θεμέλια</div>
+                <div>0-25%</div>
+              </div>
+              <div className={cn("p-2 rounded text-center", building.progress >= 50 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+                <div className="font-medium">Κατασκευή</div>
+                <div>25-50%</div>
+              </div>
+              <div className={cn("p-2 rounded text-center", building.progress >= 75 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+                <div className="font-medium">Ολοκληρώσεις</div>
+                <div>50-75%</div>
+              </div>
+              <div className={cn("p-2 rounded text-center", building.progress >= 100 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600")}>
+                <div className="font-medium">Παράδοση</div>
+                <div>75-100%</div>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
       {/* Enhanced Project Files */}
       <Card>
         <CardHeader>
