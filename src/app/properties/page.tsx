@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Settings, Eye, Edit3 } from "lucide-react";
+import { Search, Filter, Settings, Eye, Edit3, Plus, Save } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { PropertyViewerFilters } from "@/components/property-viewer/PropertyViewerFilters";
@@ -20,6 +20,7 @@ export default function PropertyViewerPage() {
   const [isPending, startTransition] = useTransition();
   const [isEditMode, setIsEditMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [isCreatingPolygon, setIsCreatingPolygon] = useState(false);
 
   const {
     properties,
@@ -69,6 +70,12 @@ export default function PropertyViewerPage() {
   const toggleEditMode = () => {
     if (!isEditor) return;
     setIsEditMode(!isEditMode);
+  };
+  
+  const handlePolygonCreated = (vertices: Array<{ x: number; y: number }>) => {
+    console.log("New polygon created with vertices:", vertices);
+    // Here you would typically call a service to save the new property
+    setIsCreatingPolygon(false); // Exit creation mode
   };
 
   return (
@@ -160,6 +167,9 @@ export default function PropertyViewerPage() {
                 hoveredPropertyId={hoveredProperty}
                 isEditMode={isEditMode}
                 onSelectProperty={setSelectedProperty}
+                isCreatingPolygon={isCreatingPolygon}
+                setIsCreatingPolygon={setIsCreatingPolygon}
+                onPolygonCreated={handlePolygonCreated}
               />
             </CardContent>
           </Card>

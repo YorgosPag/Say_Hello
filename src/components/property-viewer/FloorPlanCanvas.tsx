@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { PolygonEditor } from "./PolygonEditor";
 
 interface PropertyPolygon {
   id: string;
@@ -401,6 +402,14 @@ export function FloorPlanCanvas({
           />
         ))}
 
+        {isEditMode && (
+          <PolygonEditor
+            floorData={floorData}
+            selectedPolygon={selectedPolygon}
+            onPolygonUpdate={() => {}}
+          />
+        )}
+
         {/* Polygon being created */}
         {isCreatingPolygon && creatingVertices.length > 0 && (
           <g>
@@ -461,7 +470,7 @@ export function FloorPlanCanvas({
               fill="#7c3aed"
               className="select-none font-medium"
             >
-              ✏️ Δημιουργία Polygon: Κάντε κλικ για να προσθέσετε σημεία. Διπλό κλικ για ολοκλήρωση.
+              ✏️ Δημιουργία Polygon: Κάντε κλικ για να προσθέσετε σημεία. Κλείστε στο πρώτο σημείο ή κάντε διπλό κλικ.
             </text>
           </g>
         )}
@@ -503,5 +512,3 @@ export function FloorPlanCanvas({
     </div>
   );
 }
-
-    

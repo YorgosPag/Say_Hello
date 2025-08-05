@@ -18,7 +18,8 @@ import {
   Grid,
   Eye,
   EyeOff,
-  Palette
+  Palette,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FloorPlanCanvas } from "./FloorPlanCanvas";
@@ -33,6 +34,9 @@ interface FloorPlanViewerProps {
   hoveredPropertyId: string | null;
   isEditMode: boolean;
   onSelectProperty: (propertyId: string | null) => void;
+  isCreatingPolygon: boolean;
+  setIsCreatingPolygon: (value: boolean) => void;
+  onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
 }
 
 interface FloorData {
@@ -120,13 +124,15 @@ export function FloorPlanViewer({
   onHoverProperty,
   hoveredPropertyId,
   isEditMode,
-  onSelectProperty
+  onSelectProperty,
+  isCreatingPolygon,
+  setIsCreatingPolygon,
+  onPolygonCreated,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [selectedPolygon, setSelectedPolygon] = useState<string | null>(null);
-  const [isCreatingPolygon, setIsCreatingPolygon] = useState(false);
   const [floors, setFloors] = useState<FloorData[]>(mockFloors);
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -161,7 +167,7 @@ export function FloorPlanViewer({
     }
   }, []);
 
-  const handlePolygonCreated = (vertices: Array<{ x: number; y: number }>) => {
+  const handleLocalPolygonCreated = (vertices: Array<{ x: number; y: number }>) => {
     const newProperty: PropertyPolygon = {
       id: `new-prop-${Date.now()}`,
       name: `Νέο Ακίνητο ${currentFloor.properties.length + 1}`,
@@ -185,7 +191,7 @@ export function FloorPlanViewer({
       });
     });
 
-    setIsCreatingPolygon(false);
+    onPolygonCreated(vertices);
     onSelectProperty(newProperty.id);
   };
 
@@ -290,7 +296,7 @@ export function FloorPlanViewer({
               {isEditMode && (
                 <>
                 <Button variant={isCreatingPolygon ? "default" : "outline"} size="sm" onClick={() => setIsCreatingPolygon(!isCreatingPolygon)}>
-                  <Save className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4 mr-2" />
                   {isCreatingPolygon ? 'Τέλος' : 'Δημιουργία'}
                 </Button>
                 <Button variant="outline" size="sm">
@@ -325,16 +331,8 @@ export function FloorPlanViewer({
                 onPolygonHover={handlePolygonHover}
                 onPolygonSelect={handlePolygonSelect}
                 isCreatingPolygon={isCreatingPolygon}
-                onPolygonCreated={handlePolygonCreated}
+                onPolygonCreated={handleLocalPolygonCreated}
               />
-              
-              {isEditMode && (
-                <PolygonEditor
-                  floorData={currentFloor}
-                  selectedPolygon={selectedPolygon}
-                  onPolygonUpdate={() => {}}
-                />
-              )}
             </div>
           </div>
 
