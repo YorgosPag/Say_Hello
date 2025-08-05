@@ -95,6 +95,59 @@ function EdgeMidpoint({
   );
 }
 
+// --- Geometry Helper Functions ---
+function distanceToLine(point: {x: number, y: number}, lineStart: {x: number, y: number}, lineEnd: {x: number, y: number}) {
+    const A = point.x - lineStart.x;
+    const B = point.y - lineStart.y;
+    const C = lineEnd.x - lineStart.x;
+    const D = lineEnd.y - lineStart.y;
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+
+    if (lenSq !== 0) param = dot / lenSq;
+
+    let xx, yy;
+
+    if (param < 0) {
+        xx = lineStart.x;
+        yy = lineStart.y;
+    } else if (param > 1) {
+        xx = lineEnd.x;
+        yy = lineEnd.y;
+    } else {
+        xx = lineStart.x + param * C;
+        yy = lineStart.y + param * D;
+    }
+
+    const dx = point.x - xx;
+    const dy = point.y - yy;
+
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function findClosestEdge(polygon: PropertyPolygon, point: {x: number, y: number}) {
+    const points = polygon.vertices;
+    let minDistance = Infinity;
+    let closestEdgeIndex = -1;
+
+    for (let i = 0; i < points.length; i++) {
+        const p1 = points[i];
+        const p2 = points[(i + 1) % points.length];
+        
+        const dist = distanceToLine(point, p1, p2);
+        
+        if (dist < minDistance) {
+            minDistance = dist;
+            closestEdgeIndex = i;
+        }
+    }
+    
+    return { index: closestEdgeIndex, distance: minDistance };
+}
+
+
 // Polygon editor component
 function EditablePolygon({
   property,
@@ -178,6 +231,27 @@ function EditablePolygon({
       onVertexRemove(vertexIndex);
     }
   }, [property.vertices.length, onVertexRemove]);
+  
+  // Handle right-click on edge to add a new vertex
+  const handleEdgeRightClick = useCallback((event: React.MouseEvent) => {
+      event.preventDefault();
+      if (!isSelected) return;
+
+      const rect = (event.target as SVGElement).ownerSVGElement?.getBoundingClientRect();
+      if (!rect) return;
+      
+      const clickPos = {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+      };
+
+      const edge = findClosestEdge(property, clickPos);
+      
+      if (edge.distance < 10) { // Add vertex if click is close to an edge
+          onVertexAdd(edge.index, clickPos);
+      }
+  }, [isSelected, property, onVertexAdd]);
+
 
   // Mouse move handler
   useEffect(() => {
@@ -249,6 +323,7 @@ function EditablePolygon({
           isSelected ? "cursor-move" : "cursor-pointer"
         )}
         onMouseDown={handlePolygonMouseDown}
+        onContextMenu={handleEdgeRightClick}
       />
 
       {/* Edit handles only when selected */}
@@ -445,3 +520,5 @@ export function PolygonEditor({
     </g>
   );
 }
+
+    
