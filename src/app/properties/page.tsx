@@ -32,6 +32,10 @@ import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcuts';
 import { useToast } from '@/hooks/use-toast';
 import type { Property } from '@/types/property-viewer';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+
 
 const EditToolbar = ({
   activeTool,
@@ -42,6 +46,12 @@ const EditToolbar = ({
   canRedo,
   onExport,
   onImport,
+  showGrid,
+  onToggleGrid,
+  snapToGrid,
+  onToggleSnap,
+  gridSize,
+  onGridSizeChange,
 }: {
   activeTool: string | null;
   onToolChange: (tool: 'create' | 'edit_nodes' | null) => void;
@@ -51,6 +61,12 @@ const EditToolbar = ({
   canRedo: boolean;
   onExport: () => void;
   onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  showGrid: boolean;
+  onToggleGrid: () => void;
+  snapToGrid: boolean;
+  onToggleSnap: () => void;
+  gridSize: number;
+  onGridSizeChange: (size: number) => void;
 }) => {
   const handleToolClick = (tool: 'create' | 'edit_nodes') => {
     if (activeTool === tool) {
@@ -64,6 +80,7 @@ const EditToolbar = ({
     <Card className="mb-4">
       <CardContent className="p-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
+          {/* Main tools */}
           <Button
             onClick={() => handleToolClick('create')}
             variant={activeTool === 'create' ? 'default' : 'outline'}
@@ -82,13 +99,32 @@ const EditToolbar = ({
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="text-sm text-muted-foreground mr-4">
-            {activeTool === 'create' &&
-              'Click για κόμβους, διπλό click ή click στο πρώτο σημείο για κλείσιμο'}
-            {activeTool === 'edit_nodes' &&
-              'Click σε polygon για επεξεργασία • Shift+Click για διαγραφή • Right Click σε ακμή για νέο κόμβο'}
+        <div className="flex items-center gap-4">
+           {/* Grid and Snap controls */}
+           <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Checkbox id="show-grid" checked={showGrid} onCheckedChange={onToggleGrid} />
+              <Label htmlFor="show-grid">Grid</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="snap-to-grid" checked={snapToGrid} onCheckedChange={onToggleSnap} />
+              <Label htmlFor="snap-to-grid">Snap</Label>
+            </div>
+            <div className="flex items-center gap-2 w-32">
+                <Slider
+                    value={[gridSize]}
+                    onValueChange={(value) => onGridSizeChange(value[0])}
+                    min={10}
+                    max={50}
+                    step={5}
+                />
+                <span className="text-xs">{gridSize}px</span>
+            </div>
           </div>
+          
+          <Separator orientation="vertical" className="h-6 mx-2" />
+
+          {/* Undo/Redo */}
           <Button
             onClick={onUndo}
             disabled={!canUndo}
@@ -112,6 +148,7 @@ const EditToolbar = ({
 
           <Separator orientation="vertical" className="h-6 mx-2" />
           
+          {/* Import/Export */}
           <input
             type="file"
             accept=".json"
@@ -137,7 +174,6 @@ const EditToolbar = ({
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-
         </div>
       </CardContent>
     </Card>
@@ -155,6 +191,11 @@ export default function PropertyViewerPage() {
     null
   );
   const { toast } = useToast();
+  
+  // Grid and Snap states
+  const [showGrid, setShowGrid] = useState(true);
+  const [snapToGrid, setSnapToGrid] = useState(true);
+  const [gridSize, setGridSize] = useState(20);
 
   const {
     properties,
@@ -390,6 +431,12 @@ export default function PropertyViewerPage() {
               canRedo={canRedo}
               onExport={handleExport}
               onImport={handleImport}
+              showGrid={showGrid}
+              onToggleGrid={() => setShowGrid(!showGrid)}
+              snapToGrid={snapToGrid}
+              onToggleSnap={() => setSnapToGrid(!snapToGrid)}
+              gridSize={gridSize}
+              onGridSizeChange={setGridSize}
             />
           )}
           <Card className="flex-1 h-full">
@@ -404,6 +451,9 @@ export default function PropertyViewerPage() {
                 isCreatingPolygon={activeTool === 'create'}
                 onPolygonCreated={handlePolygonCreated}
                 onPolygonUpdated={handlePolygonUpdated}
+                showGrid={showGrid}
+                snapToGrid={snapToGrid}
+                gridSize={gridSize}
               />
             </CardContent>
           </Card>

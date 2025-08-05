@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useCallback } from "react";
@@ -31,12 +32,15 @@ interface FloorPlanViewerProps {
   selectedFloorId: string | null;
   onSelectFloor: (floorId: string | null) => void;
   onHoverProperty: (propertyId: string | null) => void;
-  hoveredPropertyId: string | null;
+  hoveredPropertyId?: string | null;
   isNodeEditMode: boolean;
   onSelectProperty: (propertyId: string | null) => void;
   isCreatingPolygon: boolean;
   onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
+  showGrid: boolean;
+  snapToGrid: boolean;
+  gridSize: number;
 }
 
 interface PropertyPolygon {
@@ -128,9 +132,11 @@ export function FloorPlanViewer({
   isCreatingPolygon,
   onPolygonCreated,
   onPolygonUpdated,
+  showGrid,
+  snapToGrid,
+  gridSize,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
-  const [showGrid, setShowGrid] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [selectedPolygon, setSelectedPolygon] = useState<string | null>(null);
   const [floors, setFloors] = useState<FloorData[]>(mockFloors);
@@ -259,14 +265,6 @@ export function FloorPlanViewer({
             {/* Display Options */}
             <div className="flex items-center gap-1 border rounded-md p-1">
               <Button
-                variant={showGrid ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setShowGrid(!showGrid)}
-                className="h-8 w-8 p-0"
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
                 variant={showLabels ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setShowLabels(!showLabels)}
@@ -321,6 +319,8 @@ export function FloorPlanViewer({
                 isCreatingPolygon={isCreatingPolygon}
                 onPolygonCreated={handleLocalPolygonCreated}
                 onPolygonUpdated={onPolygonUpdated}
+                snapToGrid={snapToGrid}
+                gridSize={gridSize}
               />
             </div>
           </div>

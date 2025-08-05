@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
@@ -37,6 +38,8 @@ interface FloorPlanCanvasProps {
   onPolygonSelect: (propertyId: string | null) => void;
   onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
+  snapToGrid: boolean;
+  gridSize: number;
 }
 
 const statusColors = {
@@ -48,10 +51,9 @@ const statusColors = {
 };
 
 // Grid component
-function GridOverlay({ showGrid, width, height }: { showGrid: boolean; width: number; height: number }) {
+function GridOverlay({ showGrid, width, height, gridSize }: { showGrid: boolean; width: number; height: number; gridSize: number }) {
   if (!showGrid) return null;
 
-  const gridSize = 20;
   const lines = [];
 
   // Vertical lines
@@ -284,10 +286,21 @@ export function FloorPlanCanvas({
   onPolygonSelect,
   onPolygonCreated,
   onPolygonUpdated,
+  snapToGrid,
+  gridSize,
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [creatingVertices, setCreatingVertices] = useState<Array<{ x: number; y: number }>>([]);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
+
+  const snapPoint = useCallback((point: { x: number; y: number }) => {
+    if (!snapToGrid) return point;
+    return {
+      x: Math.round(point.x / gridSize) * gridSize,
+      y: Math.round(point.y / gridSize) * gridSize,
+    };
+  }, [snapToGrid, gridSize]);
 
   // Handle container resize
   useEffect(() => {
@@ -307,38 +320,39 @@ export function FloorPlanCanvas({
   }, []);
 
   const handleCanvasClick = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    // If clicking on empty space and not creating or editing, deselect
-    if (event.target === event.currentTarget && !isCreatingPolygon && !isNodeEditMode) {
+    if (event.target !== event.currentTarget && !isCreatingPolygon) {
+      return;
+    }
+
+    if (!isCreatingPolygon) {
       onPolygonSelect(null);
       return;
     }
 
-    if (isCreatingPolygon) {
-        const rect = event.currentTarget.getBoundingClientRect();
-        const newVertex = {
-          x: event.clientX - rect.left,
-          y: event.clientY - rect.top
-        };
+    const rect = event.currentTarget.getBoundingClientRect();
+    let newVertex = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    };
 
-        // Check if user is closing the polygon by clicking on the first vertex
-        if (creatingVertices.length > 2) {
-            const firstVertex = creatingVertices[0];
-            const distance = Math.sqrt(
-                Math.pow(newVertex.x - firstVertex.x, 2) +
-                Math.pow(newVertex.y - firstVertex.y, 2)
-            );
+    newVertex = snapPoint(newVertex);
 
-            // If click is close enough to the start point, close the polygon
-            if (distance < 10) { // 10px threshold
-                onPolygonCreated(creatingVertices);
-                setCreatingVertices([]); // Reset for next polygon
-                return; // Stop further execution
-            }
-        }
-        
-        setCreatingVertices(prev => [...prev, newVertex]);
+    if (creatingVertices.length > 2) {
+      const firstVertex = creatingVertices[0];
+      const distance = Math.sqrt(
+        Math.pow(newVertex.x - firstVertex.x, 2) +
+        Math.pow(newVertex.y - firstVertex.y, 2)
+      );
+
+      if (distance < 10) {
+        onPolygonCreated(creatingVertices);
+        setCreatingVertices([]);
+        return;
       }
-  }, [isCreatingPolygon, onPolygonSelect, creatingVertices, onPolygonCreated, isNodeEditMode]);
+    }
+    
+    setCreatingVertices(prev => [...prev, newVertex]);
+  }, [isCreatingPolygon, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint]);
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
@@ -349,11 +363,21 @@ export function FloorPlanCanvas({
 
 
   const handleCanvasMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    // Clear hover if moving over empty space
     if (event.target === event.currentTarget) {
       onPolygonHover(null);
     }
-  }, [onPolygonHover]);
+    
+    if (isCreatingPolygon) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const currentPos = {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top
+        };
+        setMousePosition(snapPoint(currentPos));
+    } else {
+        setMousePosition(null);
+    }
+  }, [onPolygonHover, isCreatingPolygon, snapPoint]);
 
   return (
     <div 
@@ -386,6 +410,7 @@ export function FloorPlanCanvas({
           showGrid={showGrid}
           width={dimensions.width}
           height={dimensions.height}
+          gridSize={gridSize}
         />
 
         {/* Existing Properties */}
@@ -408,6 +433,8 @@ export function FloorPlanCanvas({
             floorData={floorData}
             selectedPolygon={selectedPolygon}
             onPolygonUpdate={onPolygonUpdated}
+            snapToGrid={snapToGrid}
+            gridSize={gridSize}
           />
         )}
 
@@ -416,7 +443,10 @@ export function FloorPlanCanvas({
           <g>
             {/* Draw lines between vertices */}
             <polyline
-              points={creatingVertices.map(v => `${v.x},${v.y}`).join(' ')}
+              points={[
+                ...creatingVertices.map(v => `${v.x},${v.y}`),
+                mousePosition ? `${mousePosition.x},${mousePosition.y}` : ''
+              ].join(' ')}
               fill="none"
               stroke="#7c3aed"
               strokeWidth="2"
@@ -443,6 +473,18 @@ export function FloorPlanCanvas({
                 strokeWidth={2}
                 className="cursor-pointer animate-pulse"
                />
+            )}
+            {/* Snap indicator */}
+            {mousePosition && snapToGrid && (
+                <circle
+                    cx={mousePosition.x}
+                    cy={mousePosition.y}
+                    r="4"
+                    fill="none"
+                    stroke="rgba(255, 0, 0, 0.7)"
+                    strokeWidth="1.5"
+                    strokeDasharray="2 2"
+                />
             )}
           </g>
         )}
