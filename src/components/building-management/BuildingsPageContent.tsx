@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { BuildingsList } from './BuildingsList';
 import { BuildingDetails } from './BuildingDetails';
 import { BuildingsHeader } from './BuildingsPage/BuildingsHeader';
@@ -138,45 +139,47 @@ export function BuildingsPageContent() {
   };
   
   return (
-    <div className="h-full flex flex-col bg-background">
-      <BuildingsHeader
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        showDashboard={showDashboard}
-        setShowDashboard={setShowDashboard}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        filterCompany={filterCompany}
-        setFilterCompany={setFilterCompany}
-        companies={companies}
-        filterProject={filterProject}
-        setFilterProject={setFilterProject}
-        projects={projects}
-        filterStatus={filterStatus}
-        setFilterStatus={setFilterStatus}
-      />
+    <TooltipProvider>
+      <div className="h-full flex flex-col bg-background">
+        <BuildingsHeader
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          showDashboard={showDashboard}
+          setShowDashboard={setShowDashboard}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterCompany={filterCompany}
+          setFilterCompany={setFilterCompany}
+          companies={companies}
+          filterProject={filterProject}
+          setFilterProject={setFilterProject}
+          projects={projects}
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+        />
 
-      {showDashboard && <BuildingsDashboard stats={stats} />}
+        {showDashboard && <BuildingsDashboard stats={stats} />}
 
-      <div className="flex-1 flex overflow-hidden">
-        {viewMode === 'list' ? (
-          <>
-            <BuildingsList
-              buildings={filteredBuildings}
-              selectedBuilding={selectedBuilding!}
-              onSelectBuilding={setSelectedBuilding}
+        <div className="flex-1 flex overflow-hidden">
+          {viewMode === 'list' ? (
+            <>
+              <BuildingsList
+                buildings={filteredBuildings}
+                selectedBuilding={selectedBuilding!}
+                onSelectBuilding={setSelectedBuilding}
+              />
+              <BuildingDetails building={selectedBuilding!} />
+            </>
+          ) : (
+            <BuildingsGroupedView
+              viewMode={viewMode}
+              filteredBuildings={filteredBuildings}
+              selectedBuilding={selectedBuilding}
+              setSelectedBuilding={setSelectedBuilding}
             />
-            <BuildingDetails building={selectedBuilding!} />
-          </>
-        ) : (
-          <BuildingsGroupedView
-            viewMode={viewMode}
-            filteredBuildings={filteredBuildings}
-            selectedBuilding={selectedBuilding}
-            setSelectedBuilding={setSelectedBuilding}
-          />
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
