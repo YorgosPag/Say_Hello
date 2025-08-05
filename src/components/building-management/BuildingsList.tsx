@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -203,7 +204,7 @@ export function BuildingsList({
               key={building.id}
               className={cn(
                 "relative p-4 rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-md group",
-                selectedBuilding.id === building.id
+                selectedBuilding?.id === building.id
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-sm"
                   : "border-border hover:border-blue-300 bg-card hover:bg-accent/50"
               )}
@@ -315,7 +316,7 @@ export function BuildingsList({
                       Επεξεργασία
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); toggleFavorite(building.id); }}>
                       <Star className="w-4 h-4 mr-2" />
                       {favorites.includes(building.id) ? 'Αφαίρεση από αγαπημένα' : 'Προσθήκη στα αγαπημένα'}
                     </DropdownMenuItem>
@@ -324,7 +325,7 @@ export function BuildingsList({
               </div>
 
               {/* Selected Indicator */}
-              {selectedBuilding.id === building.id && (
+              {selectedBuilding?.id === building.id && (
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-full" />
               )}
             </div>
@@ -334,3 +335,5 @@ export function BuildingsList({
     </div>
   );
 }
+
+    

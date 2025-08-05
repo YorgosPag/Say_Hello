@@ -124,7 +124,7 @@ const projects = [
 ];
 
 export function BuildingsPageContent() {
-  const [selectedBuilding, setSelectedBuilding] = useState<Building>(buildings[0]);
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(buildings[0]);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCompany, setFilterCompany] = useState('all');
@@ -151,7 +151,7 @@ export function BuildingsPageContent() {
     activeProjects: buildings.filter(b => b.status === 'active' || b.status === 'construction').length,
     totalValue: buildings.reduce((sum, b) => sum + b.totalValue, 0),
     totalArea: buildings.reduce((sum, b) => sum + b.totalArea, 0),
-    averageProgress: Math.round(buildings.reduce((sum, b) => sum + b.progress, 0) / buildings.length),
+    averageProgress: buildings.length > 0 ? Math.round(buildings.reduce((sum, b) => sum + b.progress, 0) / buildings.length) : 0,
     totalUnits: buildings.reduce((sum, b) => sum + b.units, 0)
   };
 
@@ -360,13 +360,13 @@ export function BuildingsPageContent() {
           <>
             <BuildingsList
               buildings={filteredBuildings}
-              selectedBuilding={selectedBuilding}
+              selectedBuilding={selectedBuilding!}
               onSelectBuilding={setSelectedBuilding}
               getStatusColor={getStatusColor}
               getStatusLabel={getStatusLabel}
             />
             <BuildingDetails 
-              building={selectedBuilding} 
+              building={selectedBuilding!} 
               getStatusColor={getStatusColor}
               getStatusLabel={getStatusLabel}
             />
@@ -378,7 +378,7 @@ export function BuildingsPageContent() {
                 <BuildingCard
                   key={building.id}
                   building={building}
-                  isSelected={selectedBuilding.id === building.id}
+                  isSelected={selectedBuilding?.id === building.id}
                   onClick={() => setSelectedBuilding(building)}
                   getStatusColor={getStatusColor}
                   getStatusLabel={getStatusLabel}
@@ -391,3 +391,5 @@ export function BuildingsPageContent() {
     </div>
   );
 }
+
+    
