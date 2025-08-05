@@ -159,6 +159,7 @@ export default function PropertyViewerPage() {
                 onHoverProperty={setHoveredProperty}
                 hoveredPropertyId={hoveredProperty}
                 isEditMode={isEditMode}
+                onSelectProperty={setSelectedProperty}
               />
             </CardContent>
           </Card>

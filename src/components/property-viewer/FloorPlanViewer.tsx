@@ -289,9 +289,9 @@ export function FloorPlanViewer({
               </Button>
               {isEditMode && (
                 <>
-                <Button variant="outline" size="sm" onClick={() => setIsCreatingPolygon(true)}>
+                <Button variant={isCreatingPolygon ? "default" : "outline"} size="sm" onClick={() => setIsCreatingPolygon(!isCreatingPolygon)}>
                   <Save className="h-4 w-4 mr-2" />
-                  Δημιουργία
+                  {isCreatingPolygon ? 'Τέλος' : 'Δημιουργία'}
                 </Button>
                 <Button variant="outline" size="sm">
                   <Save className="h-4 w-4 mr-2" />
