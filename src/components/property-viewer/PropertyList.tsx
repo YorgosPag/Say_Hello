@@ -111,12 +111,14 @@ function PropertyListItem({
             <IconComponent className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <h4 className="font-medium text-sm truncate">{property.name}</h4>
           </div>
-          <Badge 
-            variant="outline" 
-            className={cn("text-xs flex-shrink-0", statusInfo.color)}
-          >
-            {statusInfo.label}
-          </Badge>
+          {statusInfo && (
+            <Badge 
+              variant="outline" 
+              className={cn("text-xs flex-shrink-0", statusInfo.color)}
+            >
+              {statusInfo.label}
+            </Badge>
+          )}
         </div>
 
         {/* Type */}
