@@ -3,17 +3,12 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import type { Property } from '@/types/property-viewer';
+import type { LayerState } from './SidebarPanel';
 
-interface PropertyPolygon {
-  id: string;
-  name: string;
-  type: string;
-  status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'reserved';
-  vertices: Array<{ x: number; y: number }>;
-  color: string;
-  price?: number;
-  area?: number;
-}
+type EditableProperty = Property & {
+    color: string; // Assuming a color property exists
+};
 
 interface FloorData {
   id: string;
@@ -21,7 +16,7 @@ interface FloorData {
   level: number;
   buildingId: string;
   floorPlanUrl?: string;
-  properties: PropertyPolygon[];
+  properties: EditableProperty[];
 }
 
 interface PolygonEditorProps {
@@ -30,6 +25,7 @@ interface PolygonEditorProps {
   onPolygonUpdate: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
   snapToGrid: boolean;
   gridSize: number;
+  layerStates: Record<string, LayerState>;
 }
 
 interface DragState {
@@ -134,7 +130,7 @@ function distanceToLine(point: {x: number, y: number}, lineStart: {x: number, y:
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-function findClosestEdge(polygon: PropertyPolygon, point: {x: number, y: number}) {
+function findClosestEdge(polygon: EditableProperty, point: {x: number, y: number}) {
     const points = polygon.vertices;
     let minDistance = Infinity;
     let closestEdgeIndex = -1;
@@ -159,14 +155,18 @@ function findClosestEdge(polygon: PropertyPolygon, point: {x: number, y: number}
 function EditablePolygon({
   property,
   isSelected,
+  isLocked,
+  opacity,
   onVertexDrag,
   onVertexAdd,
   onVertexRemove,
   onPolygonDrag,
   snapPoint,
 }: {
-  property: PropertyPolygon;
+  property: EditableProperty;
   isSelected: boolean;
+  isLocked: boolean;
+  opacity: number;
   onVertexDrag: (vertexIndex: number, newPos: { x: number; y: number }) => void;
   onVertexAdd: (edgeIndex: number, newPos: { x: number; y: number }) => void;
   onVertexRemove: (vertexIndex: number) => void;
@@ -204,6 +204,23 @@ function EditablePolygon({
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+
+  const pathData = property.vertices
+    .map((vertex, index) => `${index === 0 ? 'M' : 'L'} ${vertex.x} ${vertex.y}`)
+    .join(' ') + ' Z';
+    
+  if (isLocked) {
+    return (
+        <path
+            d={pathData}
+            fill={property.color}
+            fillOpacity={opacity}
+            stroke={property.color}
+            strokeWidth={1}
+            className="cursor-not-allowed"
+        />
+    );
+  }
 
   // Handle vertex drag start or deletion
   const handleVertexMouseDown = useCallback((vertexIndex: number, event: React.MouseEvent) => {
@@ -333,17 +350,13 @@ function EditablePolygon({
     };
   }, [dragState, property.vertices, onVertexDrag, onPolygonDrag, snapPoint]);
 
-  const pathData = property.vertices
-    .map((vertex, index) => `${index === 0 ? 'M' : 'L'} ${vertex.x} ${vertex.y}`)
-    .join(' ') + ' Z';
-
   return (
     <g ref={svgRef} className="editable-polygon">
       {/* Main polygon */}
       <path
         d={pathData}
         fill={property.color}
-        fillOpacity={isSelected ? 0.3 : 0.2}
+        fillOpacity={opacity}
         stroke={isSelected ? "#7c3aed" : property.color}
         strokeWidth={isSelected ? 2 : 1}
         strokeDasharray={isSelected ? "5,5" : "none"}
@@ -408,6 +421,7 @@ export function PolygonEditor({
   onPolygonUpdate,
   snapToGrid,
   gridSize,
+  layerStates,
 }: PolygonEditorProps) {
   const [editedVertices, setEditedVertices] = useState<Record<string, Array<{ x: number; y: number }>>>({});
   const initialPolygonStateRef = useRef<Record<string, Array<{ x: number; y: number }>>>({});
@@ -514,10 +528,15 @@ export function PolygonEditor({
   return (
     <g className="polygon-editor">
       {floorData.properties.map((property) => {
+        const layerState = layerStates[property.id] ?? { visible: true, opacity: 1, locked: false };
+
+        if (!layerState.visible) return null;
+
         const currentVertices = getCurrentVertices(property.id);
-        const editedProperty = {
+        const editedProperty: EditableProperty = {
           ...property,
-          vertices: currentVertices
+          vertices: currentVertices,
+          color: property.color || '#cccccc' // Add default color if not present
         };
 
         return (
@@ -525,6 +544,8 @@ export function PolygonEditor({
             key={property.id}
             property={editedProperty}
             isSelected={selectedPolygon === property.id}
+            isLocked={layerState.locked}
+            opacity={layerState.opacity}
             onVertexDrag={(vertexIndex, newPos) => handleVertexDrag(property.id, vertexIndex, newPos)}
             onVertexAdd={(edgeIndex, newPos) => handleVertexAdd(property.id, edgeIndex, newPos)}
             onVertexRemove={(vertexIndex) => handleVertexRemove(property.id, vertexIndex)}

@@ -222,7 +222,7 @@ export function FloorPlanCanvas({
         />
 
         {floorData.properties.map((property) => {
-            const layerState = layerStates[property.id] || { visible: true, opacity: 0.3 };
+            const layerState = layerStates[property.id] || { visible: true, opacity: 0.3, locked: false };
             return (
                 <PropertyPolygon
                     key={property.id}
@@ -248,6 +248,7 @@ export function FloorPlanCanvas({
             onPolygonUpdate={onPolygonUpdated}
             snapToGrid={snapToGrid}
             gridSize={gridSize}
+            layerStates={layerStates}
           />
         )}
 
