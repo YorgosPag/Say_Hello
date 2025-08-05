@@ -264,7 +264,7 @@ export function FloorPlanViewer({
       <CardContent className="flex-1 p-0 overflow-hidden">
         <div className="h-full flex">
           {/* Canvas Area */}
-          <div className="flex-1 relative overflow-hidden bg-gray-50">
+          <div className="flex-1 relative overflow-hidden bg-gray-50 dark:bg-muted">
             <div
               ref={canvasRef}
               className="w-full h-full relative"
@@ -279,6 +279,7 @@ export function FloorPlanViewer({
                 onPolygonSelect={onSelectProperty}
                 onPolygonCreated={onPolygonCreated}
                 onPolygonUpdated={onPolygonUpdated}
+                showGrid={showGrid}
                 snapToGrid={snapToGrid}
                 gridSize={gridSize}
                 showMeasurements={showMeasurements}

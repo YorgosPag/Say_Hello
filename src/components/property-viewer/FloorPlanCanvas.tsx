@@ -490,7 +490,7 @@ export function FloorPlanCanvas({
   return (
     <div 
       ref={containerRef} 
-      className={cn("w-full h-full relative overflow-hidden bg-white", {
+      className={cn("w-full h-full relative overflow-hidden", {
         "cursor-crosshair": isCreatingPolygon || isMeasuring,
       })}
     >
@@ -640,5 +640,4 @@ export function FloorPlanCanvas({
     </div>
   );
 }
-
     
