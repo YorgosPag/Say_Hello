@@ -58,6 +58,7 @@ const propertyTypeIcons = {
   'Διαμέρισμα 3Δ': Home,
   'Μεζονέτα': Building,
   'Κατάστημα': Building,
+  'Αποθήκη': Building,
 };
 
 function PropertyListSkeleton() {
@@ -130,7 +131,7 @@ function PropertyListItem({
           <MapPin className="h-3 w-3" />
           <span className="truncate">{property.building}</span>
           <span>•</span>
-          <span>{property.floor}ος όροφος</span>
+          <span>{property.floor >= 0 ? `${property.floor}ος όροφος` : `Υπόγειο ${Math.abs(property.floor)}`}</span>
         </div>
 
         {/* Price & Area */}
