@@ -4,17 +4,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { PolygonEditor } from "./PolygonEditor";
-
-interface PropertyPolygon {
-  id: string;
-  name: string;
-  type: string;
-  status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'reserved';
-  vertices: Array<{ x: number; y: number }>;
-  color: string;
-  price?: number;
-  area?: number;
-}
+import type { Property } from '@/types/property-viewer';
 
 interface FloorData {
   id: string;
@@ -22,7 +12,7 @@ interface FloorData {
   level: number;
   buildingId: string;
   floorPlanUrl?: string;
-  properties: PropertyPolygon[];
+  properties: Property[];
 }
 
 interface Point {
@@ -40,7 +30,7 @@ interface FloorPlanCanvasProps {
   activeTool: 'create' | 'edit_nodes' | 'measure' | null;
   onPolygonHover: (propertyId: string | null) => void;
   onPolygonSelect: (propertyId: string | null) => void;
-  onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
+  onPolygonCreated: (newProperty: Omit<Property, 'id'>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
   snapToGrid: boolean;
   gridSize: number;
@@ -108,7 +98,7 @@ function PropertyPolygon({
   onHover,
   onSelect
 }: {
-  property: PropertyPolygon;
+  property: Property;
   isSelected: boolean;
   isHovered: boolean;
   isPolygonSelected: boolean;
@@ -280,7 +270,7 @@ function PropertyPolygon({
 }
 
 // Measurement Info component
-function PolygonMeasurementInfo({ polygon, scale }: { polygon: PropertyPolygon; scale: number }) {
+function PolygonMeasurementInfo({ polygon, scale }: { polygon: Property; scale: number }) {
   const vertices = polygon.vertices;
   
   // Calculate Area (Shoelace formula)
@@ -405,7 +395,7 @@ export function FloorPlanCanvas({
         );
 
         if (distance < 10) {
-          onPolygonCreated(creatingVertices);
+          onPolygonCreated({vertices: creatingVertices} as any);
           setCreatingVertices([]);
           return;
         }
@@ -429,7 +419,7 @@ export function FloorPlanCanvas({
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
-      onPolygonCreated(creatingVertices);
+      onPolygonCreated({vertices: creatingVertices} as any);
       setCreatingVertices([]);
     }
   }, [isCreatingPolygon, creatingVertices, onPolygonCreated]);

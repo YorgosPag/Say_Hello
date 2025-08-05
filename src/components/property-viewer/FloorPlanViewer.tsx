@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { FloorPlanCanvas } from "./FloorPlanCanvas";
 import { PolygonEditor } from "./PolygonEditor";
 import { LayerManager } from "./LayerManager";
+import type { Property } from '@/types/property-viewer';
 
 interface FloorPlanViewerProps {
   selectedPropertyId: string | null;
@@ -35,24 +36,15 @@ interface FloorPlanViewerProps {
   hoveredPropertyId?: string | null;
   activeTool: 'create' | 'edit_nodes' | 'measure' | null;
   onSelectProperty: (propertyId: string | null) => void;
-  onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
+  onPolygonCreated: (newProperty: Omit<Property, 'id'>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
+  onDuplicate: (propertyId: string) => void;
+  onDelete: (propertyId: string) => void;
   showGrid: boolean;
   snapToGrid: boolean;
   gridSize: number;
   showMeasurements: boolean;
   scale: number;
-}
-
-interface PropertyPolygon {
-  id: string;
-  name: string;
-  type: string;
-  status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'reserved';
-  vertices: Array<{ x: number; y: number }>;
-  color: string;
-  price?: number;
-  area?: number;
 }
 
 interface FloorData {
@@ -61,7 +53,7 @@ interface FloorData {
   level: number;
   buildingId: string;
   floorPlanUrl?: string;
-  properties: PropertyPolygon[];
+  properties: Property[];
 }
 
 // Mock data - θα αντικατασταθεί με πραγματικά δεδομένα
@@ -78,7 +70,6 @@ const mockFloors: FloorData[] = [
         name: "Αποθήκη A1",
         type: "Αποθήκη",
         status: "for-sale",
-        color: "#10b981",
         vertices: [
           { x: 100, y: 100 },
           { x: 200, y: 100 },
@@ -86,14 +77,18 @@ const mockFloors: FloorData[] = [
           { x: 100, y: 180 }
         ],
         price: 25000,
-        area: 15
+        area: 15,
+        building: 'Κτίριο Alpha',
+        floor: -1,
+        project: 'Έργο Κέντρο',
+        buildingId: 'building-1',
+        floorId: 'floor-1',
       },
       {
         id: "prop-2",
         name: "Στούντιο B1",
         type: "Στούντιο",
         status: "sold",
-        color: "#ef4444",
         vertices: [
           { x: 220, y: 100 },
           { x: 350, y: 100 },
@@ -101,7 +96,12 @@ const mockFloors: FloorData[] = [
           { x: 220, y: 200 }
         ],
         price: 85000,
-        area: 35
+        area: 35,
+        building: 'Κτίριο Alpha',
+        floor: -1,
+        project: 'Έργο Κέντρο',
+        buildingId: 'building-1',
+        floorId: 'floor-1',
       }
     ]
   },
@@ -132,6 +132,8 @@ export function FloorPlanViewer({
   onSelectProperty,
   onPolygonCreated,
   onPolygonUpdated,
+  onDuplicate,
+  onDelete,
   showGrid,
   snapToGrid,
   gridSize,
@@ -176,31 +178,23 @@ export function FloorPlanViewer({
   }, []);
 
   const handleLocalPolygonCreated = (vertices: Array<{ x: number; y: number }>) => {
-    const newProperty: PropertyPolygon = {
-      id: `new-prop-${Date.now()}`,
+    if (!currentFloor) return;
+    
+    const newProperty: Omit<Property, 'id'> = {
       name: `Νέο Ακίνητο ${currentFloor.properties.length + 1}`,
       type: 'Διαμέρισμα 2Δ',
       status: 'for-sale',
-      color: '#10b981',
       vertices,
       price: 0,
-      area: 0
+      area: 0,
+      building: currentFloor.buildingId,
+      floor: currentFloor.level,
+      project: 'Default Project',
+      buildingId: currentFloor.buildingId,
+      floorId: currentFloor.id,
     };
     
-    setFloors(prevFloors => {
-      return prevFloors.map(floor => {
-        if (floor.id === currentFloor.id) {
-          return {
-            ...floor,
-            properties: [...floor.properties, newProperty]
-          };
-        }
-        return floor;
-      });
-    });
-
-    onPolygonCreated(vertices);
-    onSelectProperty(newProperty.id);
+    onPolygonCreated(newProperty);
   };
 
 
@@ -348,6 +342,8 @@ export function FloorPlanViewer({
                     floorData={currentFloor}
                     selectedPolygon={selectedPolygon}
                     onPolygonSelect={setSelectedPolygon}
+                    onDuplicate={onDuplicate}
+                    onDelete={onDelete}
                   />
                 </TabsContent>
                 

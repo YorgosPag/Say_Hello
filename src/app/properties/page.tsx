@@ -250,8 +250,10 @@ export default function PropertyViewerPage() {
     saveHistory,
   } = usePropertyViewer();
 
+  const [clipboard, setClipboard] = useState<Property | null>(null);
+
   // Keyboard shortcuts for Undo/Redo
-  useKeyboardShortcut('z', undo, { metaKey: true, ctrlKey: true });
+  useKeyboardShortcut('z', undo, { metaKey: true, ctrlKey: true, shiftKey: false });
   useKeyboardShortcut('Z', redo, { metaKey: true, ctrlKey: true, shiftKey: true }); // Captures Shift+Z
   useKeyboardShortcut('y', redo, { metaKey: true, ctrlKey: true });
 
@@ -300,16 +302,95 @@ export default function PropertyViewerPage() {
     }
   };
 
-  const handlePolygonCreated = useCallback((vertices: Array<{ x: number; y: number }>) => {
-      saveHistory('Δημιουργία Polygon');
-      toast.success('Το Polygon δημιουργήθηκε');
-      setActiveTool(null);
-    }, [saveHistory, toast]
+  const handlePolygonCreated = useCallback((newProperty: Omit<Property, 'id'>) => {
+    const propertyToAdd: Property = {
+        ...newProperty,
+        id: `prop-${Date.now()}`,
+    };
+      
+    const newProperties = [...properties, propertyToAdd];
+    setProperties(newProperties, 'Δημιουργία Polygon');
+    toast.success('Το Polygon δημιουργήθηκε');
+    setActiveTool(null);
+    setSelectedProperty(propertyToAdd.id);
+    }, [properties, setProperties, toast, setSelectedProperty]
   );
   
   const handlePolygonUpdated = useCallback((polygonId: string, vertices: Array<{ x: number; y: number }>) => {
-    saveHistory('Επεξεργασία Polygon');
-  }, [saveHistory]);
+    const newProperties = properties.map(p => 
+        p.id === polygonId ? { ...p, vertices } : p
+    );
+    setProperties(newProperties, 'Επεξεργασία Polygon');
+  }, [properties, setProperties]);
+
+  const handleCopy = useCallback(() => {
+    if (!selectedProperty) return;
+    const propertyToCopy = properties.find(p => p.id === selectedProperty);
+    if (propertyToCopy) {
+      setClipboard(propertyToCopy);
+      toast.success(`Το ακίνητο "${propertyToCopy.name}" αντιγράφηκε.`);
+    }
+  }, [selectedProperty, properties, toast]);
+
+  const handlePaste = useCallback(() => {
+    if (!clipboard) return;
+    if (!selectedFloor) {
+      toast.warning("Επιλέξτε έναν όροφο για επικόλληση.");
+      return;
+    }
+
+    const newId = `prop-${Date.now()}`;
+    const newProperty: Property = {
+      ...clipboard,
+      id: newId,
+      name: `${clipboard.name} (Αντίγραφο)`,
+      floorId: selectedFloor,
+      vertices: clipboard.vertices.map(v => ({ x: v.x + 20, y: v.y + 20 })),
+    };
+
+    const newProperties = [...properties, newProperty];
+    setProperties(newProperties, `Επικόλληση ${newProperty.name}`);
+    setSelectedProperty(newId);
+    toast.success(`Το ακίνητο "${newProperty.name}" επικολλήθηκε.`);
+  }, [clipboard, properties, setProperties, selectedFloor, toast, setSelectedProperty]);
+  
+  const handleDuplicate = useCallback((propertyId: string) => {
+     const propertyToDuplicate = properties.find(p => p.id === propertyId);
+    if (!propertyToDuplicate) return;
+
+    const newId = `prop-${Date.now()}`;
+    const newProperty: Property = {
+        ...propertyToDuplicate,
+        id: newId,
+        name: `${propertyToDuplicate.name} (Αντίγραφο)`,
+        vertices: propertyToDuplicate.vertices.map(v => ({ x: v.x + 20, y: v.y + 20 })),
+    };
+
+    const newProperties = [...properties, newProperty];
+    setProperties(newProperties, `Διπλασιασμός ${propertyToDuplicate.name}`);
+    setSelectedProperty(newId);
+    toast.success(`Ο διπλασιασμός του "${propertyToDuplicate.name}" έγινε με επιτυχία.`);
+  }, [properties, setProperties, toast, setSelectedProperty]);
+
+  const handleDelete = useCallback((propertyId: string) => {
+    const propertyToDelete = properties.find(p => p.id === propertyId);
+    if (!propertyToDelete) return;
+    
+    const newProperties = properties.filter(p => p.id !== propertyId);
+    setProperties(newProperties, `Διαγραφή ${propertyToDelete.name}`);
+
+    if(selectedProperty === propertyId) {
+        setSelectedProperty(null);
+    }
+    toast.error(`Το ακίνητο "${propertyToDelete.name}" διαγράφηκε.`);
+  }, [properties, setProperties, toast, selectedProperty, setSelectedProperty]);
+
+
+  useKeyboardShortcut('c', handleCopy, { metaKey: true, ctrlKey: true });
+  useKeyboardShortcut('v', handlePaste, { metaKey: true, ctrlKey: true });
+  useKeyboardShortcut('d', () => selectedProperty && handleDuplicate(selectedProperty), { metaKey: true, ctrlKey: true });
+  useKeyboardShortcut('Delete', () => selectedProperty && handleDelete(selectedProperty), { metaKey: false, ctrlKey: false });
+  useKeyboardShortcut('Backspace', () => selectedProperty && handleDelete(selectedProperty), { metaKey: false, ctrlKey: false });
   
   const handleExport = useCallback(() => {
     if (!properties || properties.length === 0) {
@@ -490,6 +571,8 @@ export default function PropertyViewerPage() {
                 onSelectProperty={setSelectedProperty}
                 onPolygonCreated={handlePolygonCreated}
                 onPolygonUpdated={handlePolygonUpdated}
+                onDuplicate={handleDuplicate}
+                onDelete={handleDelete}
                 showGrid={showGrid}
                 snapToGrid={snapToGrid}
                 gridSize={gridSize}

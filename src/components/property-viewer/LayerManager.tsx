@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -25,17 +26,8 @@ import {
   Palette
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Property } from '@/types/property-viewer';
 
-interface PropertyPolygon {
-  id: string;
-  name: string;
-  type: string;
-  status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'reserved';
-  vertices: Array<{ x: number; y: number }>;
-  color: string;
-  price?: number;
-  area?: number;
-}
 
 interface FloorData {
   id: string;
@@ -43,13 +35,15 @@ interface FloorData {
   level: number;
   buildingId: string;
   floorPlanUrl?: string;
-  properties: PropertyPolygon[];
+  properties: Property[];
 }
 
 interface LayerManagerProps {
   floorData: FloorData;
   selectedPolygon: string | null;
   onPolygonSelect: (polygonId: string | null) => void;
+  onDuplicate: (propertyId: string) => void;
+  onDelete: (propertyId: string) => void;
 }
 
 interface LayerState {
@@ -108,7 +102,7 @@ function PropertyLayerItem({
   onDelete,
   onDuplicate
 }: {
-  property: PropertyPolygon;
+  property: Property;
   isSelected: boolean;
   layerState: LayerState;
   onSelect: () => void;
@@ -199,7 +193,7 @@ function PropertyLayerItem({
             <Label className="text-xs">Χρώμα:</Label>
             <div 
               className="w-6 h-4 rounded border"
-              style={{ backgroundColor: property.color }}
+              style={{ backgroundColor: statusInfo.color }}
             />
             <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
               <Palette className="h-3 w-3 mr-1" />
@@ -250,19 +244,10 @@ function PropertyLayerItem({
               variant="outline"
               size="sm"
               className="h-7 px-2 text-xs flex-1"
-              onClick={onEdit}
-            >
-              <Edit3 className="h-3 w-3 mr-1" />
-              Επεξ.
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 text-xs flex-1"
               onClick={onDuplicate}
             >
               <Copy className="h-3 w-3 mr-1" />
-              Αντιγρ.
+              Διπλ.
             </Button>
             <Button
               variant="outline"
@@ -282,7 +267,9 @@ function PropertyLayerItem({
 export function LayerManager({
   floorData,
   selectedPolygon,
-  onPolygonSelect
+  onPolygonSelect,
+  onDuplicate,
+  onDelete
 }: LayerManagerProps) {
   const [layerStates, setLayerStates] = useState<Record<string, LayerState>>(() => {
     const initialStates: Record<string, LayerState> = {};
@@ -345,16 +332,6 @@ export function LayerManager({
   const handleEdit = (propertyId: string) => {
     onPolygonSelect(propertyId);
     // Additional edit logic here
-  };
-
-  const handleDelete = (propertyId: string) => {
-    // Delete logic here
-    console.log("Delete property:", propertyId);
-  };
-
-  const handleDuplicate = (propertyId: string) => {
-    // Duplicate logic here
-    console.log("Duplicate property:", propertyId);
   };
 
   const handleSelectAll = () => {
@@ -463,8 +440,8 @@ export function LayerManager({
                 onToggleLock={() => handleToggleLock(property.id)}
                 onOpacityChange={(opacity) => handleOpacityChange(property.id, opacity)}
                 onEdit={() => handleEdit(property.id)}
-                onDelete={() => handleDelete(property.id)}
-                onDuplicate={() => handleDuplicate(property.id)}
+                onDelete={() => onDelete(property.id)}
+                onDuplicate={() => onDuplicate(property.id)}
               />
             ))
           )}
@@ -473,5 +450,3 @@ export function LayerManager({
     </div>
   );
 }
-
-    
