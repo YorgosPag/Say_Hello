@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 
 interface Property {
   id: string;
@@ -15,6 +15,7 @@ interface Property {
   description?: string;
   buildingId: string;
   floorId: string;
+  vertices: Array<{x: number, y: number}>;
 }
 
 interface Floor {
@@ -138,7 +139,8 @@ const mockProperties: Property[] = [
     area: 15,
     description: "Ευρύχωρη αποθήκη με εύκολη πρόσβαση",
     buildingId: "building-1",
-    floorId: "floor-1"
+    floorId: "floor-1",
+    vertices: [{x: 50, y: 50}, {x: 150, y: 50}, {x: 150, y: 120}, {x: 50, y: 120}],
   },
   {
     id: "prop-2",
@@ -152,7 +154,8 @@ const mockProperties: Property[] = [
     area: 35,
     description: "Μοντέρνο στούντιο με θέα",
     buildingId: "building-1",
-    floorId: "floor-3"
+    floorId: "floor-3",
+    vertices: [{x: 180, y: 50}, {x: 300, y: 50}, {x: 300, y: 150}, {x: 180, y: 150}],
   },
   {
     id: "prop-3",
@@ -166,7 +169,8 @@ const mockProperties: Property[] = [
     area: 65,
     description: "Ηλιόλουστο διαμέρισμα",
     buildingId: "building-2",
-    floorId: "floor-4"
+    floorId: "floor-4",
+    vertices: [{x: 50, y: 180}, {x: 250, y: 180}, {x: 250, y: 300}, {x: 50, y: 300}],
   },
   {
     id: "prop-4",
@@ -180,7 +184,8 @@ const mockProperties: Property[] = [
     area: 45,
     description: "Κατάστημα σε εμπορικό δρόμο",
     buildingId: "building-1",
-    floorId: "floor-2"
+    floorId: "floor-2",
+    vertices: [{x: 320, y: 50}, {x: 450, y: 50}, {x: 450, y: 200}, {x: 320, y: 200}],
   },
   {
     id: "prop-5",
@@ -194,9 +199,53 @@ const mockProperties: Property[] = [
     area: 85,
     description: "Πολυτελής μεζονέτα",
     buildingId: "building-2",
-    floorId: "floor-5"
+    floorId: "floor-5",
+    vertices: [{x: 280, y: 220}, {x: 480, y: 220}, {x: 480, y: 350}, {x: 280, y: 350}],
   }
 ];
+
+type HistoryState = {
+  properties: Property[];
+  description: string;
+};
+
+// Custom hook for managing state with undo/redo
+function useUndoableState<T>(initialState: T) {
+  const [history, setHistory] = useState<HistoryState[]>([
+    { properties: initialState as any, description: "Initial State" },
+  ]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const setState = useCallback((newState: Property[], description: string) => {
+    // If we are in the middle of history, discard future states
+    const newHistory = history.slice(0, currentIndex + 1);
+    
+    setHistory([...newHistory, { properties: newState, description }]);
+    setCurrentIndex(newHistory.length);
+  }, [history, currentIndex]);
+  
+  const undo = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  }, [currentIndex]);
+
+  const redo = useCallback(() => {
+    if (currentIndex < history.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  }, [currentIndex, history.length]);
+
+  return {
+    state: history[currentIndex].properties,
+    setState,
+    undo,
+    redo,
+    canUndo: currentIndex > 0,
+    canRedo: currentIndex < history.length - 1,
+  };
+}
+
 
 interface UsePropertyViewerReturn {
   // Data
@@ -230,10 +279,27 @@ interface UsePropertyViewerReturn {
   
   // Actions
   refreshData: () => Promise<void>;
+
+  // Undo/Redo
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  saveHistory: (description: string) => void;
 }
 
 export function usePropertyViewer(): UsePropertyViewerReturn {
   const [isLoading, setIsLoading] = useState(false);
+  
+  const { 
+    state: properties, 
+    setState: setProperties, 
+    undo, 
+    redo, 
+    canUndo, 
+    canRedo 
+  } = useUndoableState<Property[]>(mockProperties);
+
   const [selectedProperty, setSelectedProperty] = useState<string | null>(null);
   const [hoveredProperty, setHoveredProperty] = useState<string | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<string | null>("floor-1");
@@ -248,6 +314,11 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
     }, 500);
     return () => clearTimeout(timer);
   }, []);
+
+  const saveHistory = (description: string) => {
+    setProperties(properties, description);
+  };
+
 
   // Computed values
   const currentProject = useMemo(() => {
@@ -264,8 +335,8 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
 
   const floorProperties = useMemo(() => {
     if (!currentFloor) return [];
-    return mockProperties.filter(p => p.floorId === currentFloor.id);
-  }, [currentFloor]);
+    return properties.filter(p => p.floorId === currentFloor.id);
+  }, [currentFloor, properties]);
 
   // Auto-select first property when floor changes
   useEffect(() => {
@@ -301,7 +372,7 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
 
   return {
     // Data
-    properties: mockProperties,
+    properties,
     projects: mockProjects,
     buildings: mockBuildings,
     floors: mockFloors,
@@ -330,6 +401,13 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
     floorProperties,
     
     // Actions
-    refreshData
+    refreshData,
+
+    // Undo/Redo
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    saveHistory,
   };
 }

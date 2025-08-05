@@ -31,11 +31,12 @@ interface FloorPlanCanvasProps {
   selectedPolygon: string | null;
   showGrid: boolean;
   showLabels: boolean;
-  isEditMode: boolean;
+  isNodeEditMode: boolean;
   isCreatingPolygon: boolean;
   onPolygonHover: (propertyId: string | null) => void;
   onPolygonSelect: (propertyId: string | null) => void;
   onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
+  onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
 }
 
 const statusColors = {
@@ -133,7 +134,7 @@ function PropertyPolygon({
   } else if (isHovered) {
     fillOpacity = 0.4;
     strokeWidth = 2;
-  } else if (isPolygonSelected) {
+  } else if (isPolygonSelected && isEditMode) { // Only show selection in edit mode
     fillOpacity = 0.6;
     strokeWidth = 2;
     strokeColor = '#7c3aed';
@@ -155,13 +156,13 @@ function PropertyPolygon({
         onClick={() => onSelect(property.id)}
       />
 
-      {/* Selection highlight */}
-      {(isSelected || isPolygonSelected) && (
+      {/* Selection highlight for edit mode */}
+      {isPolygonSelected && isEditMode && (
         <path
           d={pathData}
           fill="none"
-          stroke={isPolygonSelected ? '#7c3aed' : '#1f2937'}
-          strokeWidth={isPolygonSelected ? 3 : 2}
+          stroke={'#7c3aed'}
+          strokeWidth={3}
           strokeDasharray="3,3"
           opacity={0.8}
           className="pointer-events-none animate-pulse"
@@ -210,7 +211,7 @@ function PropertyPolygon({
       )}
 
       {/* Hover tooltip */}
-      {isHovered && (
+      {isHovered && !isEditMode && (
         <g className="hover-tooltip">
           <rect
             x={centroid.x + 40}
@@ -277,11 +278,12 @@ export function FloorPlanCanvas({
   selectedPolygon,
   showGrid,
   showLabels,
-  isEditMode,
+  isNodeEditMode,
   isCreatingPolygon,
   onPolygonHover,
   onPolygonSelect,
   onPolygonCreated,
+  onPolygonUpdated,
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -305,8 +307,8 @@ export function FloorPlanCanvas({
   }, []);
 
   const handleCanvasClick = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    // If clicking on empty space and not creating, deselect
-    if (event.target === event.currentTarget && !isCreatingPolygon) {
+    // If clicking on empty space and not creating or editing, deselect
+    if (event.target === event.currentTarget && !isCreatingPolygon && !isNodeEditMode) {
       onPolygonSelect(null);
       return;
     }
@@ -335,9 +337,8 @@ export function FloorPlanCanvas({
         }
         
         setCreatingVertices(prev => [...prev, newVertex]);
-        console.log('Added vertex:', newVertex);
       }
-  }, [isCreatingPolygon, onPolygonSelect, creatingVertices, onPolygonCreated]);
+  }, [isCreatingPolygon, onPolygonSelect, creatingVertices, onPolygonCreated, isNodeEditMode]);
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
@@ -396,17 +397,17 @@ export function FloorPlanCanvas({
             isHovered={hoveredProperty === property.id}
             isPolygonSelected={selectedPolygon === property.id}
             showLabels={showLabels}
-            isEditMode={isEditMode}
+            isEditMode={isNodeEditMode}
             onHover={onPolygonHover}
             onSelect={onPolygonSelect}
           />
         ))}
 
-        {isEditMode && (
+        {isNodeEditMode && (
           <PolygonEditor
             floorData={floorData}
             selectedPolygon={selectedPolygon}
-            onPolygonUpdate={() => {}}
+            onPolygonUpdate={onPolygonUpdated}
           />
         )}
 
@@ -443,35 +444,6 @@ export function FloorPlanCanvas({
                 className="cursor-pointer animate-pulse"
                />
             )}
-          </g>
-        )}
-
-        {/* Edit mode indicators */}
-        {isEditMode && !isCreatingPolygon && (
-          <g className="edit-indicators">
-            <text
-              x={20}
-              y={30}
-              fontSize="12"
-              fill="#7c3aed"
-              className="select-none font-medium"
-            >
-              ✏️ Λειτουργία Επεξεργασίας
-            </text>
-          </g>
-        )}
-
-        {isCreatingPolygon && (
-           <g className="creating-indicators">
-            <text
-              x={20}
-              y={30}
-              fontSize="12"
-              fill="#7c3aed"
-              className="select-none font-medium"
-            >
-              ✏️ Δημιουργία Polygon: Κάντε κλικ για να προσθέσετε σημεία. Κλείστε στο πρώτο σημείο ή κάντε διπλό κλικ.
-            </text>
           </g>
         )}
       </svg>

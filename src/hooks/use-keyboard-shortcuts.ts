@@ -7,14 +7,16 @@ export function useKeyboardShortcut(
   callback: (e: KeyboardEvent) => void,
   options: {
     metaKey?: boolean
-    ctrlKey?: boolean
-  } = { metaKey: true, ctrlKey: true }
+    ctrlKey?: boolean,
+    shiftKey?: boolean
+  } = { metaKey: true, ctrlKey: true, shiftKey: false }
 ) {
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (
-        e.key === key &&
-        (e.metaKey || e.ctrlKey)
+        e.key.toLowerCase() === key.toLowerCase() &&
+        (e.metaKey || e.ctrlKey) &&
+        (options.shiftKey ? e.shiftKey : !e.shiftKey)
       ) {
         e.preventDefault()
         callback(e)

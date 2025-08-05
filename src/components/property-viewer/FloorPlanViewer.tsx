@@ -36,15 +36,7 @@ interface FloorPlanViewerProps {
   onSelectProperty: (propertyId: string | null) => void;
   isCreatingPolygon: boolean;
   onPolygonCreated: (vertices: Array<{ x: number; y: number }>) => void;
-}
-
-interface FloorData {
-  id: string;
-  name: string;
-  level: number;
-  buildingId: string;
-  floorPlanUrl?: string;
-  properties: PropertyPolygon[];
+  onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
 }
 
 interface PropertyPolygon {
@@ -56,6 +48,15 @@ interface PropertyPolygon {
   color: string;
   price?: number;
   area?: number;
+}
+
+interface FloorData {
+  id: string;
+  name: string;
+  level: number;
+  buildingId: string;
+  floorPlanUrl?: string;
+  properties: PropertyPolygon[];
 }
 
 // Mock data - θα αντικατασταθεί με πραγματικά δεδομένα
@@ -126,6 +127,7 @@ export function FloorPlanViewer({
   onSelectProperty,
   isCreatingPolygon,
   onPolygonCreated,
+  onPolygonUpdated,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showGrid, setShowGrid] = useState(true);
@@ -313,11 +315,12 @@ export function FloorPlanViewer({
                 selectedPolygon={selectedPolygon}
                 showGrid={showGrid}
                 showLabels={showLabels}
-                isEditMode={isNodeEditMode}
+                isNodeEditMode={isNodeEditMode}
                 onPolygonHover={handlePolygonHover}
                 onPolygonSelect={handlePolygonSelect}
                 isCreatingPolygon={isCreatingPolygon}
                 onPolygonCreated={handleLocalPolygonCreated}
+                onPolygonUpdated={onPolygonUpdated}
               />
             </div>
           </div>

@@ -1,69 +1,122 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useEffect, useTransition } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Filter, Settings, Eye, Edit3, Plus, Save, Square, MousePointer } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useAuth } from "@/hooks/use-auth";
-import { PropertyViewerFilters } from "@/components/property-viewer/PropertyViewerFilters";
-import { PropertyList } from "@/components/property-viewer/PropertyList";
-import { FloorPlanViewer } from "@/components/property-viewer/FloorPlanViewer";
-import { PropertyDetailsPanel } from "@/components/property-viewer/PropertyDetailsPanel";
-import { PropertyHoverInfo } from "@/components/property-viewer/PropertyHoverInfo";
-import { usePropertyViewer } from "@/hooks/use-property-viewer";
-import { cn } from "@/lib/utils";
+import { useState, useMemo, useEffect, useTransition, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Search,
+  Filter,
+  Settings,
+  Eye,
+  Edit3,
+  Plus,
+  Save,
+  Square,
+  MousePointer,
+  Undo,
+  Redo,
+} from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useAuth } from '@/hooks/use-auth';
+import { PropertyViewerFilters } from '@/components/property-viewer/PropertyViewerFilters';
+import { PropertyList } from '@/components/property-viewer/PropertyList';
+import { FloorPlanViewer } from '@/components/property-viewer/FloorPlanViewer';
+import { PropertyDetailsPanel } from '@/components/property-viewer/PropertyDetailsPanel';
+import { PropertyHoverInfo } from '@/components/property-viewer/PropertyHoverInfo';
+import { usePropertyViewer } from '@/hooks/use-property-viewer';
+import { cn } from '@/lib/utils';
+import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcuts';
+import { useToast } from '@/hooks/use-toast';
 
-const EditToolbar = ({ activeTool, onToolChange }: { activeTool: string | null, onToolChange: (tool: 'create' | 'edit_nodes' | null) => void }) => {
-    
-    const handleToolClick = (tool: 'create' | 'edit_nodes') => {
-        if (activeTool === tool) {
-            onToolChange(null); // Deselect if clicking the same tool
-        } else {
-            onToolChange(tool);
-        }
-    };
+const EditToolbar = ({
+  activeTool,
+  onToolChange,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+}: {
+  activeTool: string | null;
+  onToolChange: (tool: 'create' | 'edit_nodes' | null) => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+}) => {
+  const handleToolClick = (tool: 'create' | 'edit_nodes') => {
+    if (activeTool === tool) {
+      onToolChange(null); // Deselect if clicking the same tool
+    } else {
+      onToolChange(tool);
+    }
+  };
 
-    return (
-        <Card className="mb-4">
-            <CardContent className="p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Button
-                        onClick={() => handleToolClick('create')}
-                        variant={activeTool === 'create' ? 'default' : 'outline'}
-                        size="sm"
-                    >
-                        <Square className="mr-2 h-4 w-4" />
-                        Σχεδίαση Polygon
-                    </Button>
-                    <Button
-                        onClick={() => handleToolClick('edit_nodes')}
-                        variant={activeTool === 'edit_nodes' ? 'default' : 'outline'}
-                        size="sm"
-                    >
-                        <MousePointer className="mr-2 h-4 w-4" />
-                        Επεξεργασία Κόμβων
-                    </Button>
-                </div>
-                
-                <div className="text-sm text-muted-foreground">
-                    {activeTool === 'create' && "Click για κόμβους, διπλό click ή click στο πρώτο σημείο για κλείσιμο"}
-                    {activeTool === 'edit_nodes' && "Click σε polygon για επεξεργασία • Shift+Click για διαγραφή • Right Click σε ακμή για νέο κόμβο"}
-                </div>
-            </CardContent>
-        </Card>
-    );
+  return (
+    <Card className="mb-4">
+      <CardContent className="p-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => handleToolClick('create')}
+            variant={activeTool === 'create' ? 'default' : 'outline'}
+            size="sm"
+          >
+            <Square className="mr-2 h-4 w-4" />
+            Σχεδίαση Polygon
+          </Button>
+          <Button
+            onClick={() => handleToolClick('edit_nodes')}
+            variant={activeTool === 'edit_nodes' ? 'default' : 'outline'}
+            size="sm"
+          >
+            <MousePointer className="mr-2 h-4 w-4" />
+            Επεξεργασία Κόμβων
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-muted-foreground mr-4">
+            {activeTool === 'create' &&
+              'Click για κόμβους, διπλό click ή click στο πρώτο σημείο για κλείσιμο'}
+            {activeTool === 'edit_nodes' &&
+              'Click σε polygon για επεξεργασία • Shift+Click για διαγραφή • Right Click σε ακμή για νέο κόμβο'}
+          </div>
+          <Button
+            onClick={onUndo}
+            disabled={!canUndo}
+            variant="outline"
+            size="sm"
+            title="Undo (Ctrl+Z)"
+          >
+            <Undo className="mr-2 h-4 w-4" />
+            Undo
+          </Button>
+          <Button
+            onClick={onRedo}
+            disabled={!canRedo}
+            variant="outline"
+            size="sm"
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            <Redo className="mr-2 h-4 w-4" />
+            Redo
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
-
 
 export default function PropertyViewerPage() {
   const { isEditor } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [inputValue, setInputValue] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [isPending, startTransition] = useTransition();
   const [isEditMode, setIsEditMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | null>(null);
+  const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | null>(
+    null
+  );
+  const { toast } = useToast();
 
   const {
     properties,
@@ -74,7 +127,18 @@ export default function PropertyViewerPage() {
     setSelectedProperty,
     setHoveredProperty,
     setSelectedFloor,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    saveHistory,
   } = usePropertyViewer();
+
+  // Keyboard shortcuts for Undo/Redo
+  useKeyboardShortcut('z', undo, { metaKey: true, ctrlKey: true });
+  useKeyboardShortcut('Z', redo, { metaKey: true, ctrlKey: true, shiftKey: true }); // Captures Shift+Z
+  useKeyboardShortcut('y', redo, { metaKey: true, ctrlKey: true });
+
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -104,7 +168,9 @@ export default function PropertyViewerPage() {
       selectedProperty &&
       !filteredProperties.find((p) => p.id === selectedProperty)
     ) {
-      setSelectedProperty(filteredProperties.length > 0 ? filteredProperties[0].id : null);
+      setSelectedProperty(
+        filteredProperties.length > 0 ? filteredProperties[0].id : null
+      );
     } else if (filteredProperties.length === 0) {
       setSelectedProperty(null);
     }
@@ -117,11 +183,18 @@ export default function PropertyViewerPage() {
       setActiveTool(null); // Reset tool when exiting edit mode
     }
   };
+
+  const handlePolygonCreated = useCallback((vertices: Array<{ x: number; y: number }>) => {
+      saveHistory('Δημιουργία Polygon');
+      toast.success('Το Polygon δημιουργήθηκε');
+      setActiveTool(null);
+    }, [saveHistory, toast]
+  );
   
-  const handlePolygonCreated = (vertices: Array<{ x: number; y: number }>) => {
-    console.log("New polygon created with vertices:", vertices);
-    setActiveTool(null); // Exit creation mode after finishing
-  };
+  const handlePolygonUpdated = useCallback((polygonId: string, vertices: Array<{ x: number; y: number }>) => {
+    saveHistory('Επεξεργασία Polygon');
+  }, [saveHistory]);
+
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-hidden">
@@ -142,7 +215,7 @@ export default function PropertyViewerPage() {
           {isEditor && (
             <Button
               onClick={toggleEditMode}
-              variant={isEditMode ? "default" : "outline"}
+              variant={isEditMode ? 'default' : 'outline'}
               size="sm"
             >
               {isEditMode ? (
@@ -202,7 +275,16 @@ export default function PropertyViewerPage() {
 
         {/* Floor Plan Viewer - 8/12 */}
         <div className="col-span-8 flex flex-col gap-2">
-           {isEditMode && <EditToolbar activeTool={activeTool} onToolChange={setActiveTool} />}
+          {isEditMode && (
+            <EditToolbar
+              activeTool={activeTool}
+              onToolChange={setActiveTool}
+              onUndo={undo}
+              onRedo={redo}
+              canUndo={canUndo}
+              canRedo={canRedo}
+            />
+          )}
           <Card className="flex-1 h-full">
             <CardContent className="p-0 h-full">
               <FloorPlanViewer
@@ -210,11 +292,11 @@ export default function PropertyViewerPage() {
                 selectedFloorId={selectedFloor}
                 onSelectFloor={setSelectedFloor}
                 onHoverProperty={setHoveredProperty}
-                hoveredPropertyId={hoveredProperty}
                 isNodeEditMode={activeTool === 'edit_nodes'}
                 onSelectProperty={setSelectedProperty}
                 isCreatingPolygon={activeTool === 'create'}
                 onPolygonCreated={handlePolygonCreated}
+                onPolygonUpdated={handlePolygonUpdated}
               />
             </CardContent>
           </Card>
