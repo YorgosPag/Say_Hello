@@ -39,6 +39,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const EditToolbar = ({
@@ -220,7 +221,7 @@ const EditToolbar = ({
 function SmartSuggestionsPanel({ properties, onShowSuggestion, onAcceptSuggestion }: { properties: Property[], onShowSuggestion: (suggestion: Suggestion) => void, onAcceptSuggestion: (suggestion: Suggestion) => void }) {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
-    const toast = useToast();
+    const { toast } = useToast();
 
     const analyzePlacement = () => {
         const newSuggestions = suggestionSystem.analyzeFloorPlan(properties);
@@ -374,7 +375,7 @@ export default function PropertyViewerPage() {
   const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | null>(
     null
   );
-  const toast = useToast();
+  const { toast } = useToast();
   
   // Grid and Snap states
   const [showGrid, setShowGrid] = useState(true);
@@ -750,38 +751,35 @@ export default function PropertyViewerPage() {
           </Card>
         </div>
 
-        {/* Right Panel - 2/12 split in half */}
-        <div className="col-span-2 flex flex-col gap-4">
-          {/* Selected Property Details - Top Half */}
-          <div className="flex-1">
-            <Card className="h-full">
-              <CardHeader className="pb-3">
-                <h3 className="text-sm font-semibold">Επιλεγμένο Ακίνητο</h3>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <PropertyDetailsPanel propertyIds={selectedProperties} />
-              </CardContent>
-            </Card>
-          </div>
+        {/* Right Panel - 2/12 */}
+        <div className="col-span-2 flex flex-col min-h-0">
+          <ScrollArea className="flex-1">
+            <div className="flex flex-col gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <h3 className="text-sm font-semibold">Επιλεγμένο Ακίνητο</h3>
+                </CardHeader>
+                <CardContent>
+                  <PropertyDetailsPanel propertyIds={selectedProperties} />
+                </CardContent>
+              </Card>
 
-          {/* Hovered Property Info - Bottom Half */}
-          <div className="flex-1">
-            <Card className="h-full">
-              <CardHeader className="pb-3">
-                <h3 className="text-sm font-semibold">Στοιχεία Hover</h3>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <PropertyHoverInfo propertyId={hoveredProperty} />
-              </CardContent>
-            </Card>
-          </div>
-          <div className="flex-1">
-            <SmartSuggestionsPanel
-                properties={properties}
-                onShowSuggestion={setSuggestionToDisplay}
-                onAcceptSuggestion={handleAcceptSuggestion}
-            />
-          </div>
+              <Card>
+                <CardHeader className="pb-3">
+                  <h3 className="text-sm font-semibold">Στοιχεία Hover</h3>
+                </CardHeader>
+                <CardContent>
+                  <PropertyHoverInfo propertyId={hoveredProperty} />
+                </CardContent>
+              </Card>
+              
+              <SmartSuggestionsPanel
+                  properties={properties}
+                  onShowSuggestion={setSuggestionToDisplay}
+                  onAcceptSuggestion={handleAcceptSuggestion}
+              />
+            </div>
+          </ScrollArea>
         </div>
       </div>
     </div>
