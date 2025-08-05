@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
 
 interface ProgressCardProps {
     progress: number;
@@ -53,6 +54,3 @@ export function ProgressCard({ progress }: ProgressCardProps) {
     </Card>
   );
 }
-
-// We need to define Label here if it's not imported globally
-const Label = (props: React.LabelHTMLAttributes<HTMLLabelElement>) => <label {...props} />;
