@@ -43,7 +43,7 @@ interface StorageTableViewProps {
   onDelete: (unitId: string) => void;
   getStatusColor: (status: StorageStatus) => string;
   getStatusLabel: (status: StorageStatus) => string;
-  getTypeIcon: (type: StorageType) => React.ReactNode;
+  getTypeIcon: (type: StorageType) => React.ElementType;
   getTypeLabel: (type: StorageType) => string;
 }
 
@@ -88,98 +88,101 @@ export function StorageTableView({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {units.map((unit) => (
-                <TableRow 
-                  key={unit.id} 
-                  data-state={selectedUnits.includes(unit.id) ? "selected" : ""}
-                >
-                  <TableCell>
-                    <Checkbox
-                      checked={selectedUnits.includes(unit.id)}
-                      onCheckedChange={() => onSelectUnit(unit.id)}
-                      aria-label={`Select row ${unit.code}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium text-foreground">{unit.code}</div>
-                    <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                      {unit.description}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {getTypeIcon(unit.type)}
-                      <span className="text-sm">{getTypeLabel(unit.type)}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Building className="w-3 h-3 text-muted-foreground" />
-                      {unit.floor}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Ruler className="w-3 h-3 text-muted-foreground" />
-                      {formatArea(unit.area)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-sm font-medium">
-                      <Euro className="w-3 h-3 text-muted-foreground" />
-                      {formatPrice(unit.price)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      className={cn(
-                        "text-xs text-white",
-                        getStatusColor(unit.status)
-                      )}
-                    >
-                      {getStatusLabel(unit.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {unit.linkedProperty ? (
-                      <div className="flex items-center gap-1 text-sm text-primary">
-                        <Link className="w-3 h-3" />
-                        {unit.linkedProperty}
+              {units.map((unit) => {
+                const TypeIcon = getTypeIcon(unit.type);
+                return (
+                  <TableRow 
+                    key={unit.id} 
+                    data-state={selectedUnits.includes(unit.id) ? "selected" : ""}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedUnits.includes(unit.id)}
+                        onCheckedChange={() => onSelectUnit(unit.id)}
+                        aria-label={`Select row ${unit.code}`}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium text-foreground">{unit.code}</div>
+                      <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                        {unit.description}
                       </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(unit)}>
-                          <Eye className="w-4 h-4 mr-2" />
-                          Προβολή
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onEdit(unit)}>
-                          <Edit className="w-4 h-4 mr-2" />
-                          Επεξεργασία
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => onDelete(unit.id)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Διαγραφή
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <TypeIcon className="w-4 h-4" />
+                        <span className="text-sm">{getTypeLabel(unit.type)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Building className="w-3 h-3 text-muted-foreground" />
+                        {unit.floor}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Ruler className="w-3 h-3 text-muted-foreground" />
+                        {formatArea(unit.area)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm font-medium">
+                        <Euro className="w-3 h-3 text-muted-foreground" />
+                        {formatPrice(unit.price)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        className={cn(
+                          "text-xs text-white",
+                          getStatusColor(unit.status)
+                        )}
+                      >
+                        {getStatusLabel(unit.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {unit.linkedProperty ? (
+                        <div className="flex items-center gap-1 text-sm text-primary">
+                          <Link className="w-3 h-3" />
+                          {unit.linkedProperty}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => onEdit(unit)}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            Προβολή
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onEdit(unit)}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Επεξεργασία
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => onDelete(unit.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Διαγραφή
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

@@ -13,15 +13,16 @@ import { formatPrice, formatArea, getPricePerSqm, getFeatureIcon } from './Stora
 
 interface StorageCardContentProps {
     unit: StorageUnit;
-    getTypeIcon: (type: 'storage' | 'parking') => React.ReactNode;
+    getTypeIcon: (type: 'storage' | 'parking') => React.ElementType;
 }
 
 export function StorageCardContent({ unit, getTypeIcon }: StorageCardContentProps) {
+    const TypeIcon = getTypeIcon(unit.type);
     return (
         <CardContent className="p-4 space-y-4">
             <div>
                 <h4 className="font-semibold text-foreground truncate group-hover:text-primary flex items-center gap-2">
-                    {getTypeIcon(unit.type)}
+                    <TypeIcon className="w-4 h-4" />
                     <span>{unit.code}</span>
                 </h4>
                 <p className="text-sm text-muted-foreground h-10 line-clamp-2">

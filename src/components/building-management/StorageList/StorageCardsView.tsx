@@ -12,7 +12,7 @@ interface StorageCardsViewProps {
   onDelete: (unitId: string) => void;
   getStatusColor: (status: StorageStatus) => string;
   getStatusLabel: (status: StorageStatus) => string;
-  getTypeIcon: (type: StorageType) => React.ReactNode;
+  getTypeIcon: (type: StorageType) => React.ElementType;
   getTypeLabel: (type: StorageType) => string;
 }
 

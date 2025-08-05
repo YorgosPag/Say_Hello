@@ -1,33 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  Eye, 
-  Edit, 
-  Trash2, 
-  MoreVertical,
-  Link,
-  Ruler,
-  Euro,
-  Building,
-  Star,
-  Package,
-  Zap,
-  Shield,
-  Lightbulb,
-  Car
-} from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Card } from '@/components/ui/card';
 import type { StorageUnit, StorageType, StorageStatus } from '@/types/storage';
 import { cn } from '@/lib/utils';
 import { StorageCardHeader } from './StorageCard/StorageCardHeader';
@@ -42,7 +16,7 @@ interface StorageCardProps {
   onDelete: () => void;
   getStatusColor: (status: StorageStatus) => string;
   getStatusLabel: (status: StorageStatus) => string;
-  getTypeIcon: (type: StorageType) => React.ReactNode;
+  getTypeIcon: (type: StorageType) => React.ElementType;
   getTypeLabel: (type: StorageType) => string;
 }
 
