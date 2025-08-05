@@ -1,7 +1,8 @@
 
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Property } from '@/types/property-viewer';
+import type { LayerState } from './SidebarPanel';
 
 
 interface FloorData {
@@ -41,15 +43,11 @@ interface FloorData {
 interface LayerManagerProps {
   floorData: FloorData;
   selectedPolygonIds: string[];
+  layerStates: Record<string, LayerState>;
+  setLayerStates: React.Dispatch<React.SetStateAction<Record<string, LayerState>>>;
   onPolygonSelect: (polygonId: string, isShiftClick: boolean) => void;
   onDuplicate: (propertyId: string) => void;
   onDelete: (propertyId: string) => void;
-}
-
-interface LayerState {
-  visible: boolean;
-  locked: boolean;
-  opacity: number;
 }
 
 const statusConfig = {
@@ -113,7 +111,7 @@ function PropertyLayerItem({
   onDelete: () => void;
   onDuplicate: () => void;
 }) {
-  const [isExpanded, setIsExpanded] = useState(isSelected);
+  const [isExpanded, setIsExpanded] = useState(false);
   const statusInfo = statusConfig[property.status];
   const IconComponent = propertyTypeIcons[property.type as keyof typeof propertyTypeIcons] || Home;
   
@@ -125,8 +123,8 @@ function PropertyLayerItem({
 
   return (
     <div className={cn(
-      "border rounded-lg p-3 space-y-2 transition-colors",
-      isSelected ? "border-violet-200 bg-violet-50" : "border-border"
+      "border rounded-lg p-3 space-y-2 transition-all",
+      isSelected ? "border-violet-300 bg-violet-50/50 ring-2 ring-violet-200" : "border-border"
     )}>
       {/* Header */}
       <div className="flex items-center gap-2">
@@ -273,22 +271,12 @@ function PropertyLayerItem({
 export function LayerManager({
   floorData,
   selectedPolygonIds,
+  layerStates,
+  setLayerStates,
   onPolygonSelect,
   onDuplicate,
   onDelete
 }: LayerManagerProps) {
-  const [layerStates, setLayerStates] = useState<Record<string, LayerState>>(() => {
-    const initialStates: Record<string, LayerState> = {};
-    floorData.properties.forEach(property => {
-      initialStates[property.id] = {
-        visible: true,
-        locked: false,
-        opacity: 0.7
-      };
-    });
-    return initialStates;
-  });
-
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -310,7 +298,7 @@ export function LayerManager({
       ...prev,
       [propertyId]: {
         ...prev[propertyId],
-        visible: !prev[propertyId].visible
+        visible: !prev[propertyId]?.visible
       }
     }));
   };
@@ -320,7 +308,7 @@ export function LayerManager({
       ...prev,
       [propertyId]: {
         ...prev[propertyId],
-        locked: !prev[propertyId].locked
+        locked: !prev[propertyId]?.locked
       }
     }));
   };

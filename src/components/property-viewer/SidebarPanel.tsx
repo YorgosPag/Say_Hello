@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,6 +7,12 @@ import { Layers, Palette } from "lucide-react";
 import { LayerManager } from "./LayerManager";
 import { PropertyEditPanel } from "./PropertyEditPanel";
 import type { Property } from '@/types/property-viewer';
+
+export interface LayerState {
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
+}
 
 interface FloorData {
     id: string;
@@ -19,6 +26,8 @@ interface FloorData {
 interface SidebarPanelProps {
   floorData: FloorData;
   selectedPolygonIds: string[];
+  layerStates: Record<string, LayerState>;
+  setLayerStates: React.Dispatch<React.SetStateAction<Record<string, LayerState>>>;
   onPolygonSelect: (polygonId: string, isShiftClick: boolean) => void;
   onDuplicate: (propertyId: string) => void;
   onDelete: (propertyId: string) => void;
@@ -27,6 +36,8 @@ interface SidebarPanelProps {
 export function SidebarPanel({ 
     floorData, 
     selectedPolygonIds, 
+    layerStates,
+    setLayerStates,
     onPolygonSelect,
     onDuplicate,
     onDelete
@@ -49,6 +60,8 @@ export function SidebarPanel({
           <LayerManager
             floorData={floorData}
             selectedPolygonIds={selectedPolygonIds}
+            layerStates={layerStates}
+            setLayerStates={setLayerStates}
             onPolygonSelect={onPolygonSelect}
             onDuplicate={onDuplicate}
             onDelete={onDelete}

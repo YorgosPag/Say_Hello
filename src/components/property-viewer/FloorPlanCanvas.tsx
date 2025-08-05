@@ -1,10 +1,12 @@
 
+
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { PolygonEditor } from "./PolygonEditor";
 import type { Property } from '@/types/property-viewer';
+import type { LayerState } from './SidebarPanel';
 
 import { GridOverlay } from './FloorPlanCanvas/GridOverlay';
 import { PropertyPolygon } from './FloorPlanCanvas/PropertyPolygon';
@@ -32,6 +34,7 @@ interface FloorPlanCanvasProps {
   selectedPropertyIds: string[];
   hoveredProperty: string | null;
   activeTool: 'create' | 'edit_nodes' | 'measure' | null;
+  layerStates: Record<string, LayerState>;
   onPolygonHover: (propertyId: string | null) => void;
   onPolygonSelect: (propertyId: string, isShiftClick: boolean) => void;
   onPolygonCreated: (newProperty: Omit<Property, 'id'>) => void;
@@ -49,6 +52,7 @@ export function FloorPlanCanvas({
   selectedPropertyIds,
   hoveredProperty,
   activeTool,
+  layerStates,
   onPolygonHover,
   onPolygonSelect,
   onPolygonCreated,
@@ -217,19 +221,25 @@ export function FloorPlanCanvas({
           gridSize={gridSize}
         />
 
-        {floorData.properties.map((property) => (
-          <PropertyPolygon
-            key={property.id}
-            property={property}
-            isSelected={selectedPropertyIds.includes(property.id)}
-            isHovered={hoveredProperty === property.id}
-            isNodeEditMode={isNodeEditMode && primarySelectedPolygon === property.id}
-            onHover={onPolygonHover}
-            onSelect={onPolygonSelect}
-            showMeasurements={showMeasurements}
-            scale={scale}
-          />
-        ))}
+        {floorData.properties.map((property) => {
+            const layerState = layerStates[property.id] || { visible: true, opacity: 0.3 };
+            return (
+                <PropertyPolygon
+                    key={property.id}
+                    property={property}
+                    isSelected={selectedPropertyIds.includes(property.id)}
+                    isHovered={hoveredProperty === property.id}
+                    isNodeEditMode={isNodeEditMode && primarySelectedPolygon === property.id}
+                    onHover={onPolygonHover}
+                    onSelect={onPolygonSelect}
+                    showMeasurements={showMeasurements}
+                    scale={scale}
+                    visible={layerState.visible}
+                    opacity={layerState.opacity}
+                />
+            );
+        })}
+
 
         {isNodeEditMode && (
           <PolygonEditor

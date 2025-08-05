@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef, useCallback } from "react";
@@ -7,7 +8,7 @@ import type { Property } from '@/types/property-viewer';
 
 import { ViewerToolbar } from './ViewerToolbar';
 import { FloorCanvasWrapper } from './FloorCanvasWrapper';
-import { SidebarPanel } from './SidebarPanel';
+import { SidebarPanel, type LayerState } from './SidebarPanel';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
 
 interface FloorData {
@@ -119,6 +120,19 @@ export function FloorPlanViewer({
   const [zoom, setZoom] = useState(1);
   const [showLabels, setShowLabels] = useState(true);
   const [floors, setFloors] = useState<FloorData[]>(mockFloors);
+  
+  // State for layer visibility and opacity, managed here
+  const [layerStates, setLayerStates] = useState<Record<string, LayerState>>(() => {
+    const initialStates: Record<string, LayerState> = {};
+    mockFloors.flatMap(f => f.properties).forEach(property => {
+      initialStates[property.id] = {
+        visible: true,
+        locked: false,
+        opacity: 0.3
+      };
+    });
+    return initialStates;
+  });
 
   const currentFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
 
@@ -149,6 +163,7 @@ export function FloorPlanViewer({
               selectedPropertyIds={selectedPropertyIds}
               hoveredProperty={hoveredPropertyId}
               activeTool={activeTool}
+              layerStates={layerStates}
               onPolygonHover={onHoverProperty}
               onPolygonSelect={onSelectProperty}
               onPolygonCreated={onPolygonCreated}
@@ -165,6 +180,8 @@ export function FloorPlanViewer({
           <SidebarPanel
             floorData={currentFloor}
             selectedPolygonIds={selectedPropertyIds}
+            layerStates={layerStates}
+            setLayerStates={setLayerStates}
             onPolygonSelect={onSelectProperty}
             onDuplicate={onDuplicate}
             onDelete={onDelete}

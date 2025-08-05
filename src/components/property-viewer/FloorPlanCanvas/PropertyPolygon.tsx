@@ -14,6 +14,8 @@ interface PropertyPolygonProps {
   onSelect: (propertyId: string, isShiftClick: boolean) => void;
   showMeasurements: boolean;
   scale: number;
+  visible: boolean;
+  opacity: number;
 }
 
 const statusColors = {
@@ -33,7 +35,11 @@ export function PropertyPolygon({
   onSelect,
   showMeasurements,
   scale,
+  visible,
+  opacity,
 }: PropertyPolygonProps) {
+  if (!visible) return null;
+
   const pathData = property.vertices
     .map((vertex, index) => `${index === 0 ? 'M' : 'L'} ${vertex.x} ${vertex.y}`)
     .join(' ') + ' Z';
@@ -47,17 +53,19 @@ export function PropertyPolygon({
   );
 
   const fillColor = statusColors[property.status as keyof typeof statusColors] || '#cccccc';
-  let fillOpacity = 0.3;
+  
+  // Combine base opacity with interaction-based adjustments
+  let fillOpacity = opacity;
   let strokeWidth = 1;
   let strokeColor = fillColor;
 
   // Visual states
   if (isSelected) {
-    fillOpacity = 0.5;
+    fillOpacity = Math.min(1, opacity + 0.2); // Increase opacity on selection
     strokeWidth = 3;
     strokeColor = isNodeEditMode ? '#7c3aed' : '#1f2937';
   } else if (isHovered) {
-    fillOpacity = 0.4;
+    fillOpacity = Math.min(1, opacity + 0.15); // Increase opacity on hover
     strokeWidth = 2;
   }
 
