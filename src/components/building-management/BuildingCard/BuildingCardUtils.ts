@@ -20,6 +20,22 @@ export const formatDate = (dateString?: string) => {
     });
 };
 
+export const formatFloorLabel = (floor: number): string => {
+    if (floor === 0) return "Ισόγειο";
+    if (floor < 0) return `Υπόγειο ${Math.abs(floor)}`;
+    if (floor === 1) return "1ος όροφος";
+    if (floor === 2) return "2ος όροφος";
+    if (floor === 3) return "3ος όροφος";
+    return `${floor}ος όροφος`;
+}
+
+export const formatPricePerSqm = (price?: number, area?: number): string => {
+    if (!price || !area || area === 0) return '-';
+    const value = Math.round(price / area);
+    return value.toLocaleString('el-GR') + '€/τμ';
+}
+
+
 export const getProgressColor = (progress: number) => {
     if (progress < 25) return 'text-red-500';
     if (progress < 50) return 'text-yellow-500';

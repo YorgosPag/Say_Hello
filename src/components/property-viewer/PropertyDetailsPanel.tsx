@@ -22,6 +22,7 @@ import {
   Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatFloorLabel } from "../building-management/BuildingCard/BuildingCardUtils";
 
 interface PropertyDetailsProps {
   propertyIds: string[];
@@ -145,23 +146,23 @@ const mockPropertyDetails: Record<string, PropertyDetails> = {
 const statusConfig = {
   'for-sale': {
     label: 'Προς Πώληση',
-    color: 'bg-green-100 text-green-800 border-green-200',
+    color: 'bg-green-100 text-green-900 border-green-200',
   },
   'for-rent': {
     label: 'Προς Ενοικίαση',
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
+    color: 'bg-blue-100 text-blue-900 border-blue-200',
   },
   'sold': {
     label: 'Πουλημένο',
-    color: 'bg-red-100 text-red-800 border-red-200',
+    color: 'bg-red-100 text-red-900 border-red-200',
   },
   'rented': {
     label: 'Ενοικιασμένο',
-    color: 'bg-orange-100 text-orange-800 border-orange-200',
+    color: 'bg-orange-100 text-orange-900 border-orange-200',
   },
   'reserved': {
     label: 'Δεσμευμένο',
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    color: 'bg-yellow-100 text-yellow-900 border-yellow-200',
   },
 };
 
@@ -195,7 +196,7 @@ function PropertyDetailsContent({ property }: { property: PropertyDetails }) {
           </div>
           <div className="flex items-center gap-2 text-xs">
             <MapPin className="h-3 w-3 text-muted-foreground" />
-            <span>{property.floor >= 0 ? '+' : ''}{property.floor} όροφος</span>
+            <span>{formatFloorLabel(property.floor)}</span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>{property.project}</span>

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Home, Building, MapPin, Euro, Ruler } from "lucide-react";
+import { formatFloorLabel } from "../building-management/BuildingCard/BuildingCardUtils";
 
 interface Property {
   id: string;
@@ -31,23 +32,23 @@ interface PropertyListProps {
 const statusConfig = {
   'for-sale': {
     label: 'Προς Πώληση',
-    color: 'bg-green-100 text-green-800 border-green-200',
+    color: 'bg-green-100 text-green-900 border-green-200',
   },
   'for-rent': {
     label: 'Προς Ενοικίαση',
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
+    color: 'bg-blue-100 text-blue-900 border-blue-200',
   },
   'sold': {
     label: 'Πουλημένο',
-    color: 'bg-red-100 text-red-800 border-red-200',
+    color: 'bg-red-100 text-red-900 border-red-200',
   },
   'rented': {
     label: 'Ενοικιασμένο',
-    color: 'bg-orange-100 text-orange-800 border-orange-200',
+    color: 'bg-orange-100 text-orange-900 border-orange-200',
   },
   'reserved': {
     label: 'Δεσμευμένο',
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    color: 'bg-yellow-100 text-yellow-900 border-yellow-200',
   },
 };
 
@@ -131,7 +132,7 @@ function PropertyListItem({
           <MapPin className="h-3 w-3" />
           <span className="truncate">{property.building}</span>
           <span>•</span>
-          <span>{property.floor >= 0 ? `${property.floor}ος όροφος` : `Υπόγειο ${Math.abs(property.floor)}`}</span>
+          <span>{formatFloorLabel(property.floor)}</span>
         </div>
 
         {/* Price & Area */}

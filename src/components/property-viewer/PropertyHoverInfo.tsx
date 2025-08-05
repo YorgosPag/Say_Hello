@@ -11,6 +11,7 @@ import {
   MousePointer
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatFloorLabel, formatPricePerSqm } from "../building-management/BuildingCard/BuildingCardUtils";
 
 interface PropertyHoverInfoProps {
   propertyId: string | null;
@@ -90,27 +91,27 @@ const mockHoverData: Record<string, PropertyHoverData> = {
 const statusConfig = {
   'for-sale': {
     label: 'Προς Πώληση',
-    color: 'bg-green-100 text-green-800 border-green-200',
+    color: 'bg-green-100 text-green-900 border-green-200',
     priceLabel: 'Τιμή Πώλησης'
   },
   'for-rent': {
     label: 'Προς Ενοικίαση',
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
+    color: 'bg-blue-100 text-blue-900 border-blue-200',
     priceLabel: 'Μηνιαίο Μίσθωμα'
   },
   'sold': {
     label: 'Πουλημένο',
-    color: 'bg-red-100 text-red-800 border-red-200',
+    color: 'bg-red-100 text-red-900 border-red-200',
     priceLabel: 'Τιμή Πώλησης'
   },
   'rented': {
     label: 'Ενοικιασμένο',
-    color: 'bg-orange-100 text-orange-800 border-orange-200',
+    color: 'bg-orange-100 text-orange-900 border-orange-200',
     priceLabel: 'Μηνιαίο Μίσθωμα'
   },
   'reserved': {
     label: 'Δεσμευμένο',
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    color: 'bg-yellow-100 text-yellow-900 border-yellow-200',
     priceLabel: 'Τιμή Πώλησης'
   },
 };
@@ -144,14 +145,7 @@ function PropertyHoverContent({ property }: { property: PropertyHoverData }) {
         </div>
         <div className="flex items-center gap-2 text-xs">
           <MapPin className="h-3 w-3 text-muted-foreground" />
-          <span>
-            {property.floor === 0 
-              ? 'Ισόγειο' 
-              : property.floor < 0 
-                ? 'Υπόγειο'
-                : `${property.floor}ος όροφος`
-            }
-          </span>
+          <span>{formatFloorLabel(property.floor)}</span>
         </div>
       </div>
 
@@ -190,7 +184,7 @@ function PropertyHoverContent({ property }: { property: PropertyHoverData }) {
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Τιμή ανά τμ:</p>
                 <span className="text-xs font-medium">
-                  {Math.round(property.price / property.area).toLocaleString('el-GR')}€/τμ
+                  {formatPricePerSqm(property.price, property.area)}
                   {(property.status === 'for-rent' || property.status === 'rented') && '/μήνα'}
                 </span>
               </div>
