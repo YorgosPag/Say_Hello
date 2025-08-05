@@ -33,7 +33,7 @@ import {
   Clock,
   Star,
   Share,
-  Print,
+  Printer,
   Settings,
   AlertCircle,
   CheckCircle,
@@ -130,7 +130,7 @@ const GeneralTabContent = ({ building }: { building: Building }) => {
             Κοινοποίηση
           </Button>
           <Button variant="outline" size="sm">
-            <Print className="w-4 h-4 mr-2" />
+            <Printer className="w-4 h-4 mr-2" />
             Εκτύπωση
           </Button>
         </div>
@@ -614,5 +614,9 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
     </div>
   );
 }
+
+    
+
+    
 
     
