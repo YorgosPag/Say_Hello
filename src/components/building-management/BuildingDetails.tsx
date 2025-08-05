@@ -51,7 +51,8 @@ import {
   ZoomOut,
   Ruler,
   BarChart3,
-  Scale
+  Scale,
+  Archive
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -67,6 +68,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { Building } from './BuildingsPageContent';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { StorageTab } from './StorageTab';
 
 interface BuildingDetailsProps {
   building: Building;
@@ -1945,7 +1947,7 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
                 Analytics
               </TabsTrigger>
               <TabsTrigger value="storage" className="flex items-center gap-2">
-                <Building2 className="w-4 h-4" />
+                <Archive className="w-4 h-4" />
                 Αποθήκες
               </TabsTrigger>
               <TabsTrigger value="contracts" className="flex items-center gap-2">
@@ -1983,7 +1985,7 @@ export function BuildingDetails({ building, getStatusColor, getStatusLabel }: Bu
             </TabsContent>
 
             <TabsContent value="storage" className="mt-0">
-              <PlaceholderTab title="Αποθήκες" icon={Building2} />
+              <StorageTab building={building} />
             </TabsContent>
 
             <TabsContent value="contracts" className="mt-0">
