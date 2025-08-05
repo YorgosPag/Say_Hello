@@ -8,6 +8,7 @@ import type { Property } from '@/types/property-viewer';
 import { ViewerToolbar } from './ViewerToolbar';
 import { FloorCanvasWrapper } from './FloorCanvasWrapper';
 import { SidebarPanel } from './SidebarPanel';
+import { FloorPlanCanvas } from './FloorPlanCanvas';
 
 interface FloorData {
   id: string;
@@ -60,7 +61,7 @@ const mockFloors: FloorData[] = [
         price: 85000,
         area: 35,
         building: 'Κτίριο Alpha',
-        floor: -1,
+        floor: 1,
         project: 'Έργο Κέντρο',
         buildingId: 'building-1',
         floorId: 'floor-1',
