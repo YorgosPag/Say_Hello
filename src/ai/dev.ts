@@ -1,4 +1,4 @@
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/analyze-greeting-sentiment.ts';
+import '@/ai/flows/message-enhancement.ts';

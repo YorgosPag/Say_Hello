@@ -1,6 +1,7 @@
-import * as React from "react"
+"use client";
 
-const MOBILE_BREAKPOINT = 768
+import * as React from "react"
+import { MOBILE_BREAKPOINT } from "@/constants/layout";
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
