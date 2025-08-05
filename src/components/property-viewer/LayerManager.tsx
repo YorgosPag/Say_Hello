@@ -240,7 +240,7 @@ function PropertyLayerItem({
 
           {/* Actions */}
           <div className="flex gap-1 pt-1">
-            <Button
+             <Button
               variant="outline"
               size="sm"
               className="h-7 px-2 text-xs flex-1"
@@ -399,7 +399,7 @@ export function LayerManager({
               <SelectItem value="all">Όλες</SelectItem>
               {uniqueStatuses.map(status => (
                 <SelectItem key={status} value={status}>
-                  {statusConfig[status].label}
+                  {statusConfig[status as keyof typeof statusConfig].label}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -224,7 +224,7 @@ export default function PropertyViewerPage() {
   const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | null>(
     null
   );
-  const { toast } = useToast();
+  const toast = useToast();
   
   // Grid and Snap states
   const [showGrid, setShowGrid] = useState(true);
