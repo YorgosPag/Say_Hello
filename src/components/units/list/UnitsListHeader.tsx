@@ -40,31 +40,6 @@ export function UnitsListHeader({
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 border">
-                    <div className="flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4 text-green-500" />
-                        <div>
-                            <p className="text-xs text-muted-foreground">Διαθέσιμες</p>
-                            <p className="text-sm font-semibold">
-                                {availableCount}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 border">
-                    <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-blue-500" />
-                        <div>
-                            <p className="text-xs text-muted-foreground">Αξία</p>
-                            <p className="text-sm font-semibold">
-                                €{(totalValue / 1000000).toFixed(1)}M
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div className="flex items-center gap-2">
                 <select
                     value={sortBy}
