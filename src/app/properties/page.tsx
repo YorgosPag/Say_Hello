@@ -1,14 +1,12 @@
 'use client';
 
 import React from 'react';
+import { PropertyViewerPage } from '@/components/property-viewer/PropertyViewerPage';
 
-export default function PropertiesPage() {
+export default function PropertyViewer() {
   return (
-    <div className="h-full flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold">Ευρετήριο Ακινήτων</h1>
-        <p className="text-muted-foreground">Το περιεχόμενο θα προστεθεί σύντομα.</p>
-      </div>
+    <div className="h-full">
+      <PropertyViewerPage />
     </div>
   );
 }
