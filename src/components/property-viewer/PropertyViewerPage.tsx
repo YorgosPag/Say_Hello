@@ -12,6 +12,8 @@ import { PropertyHoverInfo } from './PropertyHoverInfo';
 import { FloorPlanViewer } from './FloorPlanViewer';
 import { PropertyViewerFilters } from './PropertyViewerFilters';
 import { ViewerTools } from './ViewerTools';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export function PropertyViewerPage() {
   const {
@@ -237,4 +239,3 @@ export function PropertyViewerPage() {
     </div>
   );
 }
-
