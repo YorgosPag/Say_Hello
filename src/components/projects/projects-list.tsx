@@ -1,103 +1,100 @@
 'use client';
 
-import React from 'react';
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { HelpCircle, Minus, Plus, Save, FileText } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from '@/components/ui/label';
+import React, { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
+import { ProjectToolbar } from './ProjectToolbar';
+import { ProjectListHeader } from './list/ProjectListHeader';
+import { ProjectListItem } from './list/ProjectListItem';
+import type { Project, ProjectStatus, ProjectSortKey } from '@/types/project';
 
-function ToolbarButton({ tooltip, children, onClick, className }: { tooltip: string, children: React.ReactNode, onClick?: () => void, className?: string }) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className={cn("h-7 w-7", className)} onClick={onClick}>
-            {children}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    )
-}
+const mockProjects: Project[] = [
+    {
+      id: 1,
+      name: "3. ΕΥΤΕΡΠΗΣ",
+      status: 'completed',
+      company: 'ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ',
+      city: 'Εύοσμος',
+      progress: 100,
+      totalValue: 3922222,
+      lastUpdate: '2023-05-15',
+    },
+    {
+      id: 2,
+      name: "Καληαρού & Κομνηνών",
+      status: 'in_progress',
+      company: 'ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ',
+      city: 'Θεσσαλονίκη',
+      progress: 65,
+      totalValue: 2100000,
+      lastUpdate: '2024-07-20',
+    },
+    {
+        id: 3,
+        name: "Κτίριο Γραφείων Αμπελόκηποι",
+        status: 'planning',
+        company: 'DevConstruct AE',
+        city: 'Αθήνα',
+        progress: 10,
+        totalValue: 5500000,
+        lastUpdate: '2024-06-10',
+    }
+];
 
-const ProjectsToolbar = () => {
-    return (
-        <TooltipProvider>
-            <div className="p-1.5 border-b flex items-center gap-1">
-                <ToolbarButton tooltip="Νέα Εγγραφή" className="text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400">
-                    <Plus className="w-4 h-4" />
-                </ToolbarButton>
-                <ToolbarButton tooltip="Διαγραφή" className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400">
-                    <Minus className="w-4 h-4" />
-                </ToolbarButton>
-                <ToolbarButton tooltip="Αποθήκευση">
-                    <Save className="w-4 h-4" />
-                </ToolbarButton>
-                <ToolbarButton tooltip="Βοήθεια">
-                    <HelpCircle className="w-4 h-4" />
-                </ToolbarButton>
-            </div>
-        </TooltipProvider>
-    );
-}
-
-type Project = {
-    id: number;
-    name: string;
-};
 
 interface ProjectsListProps {
-    projects: Project[];
     selectedProject: Project;
     onSelectProject?: (project: Project) => void;
 }
 
-export function ProjectsList({ projects, selectedProject, onSelectProject }: ProjectsListProps) {
+export function ProjectsList({ selectedProject, onSelectProject }: ProjectsListProps) {
+    const [projects, setProjects] = useState<Project[]>(mockProjects);
+    const [sortBy, setSortBy] = useState<ProjectSortKey>('name');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'all'>('all');
+    
+    const filteredProjects = useMemo(() => {
+        return projects.filter(p => filterStatus === 'all' || p.status === filterStatus);
+    }, [projects, filterStatus]);
+    
+    const sortedProjects = useMemo(() => {
+        return [...filteredProjects].sort((a, b) => {
+            const aVal = a[sortBy];
+            const bVal = b[sortBy];
+            
+            if (typeof aVal === 'string' && typeof bVal === 'string') {
+                return sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            }
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+                return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
+            }
+            return 0;
+        });
+    }, [filteredProjects, sortBy, sortOrder]);
+
+
     return (
-        <div className="w-[350px] bg-card border rounded-lg flex flex-col shrink-0">
-            <div className="p-2 border-b space-y-2">
-                <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    <h3 className="text-sm font-semibold">Έργα</h3>
-                </div>
-                <div className="space-y-1">
-                    <Label htmlFor="company-filter" className="text-xs">Εταιρεία</Label>
-                    <Select defaultValue="pagonis-nest">
-                        <SelectTrigger id="company-filter" className="h-8 text-xs">
-                            <SelectValue placeholder="Επιλογή Εταιρείας" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="pagonis-nest">ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ</SelectItem>
-                            {/* Add other companies here */}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-            <ProjectsToolbar />
+        <div className="w-[400px] bg-card border rounded-lg flex flex-col shrink-0">
+            <ProjectListHeader 
+                projectCount={projects.length}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
+                filterStatus={filterStatus}
+                setFilterStatus={setFilterStatus}
+            />
+            <ProjectToolbar />
             <ScrollArea className="flex-1">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="px-2">Τίτλος</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {projects.map((project) => (
-                            <TableRow 
-                                key={project.id} 
-                                className={cn("cursor-pointer", selectedProject.id === project.id ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-accent")}
-                                onClick={() => onSelectProject?.(project)}
-                            >
-                                <TableCell className="font-medium py-1.5 px-2 text-xs">{project.name}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                <div className="p-2 space-y-2">
+                    {sortedProjects.map((project) => (
+                        <ProjectListItem
+                            key={project.id}
+                            project={project}
+                            isSelected={selectedProject?.id === project.id}
+                            onSelect={() => onSelectProject?.(project)}
+                        />
+                    ))}
+                </div>
             </ScrollArea>
         </div>
     );
