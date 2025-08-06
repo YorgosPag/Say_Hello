@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { ProjectsList } from './projects-list';
 import { ProjectDetails } from './project-details';
-import { PageLayout } from '@/components/app/page-layout';
-import type { Project, ProjectStatus } from '@/types/project';
+import type { Project } from '@/types/project';
 import { ProjectsHeader } from './ProjectsHeader';
 import { ProjectsDashboard } from './ProjectsDashboard';
 import { ProjectsGridView } from './projects/ProjectsGridView';
@@ -108,24 +107,28 @@ export function ProjectsPageContent() {
         
         {showDashboard && <ProjectsDashboard stats={stats} />}
 
-        <div className="flex-1 flex overflow-hidden p-4 gap-4">
-          {viewMode === 'list' ? (
-             <>
-               <ProjectsList
-                  projects={filteredProjects}
-                  selectedProject={selectedProject}
-                  onSelectProject={setSelectedProject}
-              />
-              <ProjectDetails project={selectedProject} />
-            </>
-          ) : (
-            <ProjectsGridView
-              projects={filteredProjects}
-              selectedProject={selectedProject}
-              onSelectProject={setSelectedProject}
-            />
-          )}
-        </div>
+        <main className="flex-1 flex min-h-0">
+          <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 flex overflow-auto p-4 gap-4">
+                  {viewMode === 'list' ? (
+                    <>
+                      <ProjectsList
+                          projects={filteredProjects}
+                          selectedProject={selectedProject}
+                          onSelectProject={setSelectedProject}
+                      />
+                      <ProjectDetails project={selectedProject} />
+                    </>
+                  ) : (
+                    <ProjectsGridView
+                      projects={filteredProjects}
+                      selectedProject={selectedProject}
+                      onSelectProject={setSelectedProject}
+                    />
+                  )}
+              </div>
+          </div>
+        </main>
       </div>
     </TooltipProvider>
   );

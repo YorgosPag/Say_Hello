@@ -14,6 +14,7 @@ import type { Project } from '@/types/project';
 import { ProjectDetailsHeader } from './ProjectDetailsHeader';
 import { ProjectTimelineTab } from './ProjectTimelineTab';
 import { Briefcase } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ProjectDetailsProps {
     project: Project;
@@ -30,11 +31,11 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
         </div>
     );
     return (
-        <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0">
+        <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0 shadow-sm">
             <ProjectDetailsHeader project={project} />
-            <main className="flex-1 overflow-auto p-4">
-                <div className="flex flex-col h-full">
-                    <Tabs defaultValue="general" className="flex flex-col h-full">
+            <ScrollArea className="flex-1">
+                <div className="p-4">
+                    <Tabs defaultValue="general" className="w-full">
                         <TabsList className="shrink-0 flex-wrap h-auto justify-start">
                             <TabsTrigger value="general">Γενικά Έργου</TabsTrigger>
                             <TabsTrigger value="timeline">Timeline</TabsTrigger>
@@ -75,7 +76,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                         </TabsContent>
                     </Tabs>
                 </div>
-            </main>
+            </ScrollArea>
         </div>
     );
 }
