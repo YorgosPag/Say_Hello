@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Heart, MapPin, Calendar, Euro } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PROJECT_STATUS_LABELS, type Project } from '@/types/project';
+import { PROJECT_STATUS_LABELS, type Project, type ProjectStatus } from '@/types/project';
 
 interface ProjectListItemProps {
   project: Project;
@@ -16,6 +16,17 @@ interface ProjectListItemProps {
   isFavorite: boolean;
   onToggleFavorite: () => void;
 }
+
+const getStatusColor = (status: ProjectStatus): string => {
+    const colors: Record<ProjectStatus, string> = {
+      planning: 'bg-yellow-100 text-yellow-800',
+      in_progress: 'bg-blue-100 text-blue-800',
+      completed: 'bg-green-100 text-green-800',
+      on_hold: 'bg-gray-100 text-gray-800',
+      cancelled: 'bg-red-100 text-red-800',
+    };
+    return colors[status];
+};
 
 export function ProjectListItem({
   project,
@@ -91,7 +102,7 @@ export function ProjectListItem({
         <div className="flex items-center justify-between mb-3">
           <Badge 
             variant="secondary" 
-            className={cn("text-xs", project.status === 'completed' ? 'bg-green-100 text-green-800' : project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')}
+            className={cn("text-xs", getStatusColor(project.status))}
           >
             {PROJECT_STATUS_LABELS[project.status]}
           </Badge>

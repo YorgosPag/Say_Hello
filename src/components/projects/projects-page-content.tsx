@@ -7,6 +7,7 @@ import { PageLayout } from '@/components/app/page-layout';
 import type { Project, ProjectStatus } from '@/types/project';
 import { ProjectsHeader } from './ProjectsHeader';
 import { ProjectsDashboard } from './ProjectsDashboard';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const projects: Project[] = [
     {
@@ -86,30 +87,9 @@ export function ProjectsPageContent() {
     averageProgress: projects.length > 0 ? Math.round(projects.reduce((sum, p) => sum + p.progress, 0) / projects.length) : 0,
   };
   
-  const getStatusLabel = (status: ProjectStatus): string => {
-    const labels: Record<ProjectStatus, string> = {
-      planning: 'Σχεδιασμός',
-      in_progress: 'Σε εξέλιξη',
-      completed: 'Ολοκληρωμένο',
-      on_hold: 'Σε αναμονή',
-      cancelled: 'Ακυρωμένο',
-    };
-    return labels[status];
-  };
-
-  const getStatusColor = (status: ProjectStatus): string => {
-    const colors: Record<ProjectStatus, string> = {
-      planning: 'bg-yellow-100 text-yellow-800',
-      in_progress: 'bg-blue-100 text-blue-800',
-      completed: 'bg-green-100 text-green-800',
-      on_hold: 'bg-gray-100 text-gray-800',
-      cancelled: 'bg-red-100 text-red-800',
-    };
-    return colors[status];
-  };
-
   return (
-    <div className="h-full flex flex-col bg-background">
+    <TooltipProvider>
+      <div className="h-full flex flex-col bg-background">
         <ProjectsHeader 
             viewMode={viewMode}
             setViewMode={setViewMode}
@@ -131,11 +111,10 @@ export function ProjectsPageContent() {
                 projects={filteredProjects}
                 selectedProject={selectedProject}
                 onSelectProject={setSelectedProject}
-                getStatusColor={getStatusColor}
-                getStatusLabel={getStatusLabel}
             />
             <ProjectDetails project={selectedProject} />
         </div>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

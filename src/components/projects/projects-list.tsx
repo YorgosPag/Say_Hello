@@ -6,6 +6,7 @@ import { ProjectToolbar } from './ProjectToolbar';
 import type { Project, ProjectStatus, ProjectSortKey } from '@/types/project';
 import { ProjectListHeader } from './list/ProjectListHeader';
 import { ProjectListItem } from './list/ProjectListItem';
+import { PROJECT_STATUS_LABELS } from '@/types/project';
 
 interface ProjectsListProps {
   projects: Project[];
@@ -73,7 +74,7 @@ export function ProjectsList({
   return (
     <div className="min-w-[300px] max-w-[420px] w-full bg-card border rounded-lg flex flex-col shrink-0 shadow-sm max-h-full overflow-hidden">
       <ProjectListHeader 
-        projects={projects}
+        projects={sortedProjects || []}
         sortBy={sortBy}
         setSortBy={setSortBy}
         sortOrder={sortOrder}
