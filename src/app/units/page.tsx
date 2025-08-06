@@ -237,36 +237,34 @@ export default function UnitsPage() {
         setViewMode={setViewMode}
       />
       
-      <main className="flex-1 flex gap-4 h-full px-4 pb-4">
+      <main className="flex-1 flex overflow-hidden p-4 gap-4">
         {viewMode === 'list' ? (
-            <div className="flex-1 flex gap-4 min-h-0">
-                <div className="w-[320px] shrink-0 flex flex-col gap-4">
-                    <Card className="flex-1 flex flex-col min-h-0">
-                        <CardHeader className="pb-4 shrink-0">
-                            <CardTitle className="text-base">Λίστα Ακινήτων</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex-1 p-0 overflow-hidden">
-                            <ScrollArea className="h-full">
-                                <PropertyList
-                                    properties={filteredProperties}
-                                    selectedPropertyIds={selectedPropertyIds}
-                                    onSelectProperty={handlePolygonSelect}
-                                    isLoading={isLoading}
-                                />
-                            </ScrollArea>
+            <>
+                <div className="min-w-[300px] max-w-[420px] w-full bg-card border rounded-lg flex flex-col shrink-0 shadow-sm max-h-full overflow-hidden">
+                    <CardHeader className="pb-4 shrink-0">
+                        <CardTitle className="text-base">Λίστα Ακινήτων</CardTitle>
+                    </CardHeader>
+                    <ScrollArea className="flex-1">
+                        <CardContent className="p-0">
+                            <PropertyList
+                                properties={filteredProperties}
+                                selectedPropertyIds={selectedPropertyIds}
+                                onSelectProperty={handlePolygonSelect}
+                                isLoading={isLoading}
+                            />
                         </CardContent>
-                    </Card>
+                    </ScrollArea>
                 </div>
 
-                <div className="flex-1 flex flex-col gap-4 min-h-0">
+                <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0 shadow-sm overflow-hidden">
                     <Tabs defaultValue="general" className="w-full h-full flex flex-col">
-                        <TabsList className="shrink-0">
+                        <TabsList className="m-4">
                             <TabsTrigger value="general"><Home className="w-4 h-4 mr-2" />Γενικά</TabsTrigger>
                             <TabsTrigger value="documents"><FileText className="w-4 h-4 mr-2" />Έγγραφα</TabsTrigger>
                             <TabsTrigger value="photos"><Camera className="w-4 h-4 mr-2" />Φωτογραφίες</TabsTrigger>
                             <TabsTrigger value="videos"><Video className="w-4 h-4 mr-2" />Βίντεο</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="general" className="flex-1 flex flex-col gap-4 h-full mt-2">
+                        <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 px-4 pb-4">
                              <div className="shrink-0">
                                 <ViewerTools 
                                     activeTool={activeTool}
@@ -328,7 +326,7 @@ export default function UnitsPage() {
                         </TabsContent>
                     </Tabs>
                 </div>
-            </div>
+            </>
         ) : (
           <PropertyGrid 
             properties={filteredProperties}
