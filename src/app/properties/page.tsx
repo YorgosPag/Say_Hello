@@ -678,7 +678,7 @@ export default function PropertyViewerPage() {
       {/* Main Content Grid */}
       <div className="flex-1 grid grid-cols-12 gap-4 px-6 pb-6 overflow-hidden">
         {/* Properties List - 2/12 */}
-        <div className="col-span-2">
+        <div className="col-span-2 flex flex-col min-h-0">
           <Card className="h-full flex flex-col">
             <CardHeader className="pb-3">
               <div className="relative">

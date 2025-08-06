@@ -52,7 +52,7 @@ const statusConfig = {
   },
 };
 
-const propertyTypeIcons = {
+const propertyTypeIcons: { [key: string]: React.ElementType } = {
   'Στούντιο': Home,
   'Γκαρσονιέρα': Home,
   'Διαμέρισμα 2Δ': Home,
@@ -183,7 +183,7 @@ export function PropertyList({
   }
 
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="flex-1">
       <div className="space-y-2 p-2">
         {properties.map((property) => (
           <PropertyListItem

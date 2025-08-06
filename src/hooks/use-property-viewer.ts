@@ -80,7 +80,7 @@ const mockFloors: Floor[] = [
     name: "1ος Όροφος",
     level: 1,
     buildingId: "building-1",
-    properties: ["prop-2"]
+    properties: ["prop-2", "prop-6"]
   },
   {
     id: "floor-4",
@@ -187,7 +187,22 @@ const mockProperties: Property[] = [
     buildingId: "building-2",
     floorId: "floor-5",
     vertices: [{x: 280, y: 220}, {x: 480, y: 220}, {x: 480, y: 350}, {x: 280, y: 350}],
-  }
+  },
+  {
+    id: "prop-6",
+    name: "Γκαρσονιέρα F1",
+    type: "Γκαρσονιέρα",
+    building: "Κτίριο Alpha",
+    floor: 1,
+    project: "Έργο Κέντρο",
+    status: "for-sale",
+    price: 65000,
+    area: 28,
+    description: "Ιδανικό για φοιτητές",
+    buildingId: "building-1",
+    floorId: "floor-3",
+    vertices: [{x: 500, y: 50}, {x: 600, y: 50}, {x: 600, y: 150}, {x: 500, y: 150}],
+  },
 ];
 
 type HistoryState = {
