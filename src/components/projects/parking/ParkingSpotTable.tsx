@@ -37,6 +37,7 @@ export function ParkingSpotTable({
   onViewFloorPlan,
 }: ParkingSpotTableProps) {
   const [columnWidths, setColumnWidths] = useState<number[]>([40, 120, 100, 120, 100, 80, 100, 120, 180, 100, 150, 150, 150, 80]);
+  const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>({});
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
   const formatNumber = (value: any) => {
@@ -46,6 +47,7 @@ export function ParkingSpotTable({
   };
   
   const columns = useMemo(() => [
+    { key: 'select', label: '' }, // Placeholder for checkbox column
     { key: 'code', label: 'Κωδικός' },
     { key: 'type', label: 'Τύπος', format: (value: any) => PARKING_TYPE_LABELS[value as keyof typeof PARKING_TYPE_LABELS] },
     { key: 'propertyCode', label: 'Ακίνητο' },
@@ -76,6 +78,10 @@ export function ParkingSpotTable({
     }
   };
 
+  const handleFilterChange = (columnKey: string, value: string) => {
+    setActiveFilters(prev => ({ ...prev, [columnKey]: value }));
+  };
+
   const handleSort = (columnKey: string) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === columnKey && sortConfig.direction === 'asc') {
@@ -86,27 +92,15 @@ export function ParkingSpotTable({
   
   const filteredSpots = useMemo(() => {
     let filtered = [...spots];
-    const searchLower = filters.searchTerm.toLowerCase();
-    
-    if (searchLower) {
-        filtered = filtered.filter(spot =>
-            spot.code.toLowerCase().includes(searchLower) ||
-            spot.owner.toLowerCase().includes(searchLower) ||
-            spot.propertyCode?.toLowerCase().includes(searchLower)
+    Object.entries(activeFilters).forEach(([key, value]) => {
+      if (value) {
+        filtered = filtered.filter(spot => 
+          String((spot as any)[key] ?? '').toLowerCase().includes(value.toLowerCase())
         );
-    }
-    if (filters.type !== 'all') {
-        filtered = filtered.filter(spot => spot.type === filters.type);
-    }
-    if (filters.status !== 'all') {
-        filtered = filtered.filter(spot => spot.status === filters.status);
-    }
-    if (filters.level !== 'all') {
-        filtered = filtered.filter(spot => spot.level === filters.level);
-    }
-
+      }
+    });
     return filtered;
-  }, [spots, filters]);
+  }, [spots, activeFilters]);
 
   const sortedSpots = useMemo(() => {
     if (!sortConfig) return filteredSpots;
@@ -126,21 +120,32 @@ export function ParkingSpotTable({
   const allSelected = selectedSpots.length === sortedSpots.length && sortedSpots.length > 0;
   const isIndeterminate = selectedSpots.length > 0 && !allSelected;
 
+  const tableColumns = columns.filter(c => c.key !== 'select');
+
   return (
     <div className="border rounded-md flex flex-col h-[600px] text-sm overflow-hidden">
       <ParkingTableHeader 
-        columns={columns}
+        columns={tableColumns}
         columnWidths={columnWidths}
         onColumnResize={handleColumnResize}
+        filters={activeFilters}
+        onFilterChange={handleFilterChange}
         sortConfig={sortConfig}
         onSort={handleSort}
-        onSelectAll={handleSelectAll}
-        allSelected={allSelected}
-        isIndeterminate={isIndeterminate}
       />
       <ScrollArea className="flex-grow">
         <div className="relative">
-          {sortedSpots.map((spot, rowIndex) => (
+          <div className="flex items-center border-b px-2 py-1.5 h-10 bg-muted/30">
+             <div style={{ flex: `0 0 ${columnWidths[0]}px`}} className="flex items-center justify-center px-2">
+                <Checkbox 
+                   checked={allSelected} 
+                   onCheckedChange={handleSelectAll}
+                   aria-label="Select all rows"
+                   data-state={isIndeterminate ? 'indeterminate' : (allSelected ? 'checked' : 'unchecked')}
+                 />
+            </div>
+          </div>
+          {sortedSpots.map((spot) => (
             <div
               key={spot.id}
               className={cn(
@@ -149,14 +154,15 @@ export function ParkingSpotTable({
               )}
               onClick={() => handleSelect(spot.id)}
             >
-                <div style={{ flex: `0 0 ${columnWidths[0]}px`}} className="flex items-center justify-center">
+                <div style={{ flex: `0 0 ${columnWidths[0]}px`}} className="flex items-center justify-center px-2">
                     <Checkbox
                         checked={selectedSpots.includes(spot.id)}
                         onCheckedChange={() => handleSelect(spot.id)}
+                        aria-label={`Select row ${spot.code}`}
                     />
                 </div>
 
-              {columns.map((col, colIndex) => {
+              {tableColumns.map((col, colIndex) => {
                 if(col.key === 'actions') return null;
 
                 const cellValue = (spot as any)[col.key];
