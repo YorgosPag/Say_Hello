@@ -757,19 +757,19 @@ export default function PropertyViewerPage() {
             <div className="flex flex-col gap-4">
               <Card>
                 <CardHeader className="pb-3">
-                  <h3 className="text-sm font-semibold">Επιλεγμένο Ακίνητο</h3>
+                  <h3 className="text-sm font-semibold">Στοιχεία Hover</h3>
                 </CardHeader>
                 <CardContent>
-                  <PropertyDetailsPanel propertyIds={selectedProperties} />
+                  <PropertyHoverInfo propertyId={hoveredProperty} />
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="pb-3">
-                  <h3 className="text-sm font-semibold">Στοιχεία Hover</h3>
+                  <h3 className="text-sm font-semibold">Επιλεγμένο Ακίνητο</h3>
                 </CardHeader>
                 <CardContent>
-                  <PropertyHoverInfo propertyId={hoveredProperty} />
+                  <PropertyDetailsPanel propertyIds={selectedProperties} />
                 </CardContent>
               </Card>
               
