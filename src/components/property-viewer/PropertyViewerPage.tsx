@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, LayoutGrid, List, Filter } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { PropertyGrid } from './PropertyGrid';
 
 function PropertyViewerHeader({
   viewMode,
@@ -252,80 +253,91 @@ export function PropertyViewerPage() {
               </div>
             </CollapsibleContent>
         </Collapsible>
-        <div className="flex-1 flex gap-4 min-h-0">
-            <div className="w-[320px] shrink-0 flex flex-col gap-4">
-                <Card className="flex-1 flex flex-col">
-                    <CardHeader className="pb-4">
-                        <CardTitle className="text-base">Λίστα Ακινήτων</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 p-0 overflow-hidden">
-                        <ScrollArea className="h-full">
-                            <PropertyList
-                                properties={properties}
-                                selectedPropertyIds={selectedPropertyIds}
-                                onSelectProperty={handlePolygonSelect}
-                                isLoading={isLoading}
-                            />
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
-                <Card className="h-[280px] shrink-0">
-                    <CardHeader className="py-3 px-4">
-                        <CardTitle className="text-sm">Γρήγορες Πληροφορίες</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0 h-[calc(100%-48px)]">
-                        <PropertyHoverInfo propertyId={hoveredPropertyId} properties={properties} />
-                    </CardContent>
-                </Card>
-            </div>
+        
+        <main className="flex-1 flex gap-4 min-h-0">
+          {viewMode === 'list' ? (
+              <div className="flex-1 flex gap-4 min-h-0">
+                  <div className="w-[320px] shrink-0 flex flex-col gap-4">
+                      <Card className="flex-1 flex flex-col">
+                          <CardHeader className="pb-4">
+                              <CardTitle className="text-base">Λίστα Ακινήτων</CardTitle>
+                          </CardHeader>
+                          <CardContent className="flex-1 p-0 overflow-hidden">
+                              <ScrollArea className="h-full">
+                                  <PropertyList
+                                      properties={properties}
+                                      selectedPropertyIds={selectedPropertyIds}
+                                      onSelectProperty={handlePolygonSelect}
+                                      isLoading={isLoading}
+                                  />
+                              </ScrollArea>
+                          </CardContent>
+                      </Card>
+                      <Card className="h-[280px] shrink-0">
+                          <CardHeader className="py-3 px-4">
+                              <CardTitle className="text-sm">Γρήγορες Πληροφορίες</CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-3 pt-0 h-[calc(100%-48px)]">
+                              <PropertyHoverInfo propertyId={hoveredPropertyId} properties={properties} />
+                          </CardContent>
+                      </Card>
+                  </div>
 
-            <div className="flex-1 flex flex-col gap-4 min-w-0">
-                <FloorPlanViewer
-                    selectedPropertyIds={selectedPropertyIds}
-                    selectedFloorId={selectedFloorId}
-                    onSelectFloor={onSelectFloor}
-                    hoveredPropertyId={hoveredPropertyId}
-                    onHoverProperty={onHoverProperty}
-                    activeTool={activeTool}
-                    onSelectProperty={handlePolygonSelect}
-                    onPolygonCreated={handlePolygonCreated}
-                    onPolygonUpdated={handlePolygonUpdated}
-                    onDuplicate={handleDuplicate}
-                    onDelete={handleDelete}
-                    showGrid={showGrid}
-                    snapToGrid={snapToGrid}
-                    gridSize={gridSize}
-                    showMeasurements={showMeasurements}
-                    scale={scale}
-                    suggestionToDisplay={suggestionToDisplay}
-                    connections={connections}
-                    setConnections={setConnections}
-                    groups={groups}
-                    setGroups={setGroups}
-                    isConnecting={isConnecting}
-                    setIsConnecting={setIsConnecting}
-                    firstConnectionPoint={firstConnectionPoint}
-                    setFirstConnectionPoint={setFirstConnectionPoint}
-                    properties={properties}
-                />
-            </div>
-            
-            <div className="w-[320px] shrink-0 flex flex-col gap-4">
-                <Card className="flex-1">
-                    <CardHeader className="py-3 px-4">
-                        <CardTitle className="text-sm">Λεπτομέρειες Ακινήτου</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0 h-[calc(100%-48px)]">
-                         <PropertyDetailsPanel 
-                            propertyIds={selectedPropertyIds} 
-                            onSelectFloor={onSelectFloor}
-                            properties={properties}
-                            onUpdateProperty={handleUpdateProperty}
-                         />
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
+                  <div className="flex-1 flex flex-col gap-4 min-w-0">
+                      <FloorPlanViewer
+                          selectedPropertyIds={selectedPropertyIds}
+                          selectedFloorId={selectedFloorId}
+                          onSelectFloor={onSelectFloor}
+                          hoveredPropertyId={hoveredPropertyId}
+                          onHoverProperty={onHoverProperty}
+                          activeTool={activeTool}
+                          onSelectProperty={handlePolygonSelect}
+                          onPolygonCreated={handlePolygonCreated}
+                          onPolygonUpdated={handlePolygonUpdated}
+                          onDuplicate={handleDuplicate}
+                          onDelete={handleDelete}
+                          showGrid={showGrid}
+                          snapToGrid={snapToGrid}
+                          gridSize={gridSize}
+                          showMeasurements={showMeasurements}
+                          scale={scale}
+                          suggestionToDisplay={suggestionToDisplay}
+                          connections={connections}
+                          setConnections={setConnections}
+                          groups={groups}
+                          setGroups={setGroups}
+                          isConnecting={isConnecting}
+                          setIsConnecting={setIsConnecting}
+                          firstConnectionPoint={firstConnectionPoint}
+                          setFirstConnectionPoint={setFirstConnectionPoint}
+                          properties={properties}
+                      />
+                  </div>
+                  
+                  <div className="w-[320px] shrink-0 flex flex-col gap-4">
+                      <Card className="flex-1">
+                          <CardHeader className="py-3 px-4">
+                              <CardTitle className="text-sm">Λεπτομέρειες Ακινήτου</CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-3 pt-0 h-[calc(100%-48px)]">
+                              <PropertyDetailsPanel 
+                                  propertyIds={selectedPropertyIds} 
+                                  onSelectFloor={onSelectFloor}
+                                  properties={properties}
+                                  onUpdateProperty={handleUpdateProperty}
+                              />
+                          </CardContent>
+                      </Card>
+                  </div>
+              </div>
+          ) : (
+            <PropertyGrid 
+              properties={properties}
+              onSelect={handlePolygonSelect}
+              selectedPropertyIds={selectedPropertyIds}
+            />
+          )}
+        </main>
     </div>
   );
 }
