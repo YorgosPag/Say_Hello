@@ -13,7 +13,6 @@ import { PropertyViewerFilters, type FilterState } from '@/components/property-v
 import { ViewerTools } from '@/components/property-viewer/ViewerTools';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SmartSuggestionsPanel } from '@/components/property-viewer/SmartSuggestionsPanel';
 import { Button } from '@/components/ui/button';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -237,6 +236,20 @@ export default function UnitsPage() {
         setViewMode={setViewMode}
       />
       
+      <div className="px-4 shrink-0 mt-4">
+          <Collapsible className="border bg-card rounded-lg">
+              <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
+                  <Filter className="w-4 h-4 mr-2"/>
+                  Φίλτρα Αναζήτησης
+                  </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                  <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+              </CollapsibleContent>
+          </Collapsible>
+      </div>
+      
       <main className="flex-1 flex overflow-hidden p-4 gap-4">
         {viewMode === 'list' ? (
             <>
@@ -264,7 +277,7 @@ export default function UnitsPage() {
                             <TabsTrigger value="photos"><Camera className="w-4 h-4 mr-2" />Φωτογραφίες</TabsTrigger>
                             <TabsTrigger value="videos"><Video className="w-4 h-4 mr-2" />Βίντεο</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 px-4 pb-4">
+                        <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 px-4 pb-4 h-full">
                              <div className="shrink-0">
                                 <ViewerTools 
                                     activeTool={activeTool}
