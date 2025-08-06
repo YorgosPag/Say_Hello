@@ -119,6 +119,7 @@ export function PropertyViewerPage() {
     status: [],
     priceRange: { min: null, max: null },
     areaRange: { min: null, max: null },
+    features: [],
   });
 
   const filteredProperties = useMemo(() => {

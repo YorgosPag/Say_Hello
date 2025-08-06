@@ -1,6 +1,6 @@
 
 
-"use client";
+'use client';
 
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, RotateCcw, Search, Filter } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 export interface FilterState {
@@ -21,12 +22,21 @@ export interface FilterState {
   status: string[];
   priceRange: { min: number | null; max: number | null };
   areaRange: { min: number | null; max: number | null };
+  features: string[];
 }
 
 interface PropertyViewerFiltersProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
 }
+
+const featureOptions = [
+    { id: 'parking', label: 'Parking' },
+    { id: 'storage', label: 'Αποθήκη' },
+    { id: 'fireplace', label: 'Τζάκι' },
+    { id: 'view', label: 'Θέα' },
+    { id: 'pool', label: 'Πισίνα' },
+]
 
 
 export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyViewerFiltersProps) {
@@ -44,6 +54,14 @@ export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyView
     const numericValue = value ? parseFloat(value) : null;
     handleFilterChange(key, { ...filters[key], [subKey]: numericValue });
   };
+  
+  const handleFeatureChange = (featureId: string, checked: boolean | 'indeterminate') => {
+    const currentFeatures = filters.features || [];
+    const newFeatures = checked
+      ? [...currentFeatures, featureId]
+      : currentFeatures.filter(id => id !== featureId);
+    handleFilterChange('features', newFeatures);
+  }
 
 
   const clearAllFilters = () => {
@@ -56,6 +74,7 @@ export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyView
       status: [],
       priceRange: { min: null, max: null },
       areaRange: { min: null, max: null },
+      features: [],
     });
   };
 
@@ -69,7 +88,8 @@ export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyView
     filters.priceRange.min !== null ||
     filters.priceRange.max !== null ||
     filters.areaRange.min !== null ||
-    filters.areaRange.max !== null;
+    filters.areaRange.max !== null ||
+    filters.features.length > 0;
 
   return (
     <Card className="w-full bg-card/50 border-none shadow-none">
@@ -152,23 +172,8 @@ export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyView
                 </Select>
             </div>
         </div>
-
-        <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
-            <div className="flex items-center justify-between">
-                <CollapsibleTrigger asChild>
-                    <Button variant="link" size="sm">
-                        <Filter className="w-4 h-4 mr-2"/>
-                        {showAdvanced ? 'Απόκρυψη' : 'Περισσότερα'} Φίλτρα
-                    </Button>
-                </CollapsibleTrigger>
-                {hasActiveFilters && (
-                    <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-                        <RotateCcw className="w-4 h-4 mr-2" />
-                        Επαναφορά Φίλτρων
-                    </Button>
-                )}
-            </div>
-            <CollapsibleContent className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in-0 zoom-in-95">
+        
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Project Filter */}
               <div className="space-y-1">
                 <Label className="text-xs font-medium">Έργο</Label>
@@ -200,6 +205,38 @@ export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyView
                     <SelectTrigger className="h-9"><SelectValue placeholder="Επιλογή Τύπου" /></SelectTrigger>
                     <SelectContent><SelectItem value="all">Όλοι οι τύποι</SelectItem></SelectContent>
                 </Select>
+              </div>
+        </div>
+
+        <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+            <div className="flex items-center justify-between">
+                <CollapsibleTrigger asChild>
+                    <Button variant="link" size="sm">
+                        <Filter className="w-4 h-4 mr-2"/>
+                        {showAdvanced ? 'Απόκρυψη' : 'Περισσότερα'} Φίλτρα
+                    </Button>
+                </CollapsibleTrigger>
+                {hasActiveFilters && (
+                    <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Επαναφορά Φίλτρων
+                    </Button>
+                )}
+            </div>
+            <CollapsibleContent className="mt-4 p-4 border rounded-lg bg-background animate-in fade-in-0 zoom-in-95">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                 {featureOptions.map(feature => (
+                    <div key={feature.id} className="flex items-center space-x-2">
+                        <Checkbox 
+                            id={`feature-${feature.id}`}
+                            checked={filters.features.includes(feature.id)}
+                            onCheckedChange={(checked) => handleFeatureChange(feature.id, checked)}
+                        />
+                        <Label htmlFor={`feature-${feature.id}`} className="text-sm font-normal">
+                            {feature.label}
+                        </Label>
+                    </div>
+                 ))}
               </div>
             </CollapsibleContent>
         </Collapsible>
