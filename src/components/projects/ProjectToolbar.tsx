@@ -1,129 +1,107 @@
 'use client';
 
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { HelpCircle, Minus, Plus, Save, FileText, RefreshCw, Download, Upload } from "lucide-react";
-import { cn } from '@/lib/utils';
+import React, { useState } from 'react';
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { HelpCircle, Zap } from "lucide-react";
+import { QuickSearch } from '@/components/ui/QuickSearch';
+import { ToolbarButton } from '@/components/ui/ToolbarButton';
+import { ToolbarFiltersMenu } from './toolbar/ToolbarFiltersMenu';
+import { ToolbarExportMenu } from './toolbar/ToolbarExportMenu';
+import { ToolbarAdvancedSection } from './toolbar/ToolbarAdvancedSection';
+import { ToolbarFiltersDisplay } from './toolbar/ToolbarFiltersDisplay';
+import { ToolbarMainActions } from './toolbar/ToolbarMainActions';
 
-interface ToolbarButtonProps {
-  tooltip: string;
-  children: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
-  disabled?: boolean;
-}
+export function ProjectToolbar() {
+  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
-function ToolbarButton({ tooltip, children, onClick, className, disabled }: ToolbarButtonProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className={cn("h-8 w-8", className)} 
-          onClick={onClick}
-          disabled={disabled}
-        >
-          {children}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{tooltip}</p>
-      </TooltipContent>
-    </Tooltip>
-  );
-}
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    console.log('Searching for:', term);
+  };
 
-interface ProjectToolbarProps {
-  selectedProject?: any;
-  onNew?: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onSave?: () => void;
-  onRefresh?: () => void;
-  onExport?: () => void;
-  onImport?: () => void;
-}
+  const handleRefresh = () => {
+    console.log('Refreshing data...');
+  };
 
-export function ProjectToolbar({
-  selectedProject,
-  onNew,
-  onEdit,
-  onDelete,
-  onSave,
-  onRefresh,
-  onExport,
-  onImport
-}: ProjectToolbarProps) {
+  const handleExport = () => {
+    console.log('Exporting data...');
+  };
+
+  const toggleSort = () => {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
+
+  const toggleAdvancedMode = () => {
+    setIsAdvancedMode(!isAdvancedMode);
+  };
+
   return (
     <TooltipProvider>
-      <div className="px-2 py-1.5 border-b bg-muted/30 flex items-center gap-1">
-        <ToolbarButton 
-          tooltip="Νέο Έργο" 
-          className="text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400"
-          onClick={onNew}
-        >
-          <Plus className="w-4 h-4" />
-        </ToolbarButton>
-        
-        <ToolbarButton 
-          tooltip="Επεξεργασία Έργου" 
-          className="text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400"
-          onClick={onEdit}
-          disabled={!selectedProject}
-        >
-          <FileText className="w-4 h-4" />
-        </ToolbarButton>
-        
-        <ToolbarButton 
-          tooltip="Διαγραφή Έργου" 
-          className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
-          onClick={onDelete}
-          disabled={!selectedProject}
-        >
-          <Minus className="w-4 h-4" />
-        </ToolbarButton>
-        
-        <div className="w-px h-6 bg-border mx-1" />
-        
-        <ToolbarButton 
-          tooltip="Αποθήκευση Αλλαγών"
-          onClick={onSave}
-        >
-          <Save className="w-4 h-4" />
-        </ToolbarButton>
-        
-        <ToolbarButton 
-          tooltip="Ανανέωση Δεδομένων"
-          onClick={onRefresh}
-        >
-          <RefreshCw className="w-4 h-4" />
-        </ToolbarButton>
-        
-        <div className="w-px h-6 bg-border mx-1" />
-        
-        <ToolbarButton 
-          tooltip="Εξαγωγή Δεδομένων"
-          onClick={onExport}
-        >
-          <Download className="w-4 h-4" />
-        </ToolbarButton>
-        
-        <ToolbarButton 
-          tooltip="Εισαγωγή Δεδομένων"
-          onClick={onImport}
-        >
-          <Upload className="w-4 h-4" />
-        </ToolbarButton>
-        
-        <div className="flex-1" />
-        
-        <ToolbarButton 
-          tooltip="Βοήθεια"
-        >
-          <HelpCircle className="w-4 h-4" />
-        </ToolbarButton>
+      <div className="border-b bg-muted/30 backdrop-blur-sm">
+        {/* Main Toolbar */}
+        <div className="p-2 flex items-center gap-1">
+          <ToolbarMainActions selectedItemsCount={selectedItems.length} />
+
+          <div className="w-px h-6 bg-border mx-1" />
+
+          {/* Search */}
+          <QuickSearch searchTerm={searchTerm} onSearchChange={handleSearch} placeholder="Γρήγορη αναζήτηση..." />
+
+          <div className="w-px h-6 bg-border mx-1" />
+
+          {/* View and Sort Actions */}
+          <ToolbarFiltersMenu 
+            sortDirection={sortDirection}
+            onToggleSort={toggleSort}
+            activeFilters={activeFilters}
+            onActiveFiltersChange={setActiveFilters}
+          />
+
+          <div className="w-px h-6 bg-border mx-1" />
+
+          {/* Data Actions */}
+          <ToolbarExportMenu onExport={handleExport} />
+
+          <div className="flex-1" />
+
+          {/* Advanced Tools */}
+          <div className="flex items-center gap-1">
+            <ToolbarButton 
+              tooltip="Προχωρημένα Εργαλεία"
+              onClick={toggleAdvancedMode}
+              variant={isAdvancedMode ? "default" : "ghost"}
+              className={isAdvancedMode ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" : ""}
+            >
+              <Zap className="w-4 h-4" />
+            </ToolbarButton>
+
+            <ToolbarButton 
+              tooltip="Βοήθεια και Οδηγίες (F1)"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </ToolbarButton>
+          </div>
+        </div>
+
+        {/* Advanced Toolbar - Shows when advanced mode is enabled */}
+        {isAdvancedMode && (
+          <ToolbarAdvancedSection 
+            selectedItems={selectedItems}
+            activeFilters={activeFilters}
+          />
+        )}
+
+        {/* Active Filters Display */}
+        {activeFilters.length > 0 && (
+          <ToolbarFiltersDisplay 
+            activeFilters={activeFilters}
+            onActiveFiltersChange={setActiveFilters}
+          />
+        )}
       </div>
     </TooltipProvider>
   );
