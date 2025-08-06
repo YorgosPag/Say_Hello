@@ -396,10 +396,10 @@ export default function UnitsPage() {
                         </ScrollArea>
                     </div>
 
-                    <div className="flex-1 flex flex-col min-h-0 gap-4">
+                    <div className="flex-1 flex flex-col min-h-0 gap-4 bg-card border rounded-lg shadow-sm">
                         <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
                            <UnitDetailsHeader unit={selectedUnit} />
-                             <div className="shrink-0 border-b">
+                             <div className="shrink-0 border-b px-4">
                                 <TabsList>
                                     <TabsTrigger value="general">Γενικά</TabsTrigger>
                                     <TabsTrigger value="documents">Έγγραφα</TabsTrigger>
@@ -407,8 +407,7 @@ export default function UnitsPage() {
                                     <TabsTrigger value="videos">Videos</TabsTrigger>
                                 </TabsList>
                             </div>
-                            <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 h-full">
-                                <div className="p-2 border-b bg-card rounded-t-lg">
+                            <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 h-full p-4">
                                 <ViewerTools 
                                     activeTool={activeTool}
                                     setActiveTool={setActiveTool}
@@ -426,7 +425,6 @@ export default function UnitsPage() {
                                     canRedo={canRedo}
                                     onShowHistory={() => setShowHistoryPanel(true)}
                                 />
-                                </div>
                                 <div className="flex-1 flex flex-col h-full">
                                   <FloorPlanViewer
                                           properties={filteredProperties}
