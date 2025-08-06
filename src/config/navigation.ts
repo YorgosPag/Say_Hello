@@ -41,6 +41,12 @@ export const mainMenuItems: MenuItem[] = [
     href: "/buildings",
     badge: null,
   },
+  {
+    title: "Μονάδες (Units)",
+    icon: Archive,
+    href: "/units",
+    badge: null,
+  },
 ]
 
 export const toolsMenuItems: MenuItem[] = []
