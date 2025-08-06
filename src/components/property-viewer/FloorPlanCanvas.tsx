@@ -49,6 +49,7 @@ interface FloorPlanCanvasProps {
   snapToGrid: boolean;
   gridSize: number;
   showMeasurements: boolean;
+  showLabels: boolean;
   scale: number;
   suggestionToDisplay: Suggestion | null;
   connections: Connection[];
@@ -73,6 +74,7 @@ export function FloorPlanCanvas({
   snapToGrid,
   gridSize,
   showMeasurements,
+  showLabels,
   scale,
   suggestionToDisplay,
   connections,
@@ -84,6 +86,8 @@ export function FloorPlanCanvas({
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [creatingVertices, setCreatingVertices] = useState<Point[]>([]);
   const [mousePosition, setMousePosition] = useState<Point | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const lastPanPoint = useRef({ x: 0, y: 0 });
   
   // Measurement tool state
   const [measurementStart, setMeasurementStart] = useState<Point | null>(null);
@@ -174,6 +178,13 @@ export function FloorPlanCanvas({
 
 
   const handleCanvasMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
+    if (isPanning && containerRef.current) {
+        const dx = event.clientX - lastPanPoint.current.x;
+        const dy = event.clientY - lastPanPoint.current.y;
+        containerRef.current.scrollBy(-dx, -dy);
+        lastPanPoint.current = { x: event.clientX, y: event.clientY };
+    }
+      
     if (event.target === event.currentTarget) {
       onPolygonHover(null);
     }
@@ -188,7 +199,7 @@ export function FloorPlanCanvas({
     } else {
         setMousePosition(null);
     }
-  }, [onPolygonHover, isCreatingPolygon, isMeasuring, isConnecting, snapPoint]);
+  }, [onPolygonHover, isCreatingPolygon, isMeasuring, isConnecting, snapPoint, isPanning]);
 
   const handleRightClick = (event: React.MouseEvent<SVGSVGElement>) => {
       // Exit creation mode on right click
@@ -203,13 +214,31 @@ export function FloorPlanCanvas({
       }
   }
 
+  const handleMouseDown = (event: React.MouseEvent<SVGSVGElement>) => {
+      if (event.button === 0 && !activeTool) { // Left-click when no tool is active
+          setIsPanning(true);
+          lastPanPoint.current = { x: event.clientX, y: event.clientY };
+          event.currentTarget.style.cursor = 'grabbing';
+      }
+  };
+  
+  const handleMouseUp = (event: React.MouseEvent<SVGSVGElement>) => {
+      setIsPanning(false);
+      event.currentTarget.style.cursor = 'default';
+  };
+
 
   return (
     <div 
       ref={containerRef} 
       className={cn("w-full h-full relative overflow-hidden", {
         "cursor-crosshair": isCreatingPolygon || isMeasuring || isConnecting,
+        "cursor-grab": !activeTool && !isPanning,
+        "cursor-grabbing": isPanning,
       })}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp} // Stop panning if mouse leaves canvas
     >
       {/* Floor plan background */}
       {floorData.floorPlanUrl && (
@@ -225,7 +254,7 @@ export function FloorPlanCanvas({
       <svg
         width={dimensions.width}
         height={dimensions.height}
-        className="absolute inset-0 cursor-default"
+        className="absolute inset-0"
         onClick={handleCanvasClick}
         onDoubleClick={handleCanvasDoubleClick}
         onMouseMove={handleCanvasMouseMove}
@@ -269,6 +298,7 @@ export function FloorPlanCanvas({
                     onSelect={onPolygonSelect}
                     onNavigateLevels={onNavigateLevels}
                     showMeasurements={showMeasurements}
+                    showLabels={showLabels}
                     scale={scale}
                     visible={layerState.visible}
                     opacity={layerState.opacity}

@@ -208,6 +208,14 @@ export function FloorPlanViewer({
   }, []);
 
   const handleNavigateLevels = useCallback((property: Property) => {
+      if (!property.isMultiLevel) {
+          const relatedPart = properties.find(p => p.parentPropertyId === property.id || p.id === property.parentPropertyId);
+          if (relatedPart) {
+              onSelectFloor(relatedPart.floorId);
+          }
+          return;
+      }
+  
       const parentPropertyId = property.parentPropertyId || property.id;
       const parentProperty = properties.find(p => p.id === parentPropertyId);
   
@@ -258,13 +266,14 @@ export function FloorPlanViewer({
               groups={groups}
               isConnecting={isConnecting}
               firstConnectionPoint={firstConnectionPoint}
+              showLabels={showLabels}
             />
         </FloorCanvasWrapper>
 
         {activeTool === 'edit_nodes' && (
           <SidebarPanel
             floorData={currentFloor}
-            selectedPolygonIds={selectedPropertyIds}
+            selectedPolygonIds={selectedPolygonIds}
             layerStates={layerStates}
             setLayerStates={setLayerStates}
             onPolygonSelect={onSelectProperty}

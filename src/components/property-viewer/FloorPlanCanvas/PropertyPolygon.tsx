@@ -15,6 +15,7 @@ interface PropertyPolygonProps {
   onHover: (propertyId: string | null) => void;
   onSelect: (propertyId: string, isShiftClick: boolean) => void;
   showMeasurements: boolean;
+  showLabels: boolean;
   scale: number;
   visible: boolean;
   opacity: number;
@@ -39,6 +40,7 @@ export function PropertyPolygon({
   onHover,
   onSelect,
   showMeasurements,
+  showLabels,
   scale,
   visible,
   opacity,
@@ -115,30 +117,32 @@ export function PropertyPolygon({
         />
       )}
 
-      <g className="property-label pointer-events-none">
-        <text
-          x={centroid.x}
-          y={centroid.y + 3}
-          textAnchor="middle"
-          fontSize="10"
-          fill="white"
-          className="select-none font-medium"
-          style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.8)', strokeWidth: '3px', strokeLinejoin: 'round' }}
-        >
-          {property.name.replace(/ - .*/, '')}
-        </text>
-        <text
-          x={centroid.x}
-          y={centroid.y + 15}
-          textAnchor="middle"
-          fontSize="8"
-          fill="white"
-          className="select-none"
-          style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.7)', strokeWidth: '2px', strokeLinejoin: 'round' }}
-        >
-          {property.type}
-        </text>
-      </g>
+      {showLabels && (
+        <g className="property-label pointer-events-none">
+          <text
+            x={centroid.x}
+            y={centroid.y + 3}
+            textAnchor="middle"
+            fontSize="10"
+            fill="white"
+            className="select-none font-medium"
+            style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.8)', strokeWidth: '3px', strokeLinejoin: 'round' }}
+          >
+            {property.name.replace(/ - .*/, '')}
+          </text>
+          <text
+            x={centroid.x}
+            y={centroid.y + 15}
+            textAnchor="middle"
+            fontSize="8"
+            fill="white"
+            className="select-none"
+            style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.7)', strokeWidth: '2px', strokeLinejoin: 'round' }}
+          >
+            {property.type}
+          </text>
+        </g>
+      )}
       
       {isMultiLevel && (
         <g 

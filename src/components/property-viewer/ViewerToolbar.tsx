@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React from 'react';
@@ -22,7 +23,7 @@ interface ViewerToolbarProps {
     currentFloor: FloorData;
     floors: FloorData[];
     zoom: number;
-    setZoom: (zoom: number) => void;
+    setZoom: (zoom: number | ((prevZoom: number) => number)) => void;
     showLabels: boolean;
     setShowLabels: (show: boolean) => void;
     onSelectFloor: (floorId: string | null) => void;
@@ -40,8 +41,8 @@ export function ViewerToolbar({
     onFileUpload
 }: ViewerToolbarProps) {
 
-    const handleZoomIn = () => setZoom(Math.min(zoom * 1.2, 5));
-    const handleZoomOut = () => setZoom(Math.max(zoom / 1.2, 0.2));
+    const handleZoomIn = () => setZoom(prev => Math.min(prev * 1.2, 5));
+    const handleZoomOut = () => setZoom(prev => Math.max(prev / 1.2, 0.2));
     const handleResetView = () => setZoom(1);
 
     return (
