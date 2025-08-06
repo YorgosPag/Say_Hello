@@ -28,9 +28,9 @@ export default function Header({ timeRange, setTimeRange, analyticsView, setAnal
                             <SelectValue placeholder="Select time range" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="1M">Τελευταίο μήνα</SelectItem>
-                            <SelectItem value="3M">Τελευταίους 3 μήνες</SelectItem>
-                            <SelectItem value="6M">Τελευταίους 6 μήνες</SelectItem>
+                            <SelectItem value="1M">Τελευταίος μήνας</SelectItem>
+                            <SelectItem value="3M">Τελευταίοι 3 μήνες</SelectItem>
+                            <SelectItem value="6M">Τελευταίοι 6 μήνες</SelectItem>
                             <SelectItem value="1Y">Τελευταίο έτος</SelectItem>
                         </SelectContent>
                     </Select>
