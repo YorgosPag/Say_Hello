@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   MousePointer,
   PenSquare,
@@ -28,6 +29,8 @@ interface ViewerToolsProps {
   setSnapToGrid: (snap: boolean) => void;
   showMeasurements: boolean;
   setShowMeasurements: (show: boolean) => void;
+  scale: number;
+  setScale: (scale: number) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -51,6 +54,8 @@ export function ViewerTools({
   setSnapToGrid,
   showMeasurements,
   setShowMeasurements,
+  scale,
+  setScale,
   undo,
   redo,
   canUndo,
@@ -110,6 +115,20 @@ export function ViewerTools({
                     checked={showMeasurements}
                     onCheckedChange={setShowMeasurements}
                 />
+                 {showMeasurements && (
+                    <div className="flex items-center gap-1 text-xs">
+                        <Label htmlFor="scale-input" className="text-xs text-muted-foreground">Κλίμακα:</Label>
+                        <Input
+                            id="scale-input"
+                            type="number"
+                            value={scale}
+                            onChange={(e) => setScale(parseFloat(e.target.value) || 0)}
+                            className="h-7 w-20 text-xs"
+                            step="0.01"
+                        />
+                        <span className="text-muted-foreground">m/px</span>
+                    </div>
+                )}
             </div>
         </div>
       </CardContent>
