@@ -236,34 +236,35 @@ export default function UnitsPage() {
         viewMode={viewMode} 
         setViewMode={setViewMode}
       />
-      <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
-        <div className="px-4 shrink-0 mt-4 border-b">
-          <TabsList>
-            <TabsTrigger value="general">Γενικά</TabsTrigger>
-            <TabsTrigger value="documents">Έγγραφα</TabsTrigger>
-            <TabsTrigger value="photos">Φωτογραφίες</TabsTrigger>
-            <TabsTrigger value="videos">Videos</TabsTrigger>
-          </TabsList>
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="px-4 shrink-0 mt-4">
+          <Collapsible className="border bg-card rounded-lg">
+              <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
+                  <Filter className="w-4 h-4 mr-2"/>
+                  Φίλτρα Αναζήτησης
+                  </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                  <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+              </CollapsibleContent>
+          </Collapsible>
         </div>
-        
-        <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2">
-           <div className="px-4 shrink-0">
-              <Collapsible className="border bg-card rounded-lg">
-                  <CollapsibleTrigger asChild>
-                      <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
-                      <Filter className="w-4 h-4 mr-2"/>
-                      Φίλτρα Αναζήτησης
-                      </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                      <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
-                  </CollapsibleContent>
-              </Collapsible>
-            </div>
+
+        <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
+          <div className="px-4 shrink-0 mt-4 border-b">
+            <TabsList>
+              <TabsTrigger value="general">Γενικά</TabsTrigger>
+              <TabsTrigger value="documents">Έγγραφα</TabsTrigger>
+              <TabsTrigger value="photos">Φωτογραφίες</TabsTrigger>
+              <TabsTrigger value="videos">Videos</TabsTrigger>
+            </TabsList>
+          </div>
           
-            <main className="flex-1 flex overflow-hidden p-4 gap-4">
+          <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2">
+             <main className="flex-1 flex overflow-hidden p-4 gap-4 h-full">
               {viewMode === 'list' ? (
-                <div className="flex-1 flex gap-4 min-h-0">
+                <div className="flex-1 flex gap-4 h-full">
                   <div className="w-[320px] bg-card border rounded-lg flex flex-col shrink-0 shadow-sm">
                         <CardHeader className="pb-4 shrink-0">
                             <CardTitle className="text-base">Λίστα Μονάδων</CardTitle>
@@ -280,7 +281,7 @@ export default function UnitsPage() {
                         </ScrollArea>
                     </div>
 
-                  <div className="flex-1 flex flex-col gap-4 min-w-0">
+                  <div className="flex-1 flex flex-col gap-4 h-full">
                     <div className="p-2 border-b bg-card rounded-t-lg">
                       <ViewerTools 
                           activeTool={activeTool}
@@ -340,11 +341,12 @@ export default function UnitsPage() {
                 />
               )}
             </main>
-        </TabsContent>
-        <TabsContent value="documents" className="p-4">Έγγραφα</TabsContent>
-        <TabsContent value="photos" className="p-4">Φωτογραφίες</TabsContent>
-        <TabsContent value="videos" className="p-4">Videos</TabsContent>
-      </Tabs>
+          </TabsContent>
+          <TabsContent value="documents" className="p-4">Έγγραφα</TabsContent>
+          <TabsContent value="photos" className="p-4">Φωτογραφίες</TabsContent>
+          <TabsContent value="videos" className="p-4">Videos</TabsContent>
+        </Tabs>
+      </div>
       {showHistoryPanel && (
           <VersionHistoryPanel 
               buildingId={selectedFloorId || 'building-1'}
@@ -355,4 +357,3 @@ export default function UnitsPage() {
     </div>
   );
 }
-
