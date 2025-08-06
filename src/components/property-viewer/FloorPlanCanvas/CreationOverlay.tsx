@@ -41,9 +41,9 @@ export function CreationOverlay({ vertices, mousePosition }: CreationOverlayProp
          <circle
           cx={vertices[0].x}
           cy={vertices[0].y}
-          r="6"
-          fill="rgba(124, 58, 237, 0.5)"
-          stroke="#7c3aed"
+          r="8"
+          fill="rgba(239, 68, 68, 0.5)"
+          stroke="#ef4444"
           strokeWidth={2}
           className="cursor-pointer animate-pulse"
          />
