@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PropertyList } from './PropertyList';
 import { PropertyDetails } from './PropertyDetails';
 import { PropertyPageHeader } from './page/PropertyPageHeader';
@@ -178,7 +178,6 @@ export function PropertyManagementPageContent() {
     canRedo,
     setSelectedProperties,
   } = usePropertyViewer();
-
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(propertiesData.length > 0 ? propertiesData[0] : null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showDashboard, setShowDashboard] = useState(true);
