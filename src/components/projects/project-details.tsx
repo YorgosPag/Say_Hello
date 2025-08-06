@@ -12,6 +12,8 @@ import { PhotosTab } from './PhotosTab';
 import { VideosTab } from './VideosTab';
 import type { Project } from '@/types/project';
 import { ProjectDetailsHeader } from './ProjectDetailsHeader';
+import { ProjectTimelineTab } from './ProjectTimelineTab';
+import { Briefcase } from 'lucide-react';
 
 interface ProjectDetailsProps {
     project: Project;
@@ -35,6 +37,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                     <Tabs defaultValue="general" className="flex flex-col h-full">
                         <TabsList className="shrink-0 flex-wrap h-auto justify-start">
                             <TabsTrigger value="general">Γενικά Έργου</TabsTrigger>
+                            <TabsTrigger value="timeline">Timeline</TabsTrigger>
                             <TabsTrigger value="building-data">Στοιχεία Δόμησης</TabsTrigger>
                             <TabsTrigger value="parking">Θέσεις Στάθμευσης</TabsTrigger>
                             <TabsTrigger value="contributors">Συντελεστές</TabsTrigger>
@@ -45,6 +48,9 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                         </TabsList>
                         <TabsContent value="general" className="flex-grow overflow-auto mt-4">
                             <GeneralProjectTab />
+                        </TabsContent>
+                         <TabsContent value="timeline" className="flex-grow overflow-auto mt-4">
+                            <ProjectTimelineTab project={project} />
                         </TabsContent>
                         <TabsContent value="building-data" className="flex-grow overflow-auto mt-4">
                             <BuildingDataTab />
