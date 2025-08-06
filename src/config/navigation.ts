@@ -5,6 +5,7 @@ import {
   Building,
   Library,
   Briefcase,
+  Archive,
 } from "lucide-react"
 import type { MenuItem } from "@/types/sidebar"
 
@@ -20,6 +21,12 @@ export const mainMenuItems: MenuItem[] = [
     icon: Library,
     href: "/properties",
     badge: "Νέο",
+  },
+  {
+    title: "Ακίνητα",
+    icon: Archive,
+    href: "/property-management",
+    badge: null,
   },
   {
     title: "Επαφές",
