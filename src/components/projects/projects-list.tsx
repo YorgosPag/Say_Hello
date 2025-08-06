@@ -3,110 +3,113 @@
 import React, { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ProjectToolbar } from './ProjectToolbar';
+import type { Project, ProjectStatus, ProjectSortKey } from '@/types/project';
 import { ProjectListHeader } from './list/ProjectListHeader';
 import { ProjectListItem } from './list/ProjectListItem';
-import type { Project, ProjectStatus, ProjectSortKey } from '@/types/project';
-
-const mockProjects: Project[] = [
-    {
-      id: 1,
-      name: "3. ΕΥΤΕΡΠΗΣ",
-      status: 'completed',
-      company: 'ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ',
-      city: 'Εύοσμος',
-      progress: 100,
-      totalValue: 3922222,
-      lastUpdate: '2023-05-15',
-    },
-    {
-      id: 2,
-      name: "Καληαρού & Κομνηνών",
-      status: 'in_progress',
-      company: 'ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ',
-      city: 'Θεσσαλονίκη',
-      progress: 65,
-      totalValue: 2100000,
-      lastUpdate: '2024-07-20',
-    },
-    {
-        id: 3,
-        name: "Κτίριο Γραφείων Αμπελόκηποι",
-        status: 'planning',
-        company: 'DevConstruct AE',
-        city: 'Αθήνα',
-        progress: 10,
-        totalValue: 5500000,
-        lastUpdate: '2024-06-10',
-    }
-];
-
 
 interface ProjectsListProps {
-    selectedProject: Project;
-    onSelectProject?: (project: Project) => void;
+  projects: Project[];
+  selectedProject: Project;
+  onSelectProject?: (project: Project) => void;
+  getStatusColor: (status: string) => string;
+  getStatusLabel: (status: string) => string;
 }
 
-export function ProjectsList({ selectedProject, onSelectProject }: ProjectsListProps) {
-    const [projects, setProjects] = useState<Project[]>(mockProjects);
-    const [sortBy, setSortBy] = useState<ProjectSortKey>('name');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-    const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'all'>('all');
-    const [favorites, setFavorites] = useState<number[]>([1]);
-    
-    const filteredProjects = useMemo(() => {
-        return projects.filter(p => filterStatus === 'all' || p.status === filterStatus);
-    }, [projects, filterStatus]);
-    
-    const sortedProjects = useMemo(() => {
-        return [...filteredProjects].sort((a, b) => {
-            const aVal = a[sortBy];
-            const bVal = b[sortBy];
-            
-            if (typeof aVal === 'string' && typeof bVal === 'string') {
-                return sortOrder === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-            }
-            if (typeof aVal === 'number' && typeof bVal === 'number') {
-                return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
-            }
-            return 0;
-        });
-    }, [filteredProjects, sortBy, sortOrder]);
+export function ProjectsList({
+  projects,
+  selectedProject,
+  onSelectProject,
+  getStatusColor,
+  getStatusLabel
+}: ProjectsListProps) {
+  const [favorites, setFavorites] = useState<number[]>([1]);
+  const [sortBy, setSortBy] = useState<ProjectSortKey>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-    const toggleFavorite = (projectId: number) => {
-        setFavorites(prev =>
-          prev.includes(projectId)
-            ? prev.filter(id => id !== projectId)
-            : [...prev, projectId]
-        );
-      };
-
-
-    return (
-        <div className="w-[400px] bg-card border rounded-lg flex flex-col shrink-0">
-            <ProjectListHeader 
-                projectCount={projects.length}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                sortOrder={sortOrder}
-                setSortOrder={setSortOrder}
-                filterStatus={filterStatus}
-                setFilterStatus={setFilterStatus}
-            />
-            <ProjectToolbar />
-            <ScrollArea className="flex-1">
-                <div className="p-2 space-y-2">
-                    {sortedProjects.map((project) => (
-                        <ProjectListItem
-                            key={project.id}
-                            project={project}
-                            isSelected={selectedProject?.id === project.id}
-                            onSelect={() => onSelectProject?.(project)}
-                            isFavorite={favorites.includes(project.id)}
-                            onToggleFavorite={() => toggleFavorite(project.id)}
-                        />
-                    ))}
-                </div>
-            </ScrollArea>
-        </div>
+  const toggleFavorite = (projectId: number) => {
+    setFavorites(prev =>
+      prev.includes(projectId)
+        ? prev.filter(id => id !== projectId)
+        : [...prev, projectId]
     );
+  };
+  
+  const sortedProjects = useMemo(() => {
+    if (!projects) return [];
+    return [...projects].sort((a, b) => {
+      let aValue, bValue;
+
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'progress':
+          aValue = a.progress;
+          bValue = b.progress;
+          break;
+        case 'totalValue':
+          aValue = a.totalValue;
+          bValue = b.totalValue;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortOrder === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortOrder === 'asc'
+          ? aValue - bValue
+          : bValue - aValue;
+      }
+      return 0;
+    });
+  }, [projects, sortBy, sortOrder]);
+
+
+  return (
+    <div className="min-w-[300px] max-w-[420px] w-full bg-card border rounded-lg flex flex-col shrink-0 shadow-sm max-h-full overflow-hidden">
+      <ProjectListHeader 
+        projects={projects}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+      />
+
+      <ProjectToolbar 
+        selectedProject={selectedProject}
+        onNew={() => console.log('Νέο έργο')}
+        onEdit={() => console.log('Επεξεργασία έργου')}
+        onDelete={() => console.log('Διαγραφή έργου')}
+        onSave={() => console.log('Αποθήκευση')}
+        onRefresh={() => console.log('Ανανέωση')}
+        onExport={() => console.log('Εξαγωγή')}
+        onImport={() => console.log('Εισαγωγή')}
+      />
+
+      <ScrollArea className="flex-1 overflow-y-auto w-full">
+        <div className="p-2 space-y-2 min-h-0 w-full">
+          {sortedProjects.map((project: Project) => (
+            <div key={project.id} className="shrink-0 w-full">
+              <ProjectListItem
+                project={project}
+                isSelected={selectedProject?.id === project.id}
+                onSelect={() => onSelectProject?.(project)}
+                isFavorite={favorites.includes(project.id)}
+                onToggleFavorite={() => toggleFavorite(project.id)}
+              />
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
+  );
 }

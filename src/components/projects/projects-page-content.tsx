@@ -68,8 +68,6 @@ export function ProjectsPageContent() {
             projects={projects}
             selectedProject={selectedProject}
             onSelectProject={setSelectedProject}
-            getStatusColor={getStatusColor}
-            getStatusLabel={getStatusLabel}
         />
         <ProjectDetails project={selectedProject} />
     </PageLayout>

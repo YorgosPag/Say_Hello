@@ -32,6 +32,7 @@ export function ProjectListItem({
     isFavorite,
     onToggleFavorite,
 }: ProjectListItemProps) {
+    if (!project) return null;
     const { icon: StatusIcon, color: statusColor } = statusConfig[project.status];
     
     return (
