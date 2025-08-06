@@ -2,6 +2,6 @@
 
 import { ProjectsPageContent } from '@/components/projects/projects-page-content';
 
-export default function ProjectsPage() {
+export default function AuditPage() {
   return <ProjectsPageContent />;
 }

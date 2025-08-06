@@ -31,7 +31,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
         </div>
     );
     return (
-        <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0 shadow-sm">
+        <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0 shadow-sm overflow-hidden">
             <ProjectDetailsHeader project={project} />
             <ScrollArea className="flex-1">
                 <div className="p-4">
