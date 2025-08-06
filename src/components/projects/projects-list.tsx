@@ -80,16 +80,7 @@ export function ProjectsList({
         setSortOrder={setSortOrder}
       />
 
-      <ProjectToolbar 
-        selectedProject={selectedProject}
-        onNew={() => console.log('Νέο έργο')}
-        onEdit={() => console.log('Επεξεργασία έργου')}
-        onDelete={() => console.log('Διαγραφή έργου')}
-        onSave={() => console.log('Αποθήκευση')}
-        onRefresh={() => console.log('Ανανέωση')}
-        onExport={() => console.log('Εξαγωγή')}
-        onImport={() => console.log('Εισαγωγή')}
-      />
+      <ProjectToolbar />
 
       <ScrollArea className="flex-1 overflow-y-auto w-full">
         <div className="p-2 space-y-2 min-h-0 w-full">
