@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, Home, Users, Ruler, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Building } from '../../BuildingsPageContent';
 
 // Mock nearby projects data
 const nearbyProjects = [
@@ -39,7 +38,7 @@ const nearbyProjects = [
 ];
 
 interface InteractiveMapProps {
-    building: Building;
+    building: { name: string };
     coordinates: { lat: number; lng: number };
     mapView: 'satellite' | 'street' | 'hybrid';
     showNearbyProjects: boolean;

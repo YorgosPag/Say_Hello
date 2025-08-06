@@ -9,7 +9,7 @@ import { NearbyProjectsList } from './NearbyProjectsList';
 import { LocationAnalyticsGrid } from './LocationAnalyticsGrid';
 
 interface MapTabContentProps {
-  building: Building;
+  building: Pick<Building, 'name' | 'address' | 'city'>;
 }
 
 const MapTabContent = ({ building }: MapTabContentProps) => {

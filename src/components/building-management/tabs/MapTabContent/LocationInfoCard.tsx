@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { MapPin, Share } from 'lucide-react';
-import type { Building } from '../../BuildingsPageContent';
 
 interface LocationInfoCardProps {
-    building: Building;
+    building: { name: string; address?: string, city?: string };
     coordinates: { lat: number, lng: number };
 }
 

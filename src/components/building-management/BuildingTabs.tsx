@@ -13,15 +13,14 @@ import {
   Camera,
   Video
 } from 'lucide-react';
-import type { Building } from '../BuildingsPageContent';
-import { StorageTab } from '../StorageTab';
-import { GeneralTabContent } from '../tabs/GeneralTabContent';
-import TimelineTabContent from '../tabs/TimelineTabContent';
-import MapTabContent from '../tabs/MapTabContent';
-import AnalyticsTabContent from '../tabs/AnalyticsTabContent';
-import PhotosTabContent from '../tabs/PhotosTabContent';
-import VideosTabContent from '../tabs/VideosTabContent';
-import PlaceholderTab from '../tabs/PlaceholderTab';
+import type { Building } from './BuildingsPageContent';
+import { StorageTab } from './StorageTab';
+import { GeneralTabContent } from './tabs/GeneralTabContent';
+import TimelineTabContent from './tabs/TimelineTabContent';
+import AnalyticsTabContent from './tabs/AnalyticsTabContent';
+import PhotosTabContent from './tabs/PhotosTabContent';
+import VideosTabContent from './tabs/VideosTabContent';
+import PlaceholderTab from './tabs/PlaceholderTab';
 
 interface BuildingTabsProps {
     building: Building;
@@ -30,7 +29,6 @@ interface BuildingTabsProps {
 const tabConfig = [
     { value: 'general', label: 'Γενικά', icon: Home, component: GeneralTabContent },
     { value: 'timeline', label: 'Timeline', icon: Clock, component: TimelineTabContent },
-    { value: 'map', label: 'Χάρτης', icon: MapPin, component: MapTabContent },
     { value: 'analytics', label: 'Analytics', icon: TrendingUp, component: AnalyticsTabContent },
     { value: 'storage', label: 'Αποθήκες & Parking', icon: Archive, component: StorageTab },
     { value: 'contracts', label: 'Συμβόλαια', icon: FileText, component: (props: any) => <PlaceholderTab title="Συμβόλαια Πελατών" icon={FileText} {...props} /> },

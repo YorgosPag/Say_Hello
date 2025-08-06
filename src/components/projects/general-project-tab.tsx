@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Globe, Folder, Eye, MapPin, Building, FileText, Settings, Edit, Save, X, CheckCircle } from "lucide-react"
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MapTabContent from '../building-management/tabs/MapTabContent';
 
 function GeneralProjectHeader() {
   const [isEditing, setIsEditing] = useState(false);
@@ -81,7 +82,7 @@ export function GeneralProjectTab() {
       <Tabs defaultValue="basic-info" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="basic-info">Βασικές Πληροφορίες</TabsTrigger>
-              <TabsTrigger value="location">Τοποθεσία</TabsTrigger>
+              <TabsTrigger value="location">Τοποθεσία & Χάρτης</TabsTrigger>
               <TabsTrigger value="permits">Άδειες & Κατάσταση</TabsTrigger>
               <TabsTrigger value="attachments">Συνημμένα Αρχεία</TabsTrigger>
           </TabsList>
@@ -121,69 +122,7 @@ export function GeneralProjectTab() {
           </TabsContent>
           
           <TabsContent value="location" className="pt-4">
-              <Card>
-                  <CardHeader className="pb-4">
-                      <div className="flex items-center gap-2">
-                          <MapPin className="w-5 h-5 text-primary" />
-                          <CardTitle className="text-lg">Τοποθεσία</CardTitle>
-                      </div>
-                      <CardDescription>
-                          Στοιχεία τοποθεσίας και διεύθυνσης του έργου
-                      </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                              <Label className="text-sm font-medium">Νομός</Label>
-                              <Select defaultValue="thessaloniki">
-                                  <SelectTrigger className="h-10">
-                                      <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                      <SelectItem value="thessaloniki">Θεσσαλονίκης</SelectItem>
-                                  </SelectContent>
-                              </Select>
-                          </div>
-                          <div className="space-y-2">
-                              <Label className="text-sm font-medium">Πόλη/Δήμος</Label>
-                              <Select defaultValue="thessaloniki">
-                                  <SelectTrigger className="h-10">
-                                      <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                      <SelectItem value="thessaloniki">Θεσσαλονίκη</SelectItem>
-                                  </SelectContent>
-                              </Select>
-                          </div>
-                          <div className="space-y-2">
-                              <Label className="text-sm font-medium">Δήμος/Δ. Διαμέρ.</Label>
-                              <Select defaultValue="evosmou">
-                                  <SelectTrigger className="h-10">
-                                      <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                      <SelectItem value="evosmou">Δήμος Ευόσμου</SelectItem>
-                                  </SelectContent>
-                              </Select>
-                          </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                          <div className="md:col-span-3 space-y-2">
-                              <Label className="text-sm font-medium">Διεύθυνση</Label>
-                              <div className="flex gap-2">
-                                  <Input defaultValue="Ευτέρπης 32 - 34" className="h-10" />
-                                  <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
-                                      <Globe className="h-4 w-4" />
-                                  </Button>
-                              </div>
-                          </div>
-                          <div className="space-y-2">
-                              <Label className="text-sm font-medium">Ταχυδρομικός Κώδικας</Label>
-                              <Input defaultValue="562 24" className="h-10" />
-                          </div>
-                      </div>
-                  </CardContent>
-              </Card>
+              <MapTabContent building={{id: 1, name: "Project"}} />
           </TabsContent>
           
           <TabsContent value="permits" className="pt-4">
