@@ -311,7 +311,7 @@ export default function UnitsPage() {
       };
       
       const description = `Duplicated property ${propertyToDuplicate.name}`;
-      setProperties([...properties, newProperty], newProperty.name);
+      setProperties([...properties, newProperty], description);
   };
 
   const handleDelete = (propertyId: string) => {
@@ -388,7 +388,7 @@ export default function UnitsPage() {
                     <div className="flex-1 flex flex-col gap-4 min-h-0 bg-card border rounded-lg shadow-sm">
                         <UnitDetailsHeader unit={selectedUnit} />
                         <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
-                             <div className="shrink-0 border-b px-4 mt-2">
+                            <div className="shrink-0 border-b px-4 pb-1">
                                 <TabsList>
                                     <TabsTrigger value="general">Γενικά</TabsTrigger>
                                     <TabsTrigger value="documents">Έγγραφα</TabsTrigger>
@@ -396,25 +396,27 @@ export default function UnitsPage() {
                                     <TabsTrigger value="videos">Videos</TabsTrigger>
                                 </TabsList>
                             </div>
-                            <TabsContent value="general" className="flex-1 flex flex-col gap-2 min-h-0 mt-2 h-full p-4">
-                                <ViewerTools 
-                                    activeTool={activeTool}
-                                    setActiveTool={setActiveTool}
-                                    showGrid={showGrid}
-                                    setShowGrid={setShowGrid}
-                                    snapToGrid={snapToGrid}
-                                    setSnapToGrid={setSnapToGrid}
-                                    showMeasurements={showMeasurements}
-                                    setShowMeasurements={setShowMeasurements}
-                                    scale={scale}
-                                    setScale={setScale}
-                                    undo={undo}
-                                    redo={redo}
-                                    canUndo={canUndo}
-                                    canRedo={canRedo}
-                                    onShowHistory={() => setShowHistoryPanel(true)}
-                                />
-                                <div className="flex-1 flex flex-col h-full pt-2">
+                            <TabsContent value="general" className="flex-1 flex flex-col min-h-0 p-4 pt-2">
+                                <div className="py-1">
+                                    <ViewerTools 
+                                        activeTool={activeTool}
+                                        setActiveTool={setActiveTool}
+                                        showGrid={showGrid}
+                                        setShowGrid={setShowGrid}
+                                        snapToGrid={snapToGrid}
+                                        setSnapToGrid={setSnapToGrid}
+                                        showMeasurements={showMeasurements}
+                                        setShowMeasurements={setShowMeasurements}
+                                        scale={scale}
+                                        setScale={setScale}
+                                        undo={undo}
+                                        redo={redo}
+                                        canUndo={canUndo}
+                                        canRedo={canRedo}
+                                        onShowHistory={() => setShowHistoryPanel(true)}
+                                    />
+                                </div>
+                                <div className="flex-1 flex flex-col h-full pt-1">
                                   <FloorPlanViewer
                                           properties={filteredProperties}
                                           selectedPropertyIds={selectedPropertyIds}
