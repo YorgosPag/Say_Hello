@@ -473,7 +473,7 @@ export default function PropertyViewerPage() {
       
     const newProperties = [...properties, propertyToAdd];
     setProperties(newProperties, 'Δημιουργία Polygon');
-    toast.success('Το Polygon δημιουργήθηκε');
+    toast({ title: "Επιτυχία", description: "Το Polygon δημιουργήθηκε." });
     setActiveTool(null);
     setSelectedProperties([propertyToAdd.id]);
     }, [properties, setProperties, toast, setSelectedProperties]
@@ -493,14 +493,14 @@ export default function PropertyViewerPage() {
     const propertyToCopy = properties.find(p => p.id === selectedProperties[0]);
     if (propertyToCopy) {
       setClipboard(propertyToCopy);
-      toast.success(`Το ακίνητο "${propertyToCopy.name}" αντιγράφηκε.`);
+      toast({ title: "Επιτυχία", description: `Το ακίνητο "${propertyToCopy.name}" αντιγράφηκε.` });
     }
   }, [selectedProperties, properties, toast]);
 
   const handlePaste = useCallback(() => {
     if (!clipboard) return;
     if (!selectedFloor) {
-      toast.warning("Επιλέξτε έναν όροφο για επικόλληση.");
+      toast({ title: "Προειδοποίηση", description: "Επιλέξτε έναν όροφο για επικόλληση.", variant: "warning" });
       return;
     }
 
@@ -516,7 +516,7 @@ export default function PropertyViewerPage() {
     const newProperties = [...properties, newProperty];
     setProperties(newProperties, `Επικόλληση ${newProperty.name}`);
     setSelectedProperties([newId]);
-    toast.success(`Το ακίνητο "${newProperty.name}" επικολλήθηκε.`);
+    toast({ title: "Επιτυχία", description: `Το ακίνητο "${newProperty.name}" επικολλήθηκε.` });
   }, [clipboard, properties, setProperties, selectedFloor, toast, setSelectedProperties]);
   
   const handleDuplicate = useCallback((propertyId: string) => {
@@ -534,7 +534,7 @@ export default function PropertyViewerPage() {
     const newProperties = [...properties, newProperty];
     setProperties(newProperties, `Διπλασιασμός ${propertyToDuplicate.name}`);
     setSelectedProperties([newId]);
-    toast.success(`Ο διπλασιασμός του "${propertyToDuplicate.name}" έγινε με επιτυχία.`);
+    toast({ title: "Επιτυχία", description: `Ο διπλασιασμός του "${propertyToDuplicate.name}" έγινε με επιτυχία.` });
   }, [properties, setProperties, toast, setSelectedProperties]);
 
   const handleDeleteSelected = useCallback(() => {
@@ -543,7 +543,7 @@ export default function PropertyViewerPage() {
     const newProperties = properties.filter(p => !selectedProperties.includes(p.id));
     setProperties(newProperties, `Διαγραφή ${selectedProperties.length} ακινήτων`);
 
-    toast.error(`Διαγράφηκαν ${selectedProperties.length} ακίνητα.`);
+    toast({ title: "Διαγραφή", description: `Διαγράφηκαν ${selectedProperties.length} ακίνητα.`, variant: "destructive" });
     setSelectedProperties([]);
   }, [properties, setProperties, toast, selectedProperties, setSelectedProperties]);
 
@@ -558,7 +558,7 @@ export default function PropertyViewerPage() {
   
   const handleExport = useCallback(() => {
     if (!properties || properties.length === 0) {
-      toast.warning('Δεν υπάρχουν δεδομένα για εξαγωγή.');
+      toast({ title: "Προειδοποίηση", description: 'Δεν υπάρχουν δεδομένα για εξαγωγή.', variant: "warning" });
       return;
     }
 
@@ -577,7 +577,7 @@ export default function PropertyViewerPage() {
     link.download = `properties_export_${Date.now()}.json`;
     link.click();
     
-    toast.success('Τα δεδομένα εξήχθησαν με επιτυχία.');
+    toast({ title: "Επιτυχία", description: 'Τα δεδομένα εξήχθησαν με επιτυχία.' });
   }, [properties, toast]);
   
   const handleImport = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -604,13 +604,13 @@ export default function PropertyViewerPage() {
         const importedProperties = data.properties as Property[];
         
         setProperties(importedProperties, 'Εισαγωγή από JSON');
-        toast.success(`${importedProperties.length} ακίνητα εισήχθησαν με επιτυχία.`);
+        toast({ title: "Επιτυχία", description: `${importedProperties.length} ακίνητα εισήχθησαν με επιτυχία.` });
 
       } catch (error) {
         if (error instanceof Error) {
-          toast.error(`Σφάλμα εισαγωγής: ${error.message}`);
+          toast({ title: "Σφάλμα", description: `Σφάλμα εισαγωγής: ${error.message}`, variant: "destructive" });
         } else {
-          toast.error('Προέκυψε ένα άγνωστο σφάλμα κατά την εισαγωγή.');
+          toast({ title: "Σφάλμα", description: 'Προέκυψε ένα άγνωστο σφάλμα κατά την εισαγωγή.', variant: "destructive" });
         }
       } finally {
          // Reset file input to allow importing the same file again
@@ -695,12 +695,14 @@ export default function PropertyViewerPage() {
               </div>
             </CardHeader>
             <CardContent className="flex-1 p-0 overflow-hidden">
-              <PropertyList
-                properties={filteredProperties}
-                selectedPropertyIds={selectedProperties}
-                onSelectProperty={handlePropertySelect}
-                isLoading={isLoading || isPending}
-              />
+               <ScrollArea className="h-full">
+                <PropertyList
+                    properties={filteredProperties}
+                    selectedPropertyIds={selectedProperties}
+                    onSelectProperty={handlePropertySelect}
+                    isLoading={isLoading || isPending}
+                />
+              </ScrollArea>
             </CardContent>
           </Card>
         </div>
