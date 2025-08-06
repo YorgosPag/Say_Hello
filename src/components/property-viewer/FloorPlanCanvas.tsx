@@ -47,6 +47,7 @@ interface FloorPlanCanvasProps {
   snapToGrid: boolean;
   gridSize: number;
   showMeasurements: boolean;
+  showLabels: boolean;
   scale: number;
   suggestionToDisplay: Suggestion | null;
   connections: Connection[];
@@ -54,7 +55,6 @@ interface FloorPlanCanvasProps {
   isConnecting: boolean;
   firstConnectionPoint: Property | null;
   pan: { x: number; y: number };
-  onPan: (pan: { x: number; y: number }) => void;
 }
 
 
@@ -81,7 +81,6 @@ export function FloorPlanCanvas({
   isConnecting,
   firstConnectionPoint,
   pan,
-  onPan
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -176,10 +175,12 @@ export function FloorPlanCanvas({
     // Default action (deselect)
     else {
       if (event.target === event.currentTarget) {
-          onPolygonSelect('', false); // Deselect all by passing empty ID
+          if (isNodeEditMode) {
+              onPolygonSelect('', false);
+          }
       }
     }
-  }, [isCreatingPolygon, isDrawingPolyline, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart, pan, onPan]);
+  }, [isCreatingPolygon, isDrawingPolyline, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart, pan, isNodeEditMode]);
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
@@ -255,7 +256,7 @@ export function FloorPlanCanvas({
         onMouseMove={handleCanvasMouseMove}
         onContextMenu={handleRightClick}
       >
-        <g transform={`translate(${pan.x}, ${pan.y})`}>
+        <g>
 
         <GridOverlay 
           showGrid={showGrid}

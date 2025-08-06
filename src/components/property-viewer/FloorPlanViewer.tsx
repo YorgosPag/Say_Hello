@@ -126,7 +126,7 @@ export interface FloorPlanViewerProps {
   onSelectFloor: (floorId: string | null) => void;
   onHoverProperty: (propertyId: string | null) => void;
   hoveredPropertyId: string | null;
-  activeTool: 'create' | 'edit_nodes' | 'measure' | null;
+  activeTool: 'create' | 'edit_nodes' | 'measure' | 'polyline' | null;
   onSelectProperty: (propertyId: string, isShiftClick: boolean) => void;
   onPolygonCreated: (newProperty: Omit<Property, 'id' | 'name' | 'type' | 'status' | 'building' | 'floor' | 'project' | 'buildingId' | 'floorId'>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
@@ -266,7 +266,6 @@ export function FloorPlanViewer({
               firstConnectionPoint={firstConnectionPoint}
               showLabels={showLabels}
               pan={pan}
-              onPan={setPan}
             />
         </FloorCanvasWrapper>
 

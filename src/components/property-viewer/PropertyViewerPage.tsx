@@ -26,8 +26,8 @@ export function PropertyViewerPage() {
     selectedProperties: selectedPropertyIds,
     hoveredProperty: hoveredPropertyId,
     selectedFloor: selectedFloorId,
-    setHoveredProperty,
-    setSelectedFloor: setSelectedFloorId,
+    setHoveredProperty: onHoverProperty,
+    setSelectedFloor: onSelectFloor,
     undo,
     redo,
     canUndo,
@@ -179,9 +179,9 @@ export function PropertyViewerPage() {
                 <FloorPlanViewer
                     selectedPropertyIds={selectedPropertyIds}
                     selectedFloorId={selectedFloorId}
-                    onSelectFloor={setSelectedFloorId}
+                    onSelectFloor={onSelectFloor}
                     hoveredPropertyId={hoveredPropertyId}
-                    onHoverProperty={setHoveredProperty}
+                    onHoverProperty={onHoverProperty}
                     activeTool={activeTool}
                     onSelectProperty={handlePolygonSelect}
                     onPolygonCreated={handlePolygonCreated}
@@ -233,7 +233,7 @@ export function PropertyViewerPage() {
                     <CardContent className="p-3 pt-0 h-[calc(100%-48px)]">
                          <PropertyDetailsPanel 
                             propertyIds={selectedPropertyIds} 
-                            onSelectFloor={setSelectedFloorId}
+                            onSelectFloor={onSelectFloor}
                             properties={properties}
                             onUpdateProperty={handleUpdateProperty}
                          />

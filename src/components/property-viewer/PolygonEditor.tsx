@@ -164,16 +164,29 @@ export function PolygonEditor({
     
     const rect = svgRef.current?.ownerSVGElement?.getBoundingClientRect();
     if (!rect) return;
-
+    
+    const zoom = parseFloat(svgRef.current?.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
+    
     let newPos = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: (event.clientX - rect.left) / zoom,
+      y: (event.clientY - rect.top) / zoom
     };
     newPos = snapPoint(newPos);
     
     const newVertices = [...polygon.vertices];
     newVertices.splice(edgeIndex + 1, 0, newPos);
     onPolygonUpdate(polygonId, newVertices);
+
+    // Immediately start dragging the new vertex
+    setDragState({
+        isDragging: true,
+        dragType: 'vertex',
+        polygonId,
+        dragIndex: edgeIndex + 1,
+        startPos: { x: event.clientX, y: event.clientY },
+        offset: { x: 0, y: 0 }
+    });
+
   }, [floorData.properties, onPolygonUpdate, snapPoint]);
 
   useEffect(() => {
@@ -185,10 +198,12 @@ export function PolygonEditor({
 
       const rect = svgRef.current?.ownerSVGElement?.getBoundingClientRect();
       if (!rect) return;
+      
+      const zoom = parseFloat(svgRef.current?.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
 
       const currentPos = snapPoint({
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
+        x: (event.clientX - rect.left) / zoom,
+        y: (event.clientY - rect.top) / zoom
       });
       
       if (dragState.dragType === 'vertex' && dragState.dragIndex !== undefined) {
