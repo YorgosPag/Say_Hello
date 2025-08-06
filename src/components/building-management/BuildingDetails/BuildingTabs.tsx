@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Home, 
   Clock, 
-  MapPin, 
   TrendingUp, 
   Archive,
   FileText,
@@ -17,7 +16,6 @@ import type { Building } from '../BuildingsPageContent';
 import { StorageTab } from '../StorageTab';
 import { GeneralTabContent } from '../tabs/GeneralTabContent';
 import TimelineTabContent from '../tabs/TimelineTabContent';
-import MapTabContent from '../tabs/MapTabContent';
 import AnalyticsTabContent from '../tabs/AnalyticsTabContent';
 import PhotosTabContent from '../tabs/PhotosTabContent';
 import VideosTabContent from '../tabs/VideosTabContent';
@@ -30,7 +28,7 @@ interface BuildingTabsProps {
 export function BuildingTabs({ building }: BuildingTabsProps) {
     return (
         <Tabs defaultValue="general" className="h-full">
-            <TabsList className="grid w-full grid-cols-9 mb-6">
+            <TabsList className="grid w-full grid-cols-8 mb-6">
                 <TabsTrigger value="general" className="flex items-center gap-2">
                     <Home className="w-4 h-4" />
                     Γενικά
@@ -38,10 +36,6 @@ export function BuildingTabs({ building }: BuildingTabsProps) {
                 <TabsTrigger value="timeline" className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
                     Timeline
-                </TabsTrigger>
-                <TabsTrigger value="map" className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Χάρτης
                 </TabsTrigger>
                 <TabsTrigger value="analytics" className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4" />
@@ -75,10 +69,6 @@ export function BuildingTabs({ building }: BuildingTabsProps) {
 
             <TabsContent value="timeline" className="mt-0">
                 <TimelineTabContent building={building} />
-            </TabsContent>
-
-            <TabsContent value="map" className="mt-0">
-                <MapTabContent building={building} />
             </TabsContent>
             
             <TabsContent value="analytics" className="mt-0">
