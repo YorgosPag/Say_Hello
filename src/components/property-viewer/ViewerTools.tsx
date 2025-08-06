@@ -16,7 +16,8 @@ import {
   Magnet,
   Undo2,
   Redo2,
-  Spline
+  Spline,
+  History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ interface ViewerToolsProps {
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  onShowHistory: () => void;
 }
 
 const tools = [
@@ -59,7 +61,8 @@ export function ViewerTools({
   undo,
   redo,
   canUndo,
-  canRedo
+  canRedo,
+  onShowHistory,
 }: ViewerToolsProps) {
   return (
     <Card className="border-none shadow-none">
@@ -87,6 +90,14 @@ export function ViewerTools({
                 </Button>
                 <Button variant="ghost" size="sm" onClick={redo} disabled={!canRedo} className="h-8 w-8 p-0">
                     <Redo2 className="h-4 w-4" />
+                </Button>
+            </div>
+            
+            <Separator orientation="vertical" className="h-6" />
+
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-md">
+                <Button variant="ghost" size="sm" onClick={onShowHistory} className="h-8 w-8 p-0">
+                    <History className="h-4 w-4" />
                 </Button>
             </div>
         </div>

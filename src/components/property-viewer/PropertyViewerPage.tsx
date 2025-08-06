@@ -22,6 +22,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { PropertyGrid } from './PropertyGrid';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Filter } from 'lucide-react';
+import { VersionHistoryPanel } from './VersionHistoryPanel';
+
 
 function PropertyViewerHeader({
   viewMode,
@@ -102,6 +104,7 @@ export function PropertyViewerPage() {
   const [gridSize, setGridSize] = useState(10);
   const [showMeasurements, setShowMeasurements] = useState(false);
   const [scale, setScale] = useState(0.05); // 1 pixel = 0.05 meters
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
 
   const [suggestionToDisplay, setSuggestionToDisplay] = useState<Suggestion | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -266,6 +269,7 @@ export function PropertyViewerPage() {
                 redo={redo}
                 canUndo={canUndo}
                 canRedo={canRedo}
+                onShowHistory={() => setShowHistoryPanel(true)}
             />
         </div>
         
@@ -332,12 +336,14 @@ export function PropertyViewerPage() {
                               <CardTitle className="text-sm">Λεπτομέρειες Ακινήτου</CardTitle>
                           </CardHeader>
                           <CardContent className="p-3 pt-0 flex-1 min-h-0">
-                              <PropertyDetailsPanel 
-                                  propertyIds={selectedPropertyIds} 
-                                  onSelectFloor={onSelectFloor}
-                                  properties={properties}
-                                  onUpdateProperty={handleUpdateProperty}
-                              />
+                               <ScrollArea className="h-full">
+                                    <PropertyDetailsPanel 
+                                        propertyIds={selectedPropertyIds} 
+                                        onSelectFloor={onSelectFloor}
+                                        properties={properties}
+                                        onUpdateProperty={handleUpdateProperty}
+                                    />
+                                </ScrollArea>
                           </CardContent>
                       </Card>
                       <Card className="h-[280px] shrink-0">
@@ -358,6 +364,13 @@ export function PropertyViewerPage() {
             />
           )}
         </main>
+        {showHistoryPanel && (
+            <VersionHistoryPanel 
+                buildingId={selectedFloorId || 'building-1'}
+                isOpen={showHistoryPanel}
+                onClose={() => setShowHistoryPanel(false)}
+            />
+        )}
     </div>
   );
 }
