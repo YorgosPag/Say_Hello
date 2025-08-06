@@ -398,9 +398,9 @@ export default function PropertyViewerPage() {
     selectedProperties,
     setSelectedProperties,
     hoveredProperty,
+    setHoveredProperty,
     selectedFloor,
     isLoading,
-    setHoveredProperty,
     setSelectedFloor,
     undo,
     redo,
@@ -411,8 +411,10 @@ export default function PropertyViewerPage() {
   const [clipboard, setClipboard] = useState<Property | null>(null);
   
   const handleUpdateProperty = useCallback((propertyId: string, updates: Partial<Property>) => {
-    const newProperties = properties.map(p => p.id === propertyId ? { ...p, ...updates } : p);
-    setProperties(newProperties, `Ενημέρωση ${updates.name || 'ιδιότητας'}`);
+    setProperties(
+        properties.map(p => p.id === propertyId ? { ...p, ...updates } : p), 
+        `Ενημέρωση ιδιότητας ${updates.name || propertyId}`
+    );
   }, [properties, setProperties]);
 
 
@@ -515,8 +517,7 @@ export default function PropertyViewerPage() {
         floorId: selectedFloor || ''
     };
       
-    const newProperties = [...properties, propertyToAdd];
-    setProperties(newProperties, 'Δημιουργία Polygon');
+    setProperties([...properties, propertyToAdd], 'Δημιουργία Polygon');
     toast({ title: "Επιτυχία", description: "Το Polygon δημιουργήθηκε." });
     setActiveTool(null);
     setSelectedProperties([propertyToAdd.id]);
@@ -525,10 +526,10 @@ export default function PropertyViewerPage() {
   
   const handlePolygonUpdated = useCallback((polygonId: string, vertices: Array<{ x: number; y: number }>) => {
     requestAnimationFrame(() => {
-        const newProperties = properties.map(p => 
-            p.id === polygonId ? { ...p, vertices } : p
+        setProperties(
+            properties.map(p => p.id === polygonId ? { ...p, vertices } : p),
+            'Επεξεργασία Polygon'
         );
-        setProperties(newProperties, 'Επεξεργασία Polygon');
     });
   }, [properties, setProperties]);
 
@@ -557,8 +558,7 @@ export default function PropertyViewerPage() {
       vertices: clipboard.vertices.map(v => ({ x: v.x + 20, y: v.y + 20 })),
     };
 
-    const newProperties = [...properties, newProperty];
-    setProperties(newProperties, `Επικόλληση ${newProperty.name}`);
+    setProperties([...properties, newProperty], `Επικόλληση ${newProperty.name}`);
     setSelectedProperties([newId]);
     toast({ title: "Επιτυχία", description: `Το ακίνητο "${newProperty.name}" επικολλήθηκε.` });
   }, [clipboard, properties, setProperties, selectedFloor, toast, setSelectedProperties]);
@@ -575,8 +575,7 @@ export default function PropertyViewerPage() {
         vertices: propertyToDuplicate.vertices.map(v => ({ x: v.x + 20, y: v.y + 20 })),
     };
 
-    const newProperties = [...properties, newProperty];
-    setProperties(newProperties, `Διπλασιασμός ${propertyToDuplicate.name}`);
+    setProperties([...properties, newProperty], `Διπλασιασμός ${propertyToDuplicate.name}`);
     setSelectedProperties([newId]);
     toast({ title: "Επιτυχία", description: `Ο διπλασιασμός του "${propertyToDuplicate.name}" έγινε με επιτυχία.` });
   }, [properties, setProperties, toast, setSelectedProperties]);
@@ -817,7 +816,7 @@ export default function PropertyViewerPage() {
                   <h3 className="text-sm font-semibold">Στοιχεία Hover</h3>
                 </CardHeader>
                 <CardContent>
-                  <PropertyHoverInfo propertyId={hoveredProperty} />
+                  <PropertyHoverInfo propertyId={hoveredProperty} properties={properties} />
                 </CardContent>
               </Card>
 
@@ -847,3 +846,5 @@ export default function PropertyViewerPage() {
     </div>
   );
 }
+
+    

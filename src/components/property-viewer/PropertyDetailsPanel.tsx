@@ -55,6 +55,10 @@ const statusConfig = {
     label: 'Δεσμευμένο',
     color: 'bg-yellow-100 text-yellow-900 border-yellow-200',
   },
+   'Άγνωστο': {
+    label: 'Άγνωστο',
+    color: 'bg-gray-100 text-gray-900 border-gray-200',
+  },
 };
 
 function MultiLevelNavigation({ property, onSelectFloor, currentFloorId }: { property: Property; onSelectFloor: (floorId: string | null) => void; currentFloorId: string | null; }) {
@@ -84,23 +88,18 @@ function MultiLevelNavigation({ property, onSelectFloor, currentFloorId }: { pro
   )
 }
 
-function PropertyDetailsContent({ property, onSelectFloor, properties, currentFloorId }: { property: ExtendedPropertyDetails; onSelectFloor: (floorId: string | null) => void; properties: Property[], currentFloorId: string | null }) {
-  const statusInfo = statusConfig[property.status] || {
+function PropertyDetailsContent({ property, onSelectFloor, onUpdateProperty, currentFloorId }: { property: ExtendedPropertyDetails; onSelectFloor: (floorId: string | null) => void; onUpdateProperty: (propertyId: string, updates: Partial<Property>) => void; currentFloorId: string | null }) {
+  const statusInfo = statusConfig[property.status as keyof typeof statusConfig] || {
     label: property.status,
     color: 'bg-gray-100 text-gray-900 border-gray-200',
   };
   
-  // Use a fallback for multilevel check
   const isMultiLevel = property.isMultiLevel || property.type === "Μεζονέτα";
 
   const handleEditClick = () => {
-    // In a real app, this would open a modal or navigate to an edit page.
-    // For now, we can log to the console or use a prompt for demonstration.
     const newName = prompt("Εισάγετε νέο όνομα για το ακίνητο:", property.name);
     if (newName && newName !== property.name) {
-      // This is where we would call an update function passed via props
-      console.log(`Updating property ${property.id} name to: ${newName}`);
-      // onUpdateProperty(property.id, { name: newName });
+      onUpdateProperty(property.id, { name: newName });
     }
   };
 
@@ -352,5 +351,7 @@ export function PropertyDetailsPanel({ propertyIds, onSelectFloor, properties, o
     );
   }
 
-  return <PropertyDetailsContent property={property as ExtendedPropertyDetails} onSelectFloor={onSelectFloor} properties={properties} currentFloorId={property.floorId} />;
+  return <PropertyDetailsContent property={property as ExtendedPropertyDetails} onSelectFloor={onSelectFloor} onUpdateProperty={onUpdateProperty} currentFloorId={property.floorId} />;
 }
+
+    
