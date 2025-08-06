@@ -125,7 +125,7 @@ export interface FloorPlanViewerProps {
   selectedFloorId: string | null;
   onSelectFloor: (floorId: string | null) => void;
   onHoverProperty: (propertyId: string | null) => void;
-  hoveredPropertyId?: string | null;
+  hoveredPropertyId: string | null;
   activeTool: 'create' | 'edit_nodes' | 'measure' | null;
   onSelectProperty: (propertyId: string, isShiftClick: boolean) => void;
   onPolygonCreated: (newProperty: Omit<Property, 'id' | 'name' | 'type' | 'status' | 'building' | 'floor' | 'project' | 'buildingId' | 'floorId'>) => void;
@@ -278,7 +278,7 @@ export function FloorPlanViewer({
             setLayerStates={setLayerStates}
             onPolygonSelect={onSelectProperty}
             onDuplicate={onDuplicate}
-            onDelete={onDelete}
+            onDelete={() => onDelete(selectedPropertyIds[0])}
             connections={connections}
             setConnections={setConnections}
             groups={groups}

@@ -21,6 +21,7 @@ import {
   Download,
   Ruler,
   EyeOff,
+  Trash2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
@@ -62,6 +63,8 @@ const EditToolbar = ({
   onToggleMeasurements,
   scale,
   onScaleChange,
+  onDelete,
+  deleteDisabled,
 }: {
   activeTool: string | null;
   onToolChange: (tool: 'create' | 'edit_nodes' | 'measure' | null) => void;
@@ -81,6 +84,8 @@ const EditToolbar = ({
   onToggleMeasurements: () => void;
   scale: number;
   onScaleChange: (scale: number) => void;
+  onDelete: () => void;
+  deleteDisabled: boolean;
 }) => {
   const handleToolClick = (tool: 'create' | 'edit_nodes' | 'measure') => {
     if (activeTool === tool) {
@@ -118,6 +123,17 @@ const EditToolbar = ({
           >
             <Ruler className="mr-2 h-4 w-4" />
             Μέτρηση
+          </Button>
+          <Button
+            onClick={onDelete}
+            disabled={deleteDisabled}
+            variant="outline"
+            size="sm"
+            className="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
+            title="Delete Selected (Del/Backspace)"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Διαγραφή
           </Button>
         </div>
 
@@ -596,8 +612,8 @@ export default function PropertyViewerPage() {
   useKeyboardShortcut('d', () => {
       if (selectedProperties.length === 1) handleDuplicate(selectedProperties[0])
   }, { metaKey: true, ctrlKey: true });
-  useKeyboardShortcut('Delete', handleDeleteSelected, { metaKey: false, ctrlKey: false });
-  useKeyboardShortcut('Backspace', handleDeleteSelected, { metaKey: false, ctrlKey: false });
+  useKeyboardShortcut('Delete', handleDeleteSelected, {});
+  useKeyboardShortcut('Backspace', handleDeleteSelected, {});
   
   const handleExport = useCallback(() => {
     if (!properties || properties.length === 0) {
@@ -772,6 +788,8 @@ export default function PropertyViewerPage() {
               onToggleMeasurements={() => setShowMeasurements(!showMeasurements)}
               scale={scale}
               onScaleChange={setScale}
+              onDelete={handleDeleteSelected}
+              deleteDisabled={selectedProperties.length === 0}
             />
           )}
           <Card className="flex-1 h-full">
@@ -782,6 +800,7 @@ export default function PropertyViewerPage() {
                 selectedFloorId={selectedFloor}
                 onSelectFloor={setSelectedFloor}
                 onHoverProperty={setHoveredProperty}
+                hoveredPropertyId={hoveredProperty}
                 activeTool={activeTool}
                 onSelectProperty={handlePropertySelect}
                 onPolygonCreated={handlePolygonCreated}
@@ -846,5 +865,3 @@ export default function PropertyViewerPage() {
     </div>
   );
 }
-
-    
