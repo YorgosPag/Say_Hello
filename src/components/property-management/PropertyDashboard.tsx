@@ -43,9 +43,9 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'sold': return 'Πουλημένα';
-      case 'available': return 'Διαθέσιμα';
-      case 'reserved': return 'Κρατημένα';
+      case 'sold': return 'Πουλημένες';
+      case 'available': return 'Διαθέσιμες';
+      case 'reserved': return 'Κρατημένες';
       case 'owner': return 'Οικοπεδούχου';
       default: return status;
     }
@@ -65,22 +65,22 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-      {/* Συνολικά Ακίνητα */}
+      {/* Συνολικές Μονάδες */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Συνολικά Ακίνητα</CardTitle>
+          <CardTitle className="text-sm font-medium">Συνολικές Μονάδες</CardTitle>
           <Home className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-primary">{stats.totalProperties}</div>
-          <p className="text-xs text-muted-foreground">Όλα τα ακίνητα</p>
+          <p className="text-xs text-muted-foreground">Όλες οι μονάδες</p>
         </CardContent>
       </Card>
 
-      {/* Διαθέσιμα Ακίνητα */}
+      {/* Διαθέσιμες Μονάδες */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Διαθέσιμα</CardTitle>
+          <CardTitle className="text-sm font-medium">Διαθέσιμες</CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -117,10 +117,10 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Πουλημένα */}
+      {/* Πουλημένες */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Πουλημένα</CardTitle>
+          <CardTitle className="text-sm font-medium">Πουλημένες</CardTitle>
           <CheckCircle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -139,14 +139,14 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
           <div className="text-2xl font-bold text-orange-600">
             {formatCurrency(stats.averagePrice)}
           </div>
-          <p className="text-xs text-muted-foreground">Ανά ακίνητο</p>
+          <p className="text-xs text-muted-foreground">Ανά μονάδα</p>
         </CardContent>
       </Card>
 
-      {/* Κατάσταση Ακινήτων */}
+      {/* Κατάσταση Μονάδων */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Κατάσταση Ακινήτων</CardTitle>
+          <CardTitle className="text-sm font-medium">Κατάσταση Μονάδων</CardTitle>
           <Activity className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -164,11 +164,11 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Τύποι Ακινήτων */}
+      {/* Τύποι Μονάδων */}
       {Object.keys(stats.propertiesByType).length > 0 && (
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Τύποι Ακινήτων</CardTitle>
+            <CardTitle className="text-sm font-medium">Τύποι Μονάδων</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -183,7 +183,7 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
         </Card>
       )}
 
-      {/* Όροφοι */}
+      {/* Κατανομή ανά Όροφο */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Κατανομή ανά Όροφο</CardTitle>

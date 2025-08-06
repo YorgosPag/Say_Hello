@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -15,7 +14,7 @@ import { ViewerTools } from '@/components/property-viewer/ViewerTools';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Plus, LayoutGrid, List, BarChart3, FolderOpen, CheckSquare } from 'lucide-react';
+import { Plus, LayoutGrid, List, BarChart3, FolderOpen, CheckSquare, Eye } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PropertyGrid } from '@/components/property-viewer/PropertyGrid';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
@@ -24,7 +23,38 @@ import { VersionHistoryPanel } from '@/components/property-viewer/VersionHistory
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PropertyGridView } from '@/components/property-viewer/PropertyGridView';
 import { PropertyDashboard } from '@/components/property-management/PropertyDashboard';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { getStatusColor, getStatusLabel } from '@/components/building-management/BuildingCard/BuildingCardUtils';
 
+
+function UnitDetailsHeader({ unit }: { unit: Property }) {
+    return (
+        <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-t-lg">
+            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm">
+                <Home className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                <h3 className="text-lg font-semibold text-foreground line-clamp-1">
+                    {unit.name}
+                </h3>
+                <div className="flex items-center gap-2 mt-1">
+                    <Badge className={cn("text-xs", getStatusColor(unit.status as any).replace('bg-','bg-') + ' text-white')}>
+                      {getStatusLabel(unit.status as any)}
+                    </Badge>
+                </div>
+                </div>
+            </div>
+            <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                <Eye className="w-4 h-4 mr-2" />
+                Επίδειξη Μονάδας
+            </Button>
+            </div>
+      </div>
+    );
+}
 
 function PropertyViewerHeader({
   viewMode,
@@ -186,6 +216,13 @@ export default function UnitsPage() {
     });
   }, [properties, filters]);
 
+  const selectedUnit = useMemo(() => {
+    if (selectedPropertyIds.length === 1) {
+      return properties.find(p => p.id === selectedPropertyIds[0]);
+    }
+    return null;
+  }, [selectedPropertyIds, properties]);
+
 
   const handlePolygonSelect = (propertyId: string, isShiftClick: boolean) => {
     setSelectedProperties(prev => {
@@ -258,7 +295,7 @@ export default function UnitsPage() {
       };
       
       const description = `Duplicated property ${propertyToDuplicate.name}`;
-      setProperties([...properties, newProperty], description);
+      setProperties([...properties, newProperty], newProperty.name);
   };
 
   const handleDelete = (propertyId: string) => {
@@ -296,36 +333,35 @@ export default function UnitsPage() {
 
   return (
     <div className="h-full flex flex-col bg-muted/30">
-      <PropertyViewerHeader 
-        viewMode={viewMode} 
-        setViewMode={setViewMode}
-        showDashboard={showDashboard}
-        setShowDashboard={setShowDashboard}
-      />
-      
-      {showDashboard && (
-        <div className="p-4">
-            <PropertyDashboard stats={dashboardStats} />
-        </div>
-       )}
-
-      <div className="px-4 shrink-0 mt-4">
-          <Collapsible className="border bg-card rounded-lg">
-              <CollapsibleTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
-                  <Filter className="w-4 h-4 mr-2"/>
-                  Φίλτρα Αναζήτησης
-                  </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                  <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
-              </CollapsibleContent>
-          </Collapsible>
+        <PropertyViewerHeader 
+            viewMode={viewMode} 
+            setViewMode={setViewMode}
+            showDashboard={showDashboard}
+            setShowDashboard={setShowDashboard}
+        />
+        
+        {showDashboard && (
+            <div className="px-4 py-4 shrink-0">
+                <PropertyDashboard stats={dashboardStats} />
+            </div>
+        )}
+        <div className="px-4 pb-4 shrink-0">
+            <Collapsible className="border bg-card rounded-lg">
+                <CollapsibleTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
+                    <Filter className="w-4 h-4 mr-2"/>
+                    Φίλτρα Αναζήτησης
+                    </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+                </CollapsibleContent>
+            </Collapsible>
         </div>
         
-        <main className="flex-1 flex overflow-hidden p-4 gap-4 h-full">
+        <main className="flex-1 flex overflow-hidden px-4 pb-4 gap-4 h-full">
             {viewMode === 'list' ? (
-                <div className="flex-1 flex gap-4 min-h-0">
+                <>
                     <div className="w-[320px] bg-card border rounded-lg flex flex-col shrink-0 shadow-sm">
                         <CardHeader className="pb-4 shrink-0">
                             <CardTitle className="text-base">Λίστα Μονάδων</CardTitle>
@@ -343,6 +379,7 @@ export default function UnitsPage() {
                     </div>
 
                     <div className="flex-1 flex flex-col min-h-0 gap-4">
+                       {selectedUnit && <UnitDetailsHeader unit={selectedUnit}/> }
                         <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
                              <div className="shrink-0 border-b">
                                 <TabsList>
@@ -408,7 +445,7 @@ export default function UnitsPage() {
                             <TabsContent value="videos" className="p-4">Videos</TabsContent>
                         </Tabs>
                     </div>
-                </div>
+                </>
              ) : (
                 <PropertyGridView
                     viewMode={viewMode}
