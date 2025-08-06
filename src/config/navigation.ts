@@ -4,7 +4,7 @@ import {
   Users,
   Building,
   Library,
-  ClipboardCheck,
+  Briefcase,
 } from "lucide-react"
 import type { MenuItem } from "@/types/sidebar"
 
@@ -28,8 +28,8 @@ export const mainMenuItems: MenuItem[] = [
     badge: null,
   },
   {
-    title: "Έλεγχος",
-    icon: ClipboardCheck,
+    title: "Έργα",
+    icon: Briefcase,
     href: "/audit",
     badge: null,
   },
