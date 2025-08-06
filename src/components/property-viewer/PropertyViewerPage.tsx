@@ -251,27 +251,6 @@ export function PropertyViewerPage() {
                 </CollapsibleContent>
             </Collapsible>
         </div>
-
-
-        <div className="px-4 shrink-0">
-            <ViewerTools 
-                activeTool={activeTool}
-                setActiveTool={setActiveTool}
-                showGrid={showGrid}
-                setShowGrid={setShowGrid}
-                snapToGrid={snapToGrid}
-                setSnapToGrid={setSnapToGrid}
-                showMeasurements={showMeasurements}
-                setShowMeasurements={setShowMeasurements}
-                scale={scale}
-                setScale={setScale}
-                undo={undo}
-                redo={redo}
-                canUndo={canUndo}
-                canRedo={canRedo}
-                onShowHistory={() => setShowHistoryPanel(true)}
-            />
-        </div>
         
         <main className="flex-1 flex gap-4 min-h-0 px-4 pb-4">
           {viewMode === 'list' ? (
