@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useTransition, useCallback } from 'react';
@@ -493,10 +494,18 @@ export default function PropertyViewerPage() {
     }
   };
 
-  const handlePolygonCreated = useCallback((newProperty: Omit<Property, 'id'>) => {
+  const handlePolygonCreated = useCallback((newProperty: Omit<Property, 'id' | 'name' | 'type' | 'status' | 'building' | 'floor' | 'project' | 'buildingId' | 'floorId'>) => {
     const propertyToAdd: Property = {
         ...newProperty,
         id: `prop-${Date.now()}`,
+        name: 'Νέο Ακίνητο',
+        type: 'Άγνωστο',
+        status: 'for-sale',
+        building: 'N/A',
+        floor: selectedFloor ? (properties.find(p => p.floorId === selectedFloor)?.floor ?? 0) : 0,
+        project: 'N/A',
+        buildingId: 'N/A',
+        floorId: selectedFloor || ''
     };
       
     const newProperties = [...properties, propertyToAdd];
@@ -504,7 +513,7 @@ export default function PropertyViewerPage() {
     toast({ title: "Επιτυχία", description: "Το Polygon δημιουργήθηκε." });
     setActiveTool(null);
     setSelectedProperties([propertyToAdd.id]);
-    }, [properties, setProperties, toast, setSelectedProperties]
+    }, [properties, setProperties, toast, setSelectedProperties, selectedFloor]
   );
   
   const handlePolygonUpdated = useCallback((polygonId: string, vertices: Array<{ x: number; y: number }>) => {
