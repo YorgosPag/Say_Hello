@@ -5,27 +5,26 @@ import { usePropertyViewer } from '@/hooks/use-property-viewer';
 import type { Property } from '@/types/property-viewer';
 import type { Suggestion } from '@/types/suggestions';
 import type { Connection, PropertyGroup } from '@/types/connections';
-import { PropertyList } from '@/components/property-viewer/PropertyList';
 import { PropertyDetailsPanel } from '@/components/property-viewer/PropertyDetailsPanel';
 import { PropertyHoverInfo } from '@/components/property-viewer/PropertyHoverInfo';
 import { FloorPlanViewer } from '@/components/property-viewer/FloorPlanViewer';
 import { PropertyViewerFilters, type FilterState } from '@/components/property-viewer/PropertyViewerFilters';
 import { ViewerTools } from '@/components/property-viewer/ViewerTools';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Plus, LayoutGrid, List, BarChart3, FolderOpen, CheckSquare, Eye, Home } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { PropertyGrid } from '@/components/property-viewer/PropertyGrid';
+import { PropertyGridView } from '@/components/property-viewer/PropertyGridView';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Filter, Briefcase, FileText, Camera, Video, Users, Building, File } from 'lucide-react';
 import { VersionHistoryPanel } from '@/components/property-viewer/VersionHistoryPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PropertyGridView } from '@/components/property-viewer/PropertyGridView';
 import { PropertyDashboard } from '@/components/property-management/PropertyDashboard';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { getStatusColor, getStatusLabel } from '@/components/building-management/BuildingCard/BuildingCardUtils';
+import { getStatusColor as getBuildingStatusColor, getStatusLabel as getBuildingStatusLabel } from '@/components/building-management/BuildingCard/BuildingCardUtils';
+import { UnitsList } from '@/components/units/UnitsList';
+import type { UnitSortKey } from '@/types/unit';
 
 
 function UnitDetailsHeader({ unit }: { unit: Property | null }) {
@@ -58,8 +57,8 @@ function UnitDetailsHeader({ unit }: { unit: Property | null }) {
                     {unit.name}
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
-                    <Badge className={cn("text-xs", getStatusColor(unit.status as any).replace('bg-','bg-') + ' text-white')}>
-                      {getStatusLabel(unit.status as any)}
+                    <Badge className={cn("text-xs", getBuildingStatusColor(unit.status as any).replace('bg-','bg-') + ' text-white')}>
+                      {getBuildingStatusLabel(unit.status as any)}
                     </Badge>
                 </div>
                 </div>
@@ -379,26 +378,16 @@ export default function UnitsPage() {
         
         <main className="flex-1 flex overflow-hidden px-4 pb-4 gap-4 h-full">
             {viewMode === 'list' ? (
-                <>
-                    <div className="w-[320px] bg-card border rounded-lg flex flex-col shrink-0 shadow-sm">
-                        <CardHeader className="pb-4 shrink-0">
-                            <CardTitle className="text-base">Λίστα Μονάδων</CardTitle>
-                        </CardHeader>
-                        <ScrollArea className="flex-1 min-h-0">
-                            <CardContent className="p-0">
-                                <PropertyList
-                                    properties={filteredProperties}
-                                    selectedPropertyIds={selectedPropertyIds}
-                                    onSelectProperty={handlePolygonSelect}
-                                    isLoading={isLoading}
-                                />
-                            </CardContent>
-                        </ScrollArea>
-                    </div>
+                 <div className="flex-1 flex gap-4 min-h-0">
+                    <UnitsList
+                        units={filteredProperties}
+                        selectedUnit={selectedUnit}
+                        onSelectUnit={(unit) => setSelectedProperties([unit.id])}
+                    />
 
-                    <div className="flex-1 flex flex-col min-h-0 gap-4 bg-card border rounded-lg shadow-sm">
+                    <div className="flex-1 flex flex-col gap-4 min-h-0 bg-card border rounded-lg shadow-sm">
+                        <UnitDetailsHeader unit={selectedUnit} />
                         <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
-                           <UnitDetailsHeader unit={selectedUnit} />
                              <div className="shrink-0 border-b px-4">
                                 <TabsList>
                                     <TabsTrigger value="general">Γενικά</TabsTrigger>
@@ -461,7 +450,7 @@ export default function UnitsPage() {
                             <TabsContent value="videos" className="p-4">Videos</TabsContent>
                         </Tabs>
                     </div>
-                </>
+                 </div>
              ) : (
                 <PropertyGridView
                     viewMode={viewMode}
