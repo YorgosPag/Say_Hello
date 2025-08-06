@@ -13,7 +13,8 @@ import {
   MapPin, 
   Activity,
   Package,
-  Users
+  Users,
+  Ruler
 } from 'lucide-react';
 import type { PropertyStats } from '@/types/property';
 
@@ -65,85 +66,78 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-      {/* Συνολικές Μονάδες */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Συνολικές Μονάδες</CardTitle>
-          <Home className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-primary">{stats.totalProperties}</div>
-          <p className="text-xs text-muted-foreground">Όλες οι μονάδες</p>
-        </CardContent>
-      </Card>
-
-      {/* Διαθέσιμες Μονάδες */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Διαθέσιμες</CardTitle>
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-gray-600">{stats.availableProperties}</div>
-          <p className="text-xs text-muted-foreground">Προς πώληση</p>
-        </CardContent>
-      </Card>
-
-      {/* Συνολική Αξία */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Συνολική Αξία</CardTitle>
-          <Euro className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(stats.totalValue)}
+      <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Συνολικές Μονάδες</p>
+              <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.totalProperties}</p>
+            </div>
+            <Home className="h-8 w-8 text-blue-500" />
           </div>
-          <p className="text-xs text-muted-foreground">Συνολικό κόστος</p>
         </CardContent>
       </Card>
-
-      {/* Συνολικό Εμβαδόν */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Συνολικό Εμβαδόν</CardTitle>
-          <BarChart3 className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-purple-600">
-            {Math.round(stats.totalArea)} m²
+      
+      <Card className="border-gray-200 bg-gray-50/50 dark:bg-gray-950/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Διαθέσιμες</p>
+              <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">{stats.availableProperties}</p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-gray-500" />
           </div>
-          <p className="text-xs text-muted-foreground">Συνολική επιφάνεια</p>
         </CardContent>
       </Card>
 
-      {/* Πουλημένες */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Πουλημένες</CardTitle>
-          <CheckCircle className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">{stats.soldProperties}</div>
-          <p className="text-xs text-muted-foreground">Ολοκληρωμένες πωλήσεις</p>
-        </CardContent>
-      </Card>
-
-      {/* Μέση Τιμή */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Μέση Τιμή</CardTitle>
-          <Euro className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-orange-600">
-            {formatCurrency(stats.averagePrice)}
+      <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-green-600 dark:text-green-400">Συνολική Αξία</p>
+              <p className="text-2xl font-bold text-green-700 dark:text-green-300">{formatCurrency(stats.totalValue)}</p>
+            </div>
+            <Euro className="h-8 w-8 text-green-500" />
           </div>
-          <p className="text-xs text-muted-foreground">Ανά μονάδα</p>
         </CardContent>
       </Card>
 
-      {/* Κατάσταση Μονάδων */}
+      <Card className="border-purple-200 bg-purple-50/50 dark:bg-purple-950/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-purple-600 dark:text-purple-400">Συνολικό Εμβαδόν</p>
+              <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{Math.round(stats.totalArea)} m²</p>
+            </div>
+            <Ruler className="h-8 w-8 text-purple-500" />
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-red-600 dark:text-red-400">Πουλημένες</p>
+              <p className="text-2xl font-bold text-red-700 dark:text-red-300">{stats.soldProperties}</p>
+            </div>
+            <CheckCircle className="h-8 w-8 text-red-500" />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-orange-200 bg-orange-50/50 dark:bg-orange-950/20">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Μέση Τιμή</p>
+              <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">{formatCurrency(stats.averagePrice)}</p>
+            </div>
+            <Euro className="h-8 w-8 text-orange-500" />
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Κατάσταση Μονάδων</CardTitle>
@@ -164,26 +158,22 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Τύποι Μονάδων */}
-      {Object.keys(stats.propertiesByType).length > 0 && (
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Τύποι Μονάδων</CardTitle>
-            <Building className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(stats.propertiesByType).map(([type, count]) => (
-                <Badge key={type} variant="secondary" className="flex items-center gap-1">
-                  {getTypeLabel(type)} ({count})
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Κατανομή ανά Όροφο */}
+      <Card className="lg:col-span-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Τύποι Μονάδων</CardTitle>
+          <Building className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(stats.propertiesByType).map(([type, count]) => (
+              <Badge key={type} variant="secondary" className="flex items-center gap-1">
+                {getTypeLabel(type)} ({count})
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Κατανομή ανά Όροφο</CardTitle>
@@ -200,27 +190,30 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
           </div>
         </CardContent>
       </Card>
-
-      {/* Αποθήκες */}
-      <Card>
+      
+      <Card className="lg:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Αποθήκες</CardTitle>
           <Package className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="text-lg font-bold text-primary">{stats.totalStorageUnits}</div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Διαθέσιμες:</span>
-              <span className="font-medium">{stats.availableStorageUnits}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Πουλημένες:</span>
-              <span className="font-medium">{stats.soldStorageUnits}</span>
-            </div>
-          </div>
+           <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-xl font-bold">{stats.totalStorageUnits}</p>
+                <p className="text-xs text-muted-foreground">Σύνολο</p>
+              </div>
+              <div>
+                <p className="text-xl font-bold">{stats.availableStorageUnits}</p>
+                <p className="text-xs text-muted-foreground">Διαθέσιμες</p>
+              </div>
+              <div>
+                <p className="text-xl font-bold">{stats.soldStorageUnits}</p>
+                <p className="text-xs text-muted-foreground">Πουλημένες</p>
+              </div>
+           </div>
         </CardContent>
       </Card>
+
     </div>
   );
 }
