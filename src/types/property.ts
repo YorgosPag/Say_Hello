@@ -53,9 +53,17 @@ export interface PropertyFilters {
 
 export interface PropertyStats {
   totalProperties: number;
-  available: number;
-  sold: number;
-  reserved: number;
+  availableProperties: number;
+  soldProperties: number;
   totalValue: number;
+  totalArea: number;
+  averagePrice: number;
+  propertiesByStatus: Record<string, number>;
+  propertiesByType: Record<string, number>;
+  propertiesByFloor: Record<string, number>;
+  totalStorageUnits: number;
+  availableStorageUnits: number;
+  soldStorageUnits: number;
   uniqueBuildings: number;
+  reserved: number;
 }
