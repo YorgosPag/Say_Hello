@@ -3,7 +3,8 @@ import {
   Settings,
   Users,
   Building,
-  Library
+  Library,
+  ClipboardCheck,
 } from "lucide-react"
 import type { MenuItem } from "@/types/sidebar"
 
@@ -24,6 +25,12 @@ export const mainMenuItems: MenuItem[] = [
     title: "Επαφές",
     icon: Users,
     href: "/contacts",
+    badge: null,
+  },
+  {
+    title: "Έλεγχος",
+    icon: ClipboardCheck,
+    href: "/audit",
     badge: null,
   },
   {
