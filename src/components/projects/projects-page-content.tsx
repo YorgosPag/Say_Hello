@@ -7,6 +7,7 @@ import { PageLayout } from '@/components/app/page-layout';
 import type { Project, ProjectStatus } from '@/types/project';
 import { ProjectsHeader } from './ProjectsHeader';
 import { ProjectsDashboard } from './ProjectsDashboard';
+import { ProjectsGridView } from './projects/ProjectsGridView';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 const projectsData: Project[] = [
@@ -108,12 +109,22 @@ export function ProjectsPageContent() {
         {showDashboard && <ProjectsDashboard stats={stats} />}
 
         <div className="flex-1 flex overflow-hidden p-4 gap-4">
-             <ProjectsList
-                projects={filteredProjects}
-                selectedProject={selectedProject}
-                onSelectProject={setSelectedProject}
+          {viewMode === 'list' ? (
+             <>
+               <ProjectsList
+                  projects={filteredProjects}
+                  selectedProject={selectedProject}
+                  onSelectProject={setSelectedProject}
+              />
+              <ProjectDetails project={selectedProject} />
+            </>
+          ) : (
+            <ProjectsGridView
+              projects={filteredProjects}
+              selectedProject={selectedProject}
+              onSelectProject={setSelectedProject}
             />
-            <ProjectDetails project={selectedProject} />
+          )}
         </div>
       </div>
     </TooltipProvider>
