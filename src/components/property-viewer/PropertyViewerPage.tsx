@@ -14,6 +14,55 @@ import { ViewerTools } from './ViewerTools';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SmartSuggestionsPanel } from './SmartSuggestionsPanel';
+import { Button } from '@/components/ui/button';
+import { Plus, LayoutGrid, List } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
+function PropertyViewerHeader({ viewMode, setViewMode }: { viewMode: string, setViewMode: (mode: 'list' | 'grid') => void }) {
+    return (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Ευρετήριο Ακινήτων</h1>
+              <p className="text-sm text-muted-foreground">
+                Οπτική διαχείριση και ανάλυση ακινήτων σε κάτοψη.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+             <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Προβολή Λίστας</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Προβολή Πλέγματος</TooltipContent>
+            </Tooltip>
+            <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Νέο Ακίνητο
+            </Button>
+          </div>
+        </div>
+    )
+}
+
 
 export function PropertyViewerPage() {
   const {
@@ -36,6 +85,7 @@ export function PropertyViewerPage() {
   } = usePropertyViewer();
   
   const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | 'polyline' | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [gridSize, setGridSize] = useState(10);
@@ -145,7 +195,8 @@ export function PropertyViewerPage() {
 
   return (
     <div className="h-full flex flex-col p-4 gap-4 bg-muted/30">
-        <div className="shrink-0">
+        <div className="shrink-0 space-y-4">
+            <PropertyViewerHeader viewMode={viewMode} setViewMode={setViewMode} />
             <PropertyViewerFilters />
         </div>
         <div className="flex-1 flex gap-4 min-h-0">
