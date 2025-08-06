@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -28,7 +26,6 @@ export function PropertyViewerPage() {
     selectedProperties: selectedPropertyIds,
     hoveredProperty: hoveredPropertyId,
     selectedFloor: selectedFloorId,
-    setSelectedProperties: setSelectedPropertyIds,
     setHoveredProperty,
     setSelectedFloor: setSelectedFloorId,
     undo,
@@ -85,7 +82,7 @@ export function PropertyViewerPage() {
     }
   };
 
-  const handlePolygonCreated = (newPropertyData: Omit<Property, 'id'>) => {
+  const handlePolygonCreated = (newPropertyData: Omit<Property, 'id' | 'name' | 'type' | 'status' | 'building' | 'floor' | 'project' | 'buildingId' | 'floorId'>) => {
       const newProperty: Property = {
           id: `prop_${Date.now()}`,
           name: `Νέο Ακίνητο ${properties.length + 1}`,

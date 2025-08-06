@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
@@ -38,7 +36,7 @@ interface FloorPlanCanvasProps {
   floorData: FloorData;
   selectedPropertyIds: string[];
   hoveredProperty: string | null;
-  activeTool: 'create' | 'edit_nodes' | 'measure' | null;
+  activeTool: 'create' | 'edit_nodes' | 'measure' | 'polyline' | null;
   layerStates: Record<string, LayerState>;
   onPolygonHover: (propertyId: string | null) => void;
   onPolygonSelect: (propertyId: string, isShiftClick: boolean) => void;
@@ -49,7 +47,6 @@ interface FloorPlanCanvasProps {
   snapToGrid: boolean;
   gridSize: number;
   showMeasurements: boolean;
-  showLabels: boolean;
   scale: number;
   suggestionToDisplay: Suggestion | null;
   connections: Connection[];
@@ -91,12 +88,18 @@ export function FloorPlanCanvas({
   const [creatingVertices, setCreatingVertices] = useState<Point[]>([]);
   const [mousePosition, setMousePosition] = useState<Point | null>(null);
   
+  // Polyline state
+  const [polylinePoints, setPolylinePoints] = useState<Point[]>([]);
+  const [currentPolylines, setCurrentPolylines] = useState<Point[][]>([]);
+  
   // Measurement tool state
   const [measurementStart, setMeasurementStart] = useState<Point | null>(null);
 
   const isCreatingPolygon = activeTool === 'create';
   const isNodeEditMode = activeTool === 'edit_nodes';
   const isMeasuring = activeTool === 'measure';
+  const isDrawingPolyline = activeTool === 'polyline';
+
 
   // The primary polygon for editing is the last one selected
   const primarySelectedPolygon = isNodeEditMode ? selectedPropertyIds[selectedPropertyIds.length - 1] : null;
@@ -127,7 +130,7 @@ export function FloorPlanCanvas({
   }, []);
 
   const handleCanvasClick = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    if (event.target !== event.currentTarget && !isCreatingPolygon) {
+    if (event.target !== event.currentTarget && !isCreatingPolygon && !isDrawingPolyline) {
         // Clicks on polygons are handled by the polygons themselves
         return;
     }
@@ -139,9 +142,13 @@ export function FloorPlanCanvas({
       y: (event.clientY - rect.top) / zoom
     };
     currentPoint = snapPoint(currentPoint);
-
+    
+    // Polyline drawing
+    if(isDrawingPolyline) {
+        setPolylinePoints(prev => [...prev, currentPoint]);
+    }
     // Polygon Creation
-    if (isCreatingPolygon) {
+    else if (isCreatingPolygon) {
       if (creatingVertices.length > 2) {
         const firstVertex = creatingVertices[0];
         const distance = Math.sqrt(
@@ -172,14 +179,17 @@ export function FloorPlanCanvas({
           onPolygonSelect('', false); // Deselect all by passing empty ID
       }
     }
-  }, [isCreatingPolygon, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart, pan]);
+  }, [isCreatingPolygon, isDrawingPolyline, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart, pan]);
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
       onPolygonCreated({vertices: creatingVertices} as any);
       setCreatingVertices([]);
+    } else if(isDrawingPolyline && polylinePoints.length > 1) {
+        setCurrentPolylines(prev => [...prev, polylinePoints]);
+        setPolylinePoints([]);
     }
-  }, [isCreatingPolygon, creatingVertices, onPolygonCreated]);
+  }, [isCreatingPolygon, isDrawingPolyline, creatingVertices, onPolygonCreated, polylinePoints]);
 
 
   const handleCanvasMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
@@ -187,7 +197,7 @@ export function FloorPlanCanvas({
       onPolygonHover(null);
     }
     
-    if (isCreatingPolygon || isMeasuring || isConnecting) {
+    if (isCreatingPolygon || isMeasuring || isConnecting || isDrawingPolyline) {
         const rect = event.currentTarget.getBoundingClientRect();
         const zoom = parseFloat(event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
         const currentPos = {
@@ -198,7 +208,7 @@ export function FloorPlanCanvas({
     } else {
         setMousePosition(null);
     }
-  }, [onPolygonHover, isCreatingPolygon, isMeasuring, isConnecting, snapPoint, pan]);
+  }, [onPolygonHover, isCreatingPolygon, isMeasuring, isConnecting, isDrawingPolyline, snapPoint, pan]);
 
   const handleRightClick = (event: React.MouseEvent<SVGSVGElement>) => {
       // Exit creation mode on right click
@@ -211,13 +221,18 @@ export function FloorPlanCanvas({
           event.preventDefault();
           setMeasurementStart(null);
       }
+      if(isDrawingPolyline && polylinePoints.length > 0) {
+        event.preventDefault();
+        setCurrentPolylines(prev => [...prev, polylinePoints]);
+        setPolylinePoints([]);
+      }
   }
 
   return (
     <div 
       ref={containerRef} 
       className={cn("w-full h-full relative overflow-hidden", {
-        "cursor-crosshair": isCreatingPolygon || isMeasuring || isConnecting,
+        "cursor-crosshair": isCreatingPolygon || isMeasuring || isConnecting || isDrawingPolyline,
       })}
     >
       {/* Floor plan background */}
@@ -289,6 +304,32 @@ export function FloorPlanCanvas({
                 />
             );
         })}
+
+        {/* Render completed polylines */}
+        {currentPolylines.map((points, index) => (
+            <polyline
+                key={`p-${index}`}
+                points={points.map(p => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke="blue"
+                strokeWidth="2"
+            />
+        ))}
+
+        {/* Render current polyline being drawn */}
+        {isDrawingPolyline && polylinePoints.length > 0 && mousePosition && (
+            <polyline
+                points={[
+                    ...polylinePoints.map(p => `${p.x},${p.y}`),
+                    `${mousePosition.x},${mousePosition.y}`
+                ].join(' ')}
+                fill="none"
+                stroke="blue"
+                strokeWidth="2"
+                strokeDasharray="4 4"
+            />
+        )}
+
 
         {suggestionToDisplay && suggestionToDisplay.recommendations.map((rec, index) => {
             if (rec.suggestedArea) {
