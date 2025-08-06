@@ -112,26 +112,15 @@ export function PropertyPolygon({
         />
       )}
 
-      <g className="property-label">
-        <rect
-          x={centroid.x - 30}
-          y={centroid.y - 10}
-          width={60}
-          height={20}
-          fill="white"
-          fillOpacity={0.9}
-          stroke="#e5e7eb"
-          strokeWidth={0.5}
-          rx={2}
-          className="pointer-events-none"
-        />
+      <g className="property-label pointer-events-none">
         <text
           x={centroid.x}
           y={centroid.y + 3}
           textAnchor="middle"
           fontSize="10"
-          fill="#374151"
-          className="pointer-events-none select-none font-medium"
+          fill="white"
+          className="select-none font-medium"
+          style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.5)', strokeWidth: '3px', strokeLinejoin: 'round' }}
         >
           {property.name.replace(/ - .*/, '')}
         </text>
@@ -140,8 +129,9 @@ export function PropertyPolygon({
           y={centroid.y + 15}
           textAnchor="middle"
           fontSize="8"
-          fill="#6b7280"
-          className="pointer-events-none select-none"
+          fill="white"
+          className="select-none"
+           style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.5)', strokeWidth: '2px', strokeLinejoin: 'round' }}
         >
           {property.type}
         </text>
