@@ -270,62 +270,65 @@ export default function UnitsPage() {
                 </div>
 
                 <div className="flex-1 flex flex-col gap-4 min-w-0">
-                  <div className="shrink-0">
-                      <ViewerTools 
-                          activeTool={activeTool}
-                          setActiveTool={setActiveTool}
-                          showGrid={showGrid}
-                          setShowGrid={setShowGrid}
-                          snapToGrid={snapToGrid}
-                          setSnapToGrid={setSnapToGrid}
-                          showMeasurements={showMeasurements}
-                          setShowMeasurements={setShowMeasurements}
-                          scale={scale}
-                          setScale={setScale}
-                          undo={undo}
-                          redo={redo}
-                          canUndo={canUndo}
-                          canRedo={canRedo}
-                          onShowHistory={() => setShowHistoryPanel(true)}
-                      />
-                  </div>
-                  <div className="flex-1 flex flex-col h-full bg-card border rounded-lg min-w-0 shadow-sm overflow-hidden">
                     <Tabs defaultValue="general" className="w-full h-full flex flex-col">
-                        <TabsList className="m-4">
+                        <TabsList>
                             <TabsTrigger value="general"><Home className="w-4 h-4 mr-2" />Γενικά</TabsTrigger>
                             <TabsTrigger value="documents"><FileText className="w-4 h-4 mr-2" />Έγγραφα</TabsTrigger>
                             <TabsTrigger value="photos"><Camera className="w-4 h-4 mr-2" />Φωτογραφίες</TabsTrigger>
                             <TabsTrigger value="videos"><Video className="w-4 h-4 mr-2" />Βίντεο</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 px-4 pb-4 h-full">
-                          <FloorPlanViewer
-                                properties={filteredProperties}
-                                selectedPropertyIds={selectedPropertyIds}
-                                selectedFloorId={selectedFloorId}
-                                onSelectFloor={onSelectFloor}
-                                hoveredPropertyId={hoveredPropertyId}
-                                onHoverProperty={onHoverProperty}
-                                activeTool={activeTool}
-                                onSelectProperty={handlePolygonSelect}
-                                onPolygonCreated={handlePolygonCreated}
-                                onPolygonUpdated={handlePolygonUpdated}
-                                onDuplicate={handleDuplicate}
-                                onDelete={handleDelete}
-                                showGrid={showGrid}
-                                snapToGrid={snapToGrid}
-                                gridSize={gridSize}
-                                showMeasurements={showMeasurements}
-                                scale={scale}
-                                suggestionToDisplay={suggestionToDisplay}
-                                connections={connections}
-                                setConnections={setConnections}
-                                groups={groups}
-                                setGroups={setGroups}
-                                isConnecting={isConnecting}
-                                setIsConnecting={setIsConnecting}
-                                firstConnectionPoint={firstConnectionPoint}
-                                setFirstConnectionPoint={setFirstConnectionPoint}
-                            />
+                        <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 h-full">
+                          <div className="flex-1 flex flex-col h-full bg-card border rounded-lg min-w-0 shadow-sm overflow-hidden">
+                            <div className="p-2 border-b">
+                              <ViewerTools 
+                                  activeTool={activeTool}
+                                  setActiveTool={setActiveTool}
+                                  showGrid={showGrid}
+                                  setShowGrid={setShowGrid}
+                                  snapToGrid={snapToGrid}
+                                  setSnapToGrid={setSnapToGrid}
+                                  showMeasurements={showMeasurements}
+                                  setShowMeasurements={setShowMeasurements}
+                                  scale={scale}
+                                  setScale={setScale}
+                                  undo={undo}
+                                  redo={redo}
+                                  canUndo={canUndo}
+                                  canRedo={canRedo}
+                                  onShowHistory={() => setShowHistoryPanel(true)}
+                              />
+                            </div>
+                            <div className="flex-1 min-h-0">
+                              <FloorPlanViewer
+                                    properties={filteredProperties}
+                                    selectedPropertyIds={selectedPropertyIds}
+                                    selectedFloorId={selectedFloorId}
+                                    onSelectFloor={onSelectFloor}
+                                    hoveredPropertyId={hoveredPropertyId}
+                                    onHoverProperty={onHoverProperty}
+                                    activeTool={activeTool}
+                                    onSelectProperty={handlePolygonSelect}
+                                    onPolygonCreated={handlePolygonCreated}
+                                    onPolygonUpdated={handlePolygonUpdated}
+                                    onDuplicate={handleDuplicate}
+                                    onDelete={handleDelete}
+                                    showGrid={showGrid}
+                                    snapToGrid={snapToGrid}
+                                    gridSize={gridSize}
+                                    showMeasurements={showMeasurements}
+                                    scale={scale}
+                                    suggestionToDisplay={suggestionToDisplay}
+                                    connections={connections}
+                                    setConnections={setConnections}
+                                    groups={groups}
+                                    setGroups={setGroups}
+                                    isConnecting={isConnecting}
+                                    setIsConnecting={setIsConnecting}
+                                    firstConnectionPoint={firstConnectionPoint}
+                                    setFirstConnectionPoint={setFirstConnectionPoint}
+                                />
+                              </div>
+                          </div>
                         </TabsContent>
                         <TabsContent value="documents" className="flex-1 flex flex-col gap-4 min-h-0 mt-2">
                             <p>Documents tab content</p>
@@ -338,7 +341,6 @@ export default function UnitsPage() {
                         </TabsContent>
                     </Tabs>
                 </div>
-              </div>
             </>
         ) : (
           <PropertyGrid 
