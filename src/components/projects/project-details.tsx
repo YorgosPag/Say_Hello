@@ -10,23 +10,26 @@ import { DocumentsProjectTab } from './documents-project-tab';
 import { IkaTab } from './ika-tab';
 import { PhotosTab } from './PhotosTab';
 import { VideosTab } from './VideosTab';
-
-type Project = {
-    id: number;
-    name: string;
-};
+import type { Project } from '@/types/project';
+import { ProjectDetailsHeader } from './ProjectDetailsHeader';
 
 interface ProjectDetailsProps {
     project: Project;
 }
 
 export function ProjectDetails({ project }: ProjectDetailsProps) {
-    if (!project) return <div className="flex-1 p-4">Επιλέξτε ένα έργο</div>;
+    if (!project) return (
+        <div className="flex-1 p-4 flex items-center justify-center bg-card border rounded-lg">
+            <div className="text-center text-muted-foreground">
+                <Briefcase className="w-12 h-12 mx-auto mb-4" />
+                <h2 className="text-xl font-semibold">Επιλέξτε ένα έργο</h2>
+                <p>Επιλέξτε ένα έργο από τη λίστα για να δείτε τις λεπτομέρειές του.</p>
+            </div>
+        </div>
+    );
     return (
         <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0">
-            <div className="p-2 border-b bg-background flex items-center gap-2 rounded-t-lg">
-                <h3 className="text-sm font-semibold">{project.name}</h3>
-            </div>
+            <ProjectDetailsHeader project={project} />
             <main className="flex-1 overflow-auto p-4">
                 <div className="flex flex-col h-full">
                     <Tabs defaultValue="general" className="flex flex-col h-full">

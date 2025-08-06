@@ -9,7 +9,7 @@ import { ProjectsHeader } from './ProjectsHeader';
 import { ProjectsDashboard } from './ProjectsDashboard';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-const projects: Project[] = [
+const projectsData: Project[] = [
     {
       id: 1,
       name: "3. ΕΥΤΕΡΠΗΣ",
@@ -63,6 +63,7 @@ const companies = [
 ];
 
 export function ProjectsPageContent() {
+  const [projects, setProjects] = useState<Project[]>(projectsData);
   const [selectedProject, setSelectedProject] = useState<Project>(projects[0]);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchTerm, setSearchTerm] = useState('');
