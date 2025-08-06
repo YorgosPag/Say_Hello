@@ -123,6 +123,7 @@ export function BuildingDataTab() {
                 <GeneralPlotDataTab 
                     plotData={{...plotData, sdFinal}}
                     onPlotDataChange={handlePlotDataChange}
+                    isEditing={isEditing}
                 />
             </TabsContent>
             <TabsContent value="allowed-data" className="pt-4">
@@ -130,13 +131,15 @@ export function BuildingDataTab() {
                     allowedDataInput={allowedDataInput}
                     calculatedData={calculatedAllowedData}
                     onInputChange={handleAllowedDataChange}
+                    isEditing={isEditing}
                 />
             </TabsContent>
             <TabsContent value="actual-data" className="pt-4">
                 <ActualBuildingDataTab 
                     actualData={actualData}
-                    calculatedData={calculatedActualData}
+                    calculatedData={calculatedAllowedData}
                     onActualDataChange={handleActualDataChange}
+                    isEditing={isEditing}
                 />
             </TabsContent>
             <TabsContent value="other-data" className="pt-4">

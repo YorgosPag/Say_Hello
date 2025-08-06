@@ -16,9 +16,10 @@ export interface PlotData {
 interface GeneralPlotDataTabProps {
     plotData: PlotData & { sdFinal?: number };
     onPlotDataChange: (newData: Partial<PlotData>) => void;
+    isEditing: boolean;
 }
 
-export function GeneralPlotDataTab({ plotData, onPlotDataChange }: GeneralPlotDataTabProps) {
+export function GeneralPlotDataTab({ plotData, onPlotDataChange, isEditing }: GeneralPlotDataTabProps) {
     
     const formRef = useRef<HTMLDivElement>(null);
 
@@ -55,18 +56,18 @@ export function GeneralPlotDataTab({ plotData, onPlotDataChange }: GeneralPlotDa
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4" ref={formRef}>
                     {/* Left Column */}
                     <div className="space-y-3">
-                        <FormField id="sdNoSocial" label="Συντελεστής Δόμησης (Χωρίς Κοιν. Συντελ.)" value={plotData.sdNoSocial} onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-32" labelClassName="text-muted-foreground" />
-                        <FormField id="socialFactor" label="Κοινωνικός Συντελεστής" value={plotData.socialFactor} onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-32" labelClassName="text-muted-foreground" />
-                        <FormField id="sdFinal" label="Συντελεστής Δόμησης (Τελικός)" value={plotData.sdFinal!} readOnly labelPosition='left' inputClassName="w-32" labelClassName="text-muted-foreground" onChange={() => {}} onEnterPress={() => {}} />
-                        <FormField id="areaCompleteness" label="Εμβαδόν Αρτιότητας" value={0} onChange={() => {}} unit="τ.μ." labelPosition='left' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" />
-                        <FormField id="areaCompletenessDerogation" label="Εμβαδόν Αρτιότητας Κατά Παρέκκλιση" value={0} onChange={() => {}} unit="τ.μ." labelPosition='left' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" />
-                        <FormField id="faceCompleteness" label="Πρόσωπο Αρτιότητας" value={0} onChange={() => {}} unit="μ.μ." labelPosition='left' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" />
-                        <FormField id="faceCompletenessDerogation" label="Πρόσωπο Αρτιότητας Κατά Παρέκκλιση" value={0} onChange={() => {}} unit="μ.μ." labelPosition='left' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" />
+                        <FormField id="sdNoSocial" label="Συντελεστής Δόμησης (Χωρίς Κοιν. Συντελ.)" value={plotData.sdNoSocial} onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
+                        <FormField id="socialFactor" label="Κοινωνικός Συντελεστής" value={plotData.socialFactor} onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
+                        <FormField id="sdFinal" label="Συντελεστής Δόμησης (Τελικός)" value={plotData.sdFinal!} readOnly labelPosition='left' inputClassName="w-32" labelClassName="text-muted-foreground" />
+                        <FormField id="areaCompleteness" label="Εμβαδόν Αρτιότητας" value={0} onChange={() => {}} unit="τ.μ." labelPosition='left' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
+                        <FormField id="areaCompletenessDerogation" label="Εμβαδόν Αρτιότητας Κατά Παρέκκλιση" value={0} onChange={() => {}} unit="τ.μ." labelPosition='left' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
+                        <FormField id="faceCompleteness" label="Πρόσωπο Αρτιότητας" value={0} onChange={() => {}} unit="μ.μ." labelPosition='left' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
+                        <FormField id="faceCompletenessDerogation" label="Πρόσωπο Αρτιότητας Κατά Παρέκκλιση" value={0} onChange={() => {}} unit="μ.μ." labelPosition='left' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
                     </div>
                     {/* Right Column */}
                     <div className="space-y-3">
                         <div className="grid grid-cols-[auto_1fr] items-center">
-                             <Select defaultValue="yes">
+                             <Select defaultValue="yes" disabled={!isEditing}>
                                 <SelectTrigger className="h-8 w-28">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -78,7 +79,7 @@ export function GeneralPlotDataTab({ plotData, onPlotDataChange }: GeneralPlotDa
                             <Label className="text-sm font-medium text-muted-foreground text-left pl-2">Εντός Ορίων</Label>
                         </div>
                          <div className="grid grid-cols-[auto_1fr] items-center">
-                             <Select defaultValue="yes">
+                             <Select defaultValue="yes" disabled={!isEditing}>
                                 <SelectTrigger className="h-8 w-28">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -90,7 +91,7 @@ export function GeneralPlotDataTab({ plotData, onPlotDataChange }: GeneralPlotDa
                             <Label className="text-sm font-medium text-muted-foreground text-left pl-2">Εντός Ζώνης</Label>
                         </div>
                         <div className="grid grid-cols-[auto_1fr] items-center">
-                             <Select defaultValue="yes">
+                             <Select defaultValue="yes" disabled={!isEditing}>
                                 <SelectTrigger className="h-8 w-28">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -102,7 +103,7 @@ export function GeneralPlotDataTab({ plotData, onPlotDataChange }: GeneralPlotDa
                             <Label className="text-sm font-medium text-muted-foreground text-left pl-2">Πυλωτή</Label>
                         </div>
                          <div className="grid grid-cols-[auto_1fr] items-center">
-                             <Select defaultValue="no">
+                             <Select defaultValue="no" disabled={!isEditing}>
                                 <SelectTrigger className="h-8 w-28">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -114,9 +115,9 @@ export function GeneralPlotDataTab({ plotData, onPlotDataChange }: GeneralPlotDa
                             <Label className="text-sm font-medium text-muted-foreground text-left pl-2">Στέγη</Label>
                         </div>
                         
-                        <FormField id="maxRoofHeight" label="Μέγιστο Ύψος Στέγης" value={0} onChange={() => {}} unit="μ.μ." labelPosition='right' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" />
-                        <FormField id="maxRoofSlope" label="Μέγιστη Κλίση Στέγης" value={0} onChange={() => {}} unit="%" labelPosition='right' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" />
-                        <FormField id="plotArea" label="Εμβαδόν Οικοπέδου (Ε.Ο.)" value={plotData.plotArea} onChange={handleChange} unit="τ.μ." labelPosition='right' unitPosition='left' useGrouping={true} onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" />
+                        <FormField id="maxRoofHeight" label="Μέγιστο Ύψος Στέγης" value={0} onChange={() => {}} unit="μ.μ." labelPosition='right' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
+                        <FormField id="maxRoofSlope" label="Μέγιστη Κλίση Στέγης" value={0} onChange={() => {}} unit="%" labelPosition='right' unitPosition='left' onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
+                        <FormField id="plotArea" label="Εμβαδόν Οικοπέδου (Ε.Ο.)" value={plotData.plotArea} onChange={handleChange} unit="τ.μ." labelPosition='right' unitPosition='left' useGrouping={true} onEnterPress={handleEnterNavigation} inputClassName="w-32" labelClassName="text-muted-foreground" readOnly={!isEditing} />
                     </div>
                 </div>
             </CardContent>

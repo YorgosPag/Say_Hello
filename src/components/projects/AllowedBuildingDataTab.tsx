@@ -27,6 +27,7 @@ interface AllowedBuildingDataTabProps {
     allowedDataInput: AllowedDataInput;
     calculatedData: AllowedDataCalculated;
     onInputChange: (newData: Partial<AllowedDataInput>) => void;
+    isEditing: boolean;
 }
 
 const CalculationFormula = ({ text, className }: { text: string; className?: string }) => {
@@ -39,7 +40,7 @@ const CalculationFormula = ({ text, className }: { text: string; className?: str
     );
 };
 
-export function AllowedBuildingDataTab({ allowedDataInput, calculatedData, onInputChange }: AllowedBuildingDataTabProps) {
+export function AllowedBuildingDataTab({ allowedDataInput, calculatedData, onInputChange, isEditing }: AllowedBuildingDataTabProps) {
     const formRef = useRef<HTMLDivElement>(null);
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +49,7 @@ export function AllowedBuildingDataTab({ allowedDataInput, calculatedData, onInp
     };
 
     const handleEnterNavigation = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key !== 'Enter') return;
         e.preventDefault();
         if (!formRef.current) return;
 
@@ -74,18 +76,18 @@ export function AllowedBuildingDataTab({ allowedDataInput, calculatedData, onInp
             <div className="flex gap-x-8" ref={formRef}>
                 {/* Left Column - Fields */}
                 <div className="space-y-3">
-                    <FormField label="Μέγιστη Επιτρεπόμενη Δόμηση" id="maxAllowedConstruction" value={calculatedData.maxAllowedConstruction} onChange={() => {}} onEnterPress={() => {}} unit="τ.μ." readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping />
-                    <FormField label="Μέγιστο Ποσοστό Κάλυψης" id="maxCoveragePercentage" value={allowedDataInput.maxCoveragePercentage} unit="%" labelClassName="text-green-600 dark:text-green-500" onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-40" unitPosition="left" />
-                    <FormField label="Μέγιστη Κάλυψη Οικοπέδου" id="maxPlotCoverage" value={calculatedData.maxPlotCoverage} unit="τ.μ." labelClassName="text-blue-600 dark:text-blue-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping onChange={() => {}} onEnterPress={() => {}} />
-                    <FormField label="Μέγιστο Ποσοστό Η/Χ" id="maxSemiOutdoorPercentage" value={allowedDataInput.maxSemiOutdoorPercentage} unit="%" labelClassName="text-orange-600 dark:text-orange-500" onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-40" unitPosition="left" />
-                    <FormField label="Μέγιστη Επιτρεπόμενη Επιφάνεια Η/Χ" id="maxAllowedSemiOutdoorArea" value={calculatedData.maxAllowedSemiOutdoorArea} unit="τ.μ." labelClassName="text-red-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping onChange={() => {}} onEnterPress={() => {}} />
-                    <FormField label="Μέγιστο Ποσοστό Εξωστών" id="maxBalconyPercentage" value={allowedDataInput.maxBalconyPercentage} unit="%" labelClassName="text-cyan-600 dark:text-cyan-500" onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-40" unitPosition="left" />
-                    <FormField label="Μέγιστη Επιφάνεια Εξωστών" id="maxBalconyArea" value={calculatedData.maxBalconyArea} unit="τ.μ." labelClassName="text-fuchsia-600 dark:text-fuchsia-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping onChange={() => {}} onEnterPress={() => {}} />
-                    <FormField label="Μέγ. Ποσοστό Επιτρεπ. Η/Χ + Εξωστών" id="maxCombinedPercentage" value={allowedDataInput.maxCombinedPercentage} unit="%" labelClassName="text-teal-600 dark:text-teal-500" onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-40" unitPosition="left" />
-                    <FormField label="Μέγ. Επιτρεπόμενη Επιφ. Η/Χ & Εξωστών" id="maxCombinedArea" value={calculatedData.maxCombinedArea} unit="τ.μ." labelClassName="text-sky-600 dark:text-sky-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping onChange={() => {}} onEnterPress={() => {}} />
-                    <FormField label="Μέγιστος Συντελεστής Όγκου (Σ.Ο.)" id="maxVolumeCoefficient" value={allowedDataInput.maxVolumeCoefficient} unit="" labelClassName="text-lime-600 dark:text-lime-500" onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-40" />
-                    <FormField label="Μέγιστη Κατ’ Όγκο Εκμετάλλευση" id="maxVolumeExploitation" value={calculatedData.maxVolumeExploitation} unit="κ.μ." labelClassName="text-red-600 dark:text-red-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping onChange={() => {}} onEnterPress={() => {}} />
-                    <FormField label="Μέγιστο Επιτρεπόμενο Ύψος" id="maxAllowedHeight" value={allowedDataInput.maxAllowedHeight} unit="m" labelClassName="text-indigo-500" onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-40" unitPosition="left" />
+                    <FormField label="Μέγιστη Επιτρεπόμενη Δόμηση" id="maxAllowedConstruction" value={calculatedData.maxAllowedConstruction} unit="τ.μ." readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping />
+                    <FormField label="Μέγιστο Ποσοστό Κάλυψης" id="maxCoveragePercentage" value={allowedDataInput.maxCoveragePercentage} unit="%" labelClassName="text-green-600 dark:text-green-500" onChange={handleChange} onEnterPress={handleEnterNavigation} isPercentage labelPosition='left' inputClassName="w-40" unitPosition="left" readOnly={!isEditing} />
+                    <FormField label="Μέγιστη Κάλυψη Οικοπέδου" id="maxPlotCoverage" value={calculatedData.maxPlotCoverage} unit="τ.μ." labelClassName="text-blue-600 dark:text-blue-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping />
+                    <FormField label="Μέγιστο Ποσοστό Η/Χ" id="maxSemiOutdoorPercentage" value={allowedDataInput.maxSemiOutdoorPercentage} unit="%" labelClassName="text-orange-600 dark:text-orange-500" onChange={handleChange} onEnterPress={handleEnterNavigation} isPercentage labelPosition='left' inputClassName="w-40" unitPosition="left" readOnly={!isEditing} />
+                    <FormField label="Μέγιστη Επιτρεπόμενη Επιφάνεια Η/Χ" id="maxAllowedSemiOutdoorArea" value={calculatedData.maxAllowedSemiOutdoorArea} unit="τ.μ." labelClassName="text-red-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping />
+                    <FormField label="Μέγιστο Ποσοστό Εξωστών" id="maxBalconyPercentage" value={allowedDataInput.maxBalconyPercentage} unit="%" labelClassName="text-cyan-600 dark:text-cyan-500" onChange={handleChange} onEnterPress={handleEnterNavigation} isPercentage labelPosition='left' inputClassName="w-40" unitPosition="left" readOnly={!isEditing} />
+                    <FormField label="Μέγιστη Επιφάνεια Εξωστών" id="maxBalconyArea" value={calculatedData.maxBalconyArea} unit="τ.μ." labelClassName="text-fuchsia-600 dark:text-fuchsia-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping />
+                    <FormField label="Μέγ. Ποσοστό Επιτρεπ. Η/Χ + Εξωστών" id="maxCombinedPercentage" value={allowedDataInput.maxCombinedPercentage} unit="%" labelClassName="text-teal-600 dark:text-teal-500" onChange={handleChange} onEnterPress={handleEnterNavigation} isPercentage labelPosition='left' inputClassName="w-40" unitPosition="left" readOnly={!isEditing} />
+                    <FormField label="Μέγ. Επιτρεπόμενη Επιφ. Η/Χ & Εξωστών" id="maxCombinedArea" value={calculatedData.maxCombinedArea} unit="τ.μ." labelClassName="text-sky-600 dark:text-sky-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping />
+                    <FormField label="Μέγιστος Συντελεστής Όγκου (Σ.Ο.)" id="maxVolumeCoefficient" value={allowedDataInput.maxVolumeCoefficient} unit="" labelClassName="text-lime-600 dark:text-lime-500" onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-40" readOnly={!isEditing} />
+                    <FormField label="Μέγιστη Κατ’ Όγκο Εκμετάλλευση" id="maxVolumeExploitation" value={calculatedData.maxVolumeExploitation} unit="κ.μ." labelClassName="text-red-600 dark:text-red-500" readOnly labelPosition='left' inputClassName="w-40" unitPosition="left" useGrouping />
+                    <FormField label="Μέγιστο Επιτρεπόμενο Ύψος" id="maxAllowedHeight" value={allowedDataInput.maxAllowedHeight} unit="m" labelClassName="text-indigo-500" onChange={handleChange} onEnterPress={handleEnterNavigation} labelPosition='left' inputClassName="w-40" unitPosition="left" readOnly={!isEditing} />
                 </div>
                 {/* Right Column - Formulas */}
                 <div className="space-y-3 border-l pl-4">
