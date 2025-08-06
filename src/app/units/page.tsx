@@ -36,7 +36,7 @@ function PropertyViewerHeader({
         <div className="border-b bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Ευρετήριο Ακινήτων</h1>
+                <h1 className="text-2xl font-bold text-foreground">Διαχείριση Μονάδων</h1>
                 <p className="text-sm text-muted-foreground">
                     Οπτική διαχείριση και ανάλυση ακινήτων σε κάτοψη.
                 </p>
