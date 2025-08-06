@@ -255,7 +255,7 @@ export default function UnitsPage() {
             <>
                 <div className="min-w-[300px] max-w-[420px] w-full bg-card border rounded-lg flex flex-col shrink-0 shadow-sm max-h-full overflow-hidden">
                     <CardHeader className="pb-4 shrink-0">
-                        <CardTitle className="text-base">Λίστα Ακινήτων</CardTitle>
+                        <CardTitle className="text-base">Λίστα Μονάδων</CardTitle>
                     </CardHeader>
                     <ScrollArea className="flex-1">
                         <CardContent className="p-0">
@@ -277,8 +277,8 @@ export default function UnitsPage() {
                             <TabsTrigger value="photos"><Camera className="w-4 h-4 mr-2" />Φωτογραφίες</TabsTrigger>
                             <TabsTrigger value="videos"><Video className="w-4 h-4 mr-2" />Βίντεο</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 h-full">
-                          <div className="flex-1 flex flex-col h-full bg-card border rounded-lg min-w-0 shadow-sm overflow-hidden">
+                        <TabsContent value="general" className="flex-1 flex flex-col min-h-0 mt-2">
+                          <div className="flex-1 flex flex-col bg-card border rounded-lg min-w-0 shadow-sm overflow-hidden">
                             <div className="p-2 border-b">
                               <ViewerTools 
                                   activeTool={activeTool}
