@@ -105,8 +105,7 @@ function PropertyDetailsContent({ property, onSelectFloor, onUpdateProperty, cur
 
 
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-4 p-1">
+    <div className="space-y-4 p-1">
 
         {isMultiLevel && <MultiLevelNavigation property={property} onSelectFloor={onSelectFloor} currentFloorId={currentFloorId} />}
 
@@ -313,7 +312,6 @@ function PropertyDetailsContent({ property, onSelectFloor, onUpdateProperty, cur
           </Button>
         </div>
       </div>
-    </ScrollArea>
   );
 }
 
@@ -351,7 +349,14 @@ export function PropertyDetailsPanel({ propertyIds, onSelectFloor, properties, o
     );
   }
 
-  return <PropertyDetailsContent property={property as ExtendedPropertyDetails} onSelectFloor={onSelectFloor} onUpdateProperty={onUpdateProperty} currentFloorId={property.floorId} />;
+  return (
+    <ScrollArea className="h-full">
+      <PropertyDetailsContent 
+        property={property as ExtendedPropertyDetails} 
+        onSelectFloor={onSelectFloor} 
+        onUpdateProperty={onUpdateProperty} 
+        currentFloorId={property.floorId} 
+      />
+    </ScrollArea>
+  );
 }
-
-    
