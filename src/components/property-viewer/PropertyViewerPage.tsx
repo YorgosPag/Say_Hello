@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -15,52 +16,113 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SmartSuggestionsPanel } from './SmartSuggestionsPanel';
 import { Button } from '@/components/ui/button';
-import { Plus, LayoutGrid, List } from 'lucide-react';
+import { Plus, LayoutGrid, List, Filter } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-function PropertyViewerHeader({ viewMode, setViewMode }: { viewMode: string, setViewMode: (mode: 'list' | 'grid') => void }) {
+function PropertyViewerHeader({
+  viewMode,
+  setViewMode,
+  onShowFilters,
+  showFilters,
+  undo,
+  redo,
+  canUndo,
+  canRedo,
+  activeTool,
+  setActiveTool,
+  showGrid,
+  setShowGrid,
+  snapToGrid,
+  setSnapToGrid,
+  showMeasurements,
+  setShowMeasurements,
+}: {
+  viewMode: string;
+  setViewMode: (mode: 'list' | 'grid') => void;
+  onShowFilters: () => void;
+  showFilters: boolean;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  activeTool: string | null;
+  setActiveTool: (tool: 'create' | 'edit_nodes' | 'measure' | 'polyline' | null) => void;
+  showGrid: boolean;
+  setShowGrid: (show: boolean) => void;
+  snapToGrid: boolean;
+  setSnapToGrid: (snap: boolean) => void;
+  showMeasurements: boolean;
+  setShowMeasurements: (show: boolean) => void;
+}) {
     return (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Ευρετήριο Ακινήτων</h1>
-              <p className="text-sm text-muted-foreground">
-                Οπτική διαχείριση και ανάλυση ακινήτων σε κάτοψη.
-              </p>
+      <div className="border-b bg-card">
+        <div className="p-4 flex items-start justify-between">
+          <div className="flex-1 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div>
+                    <h1 className="text-2xl font-bold text-foreground">Ευρετήριο Ακινήτων</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Οπτική διαχείριση και ανάλυση ακινήτων σε κάτοψη.
+                    </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                        <Button
+                            variant={viewMode === 'list' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setViewMode('list')}
+                        >
+                            <List className="w-4 h-4" />
+                        </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Προβολή Λίστας</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                        <Button
+                            variant={viewMode === 'grid' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setViewMode('grid')}
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                        </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Προβολή Πλέγματος</TooltipContent>
+                    </Tooltip>
+                      <Button variant="outline" size="sm" onClick={onShowFilters}>
+                        <Filter className="w-4 h-4 mr-2" />
+                        {showFilters ? 'Απόκρυψη' : 'Εμφάνιση'} Φίλτρων
+                    </Button>
+                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Νέο Ακίνητο
+                    </Button>
+                </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-             <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Προβολή Λίστας</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Προβολή Πλέγματος</TooltipContent>
-            </Tooltip>
-            <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Νέο Ακίνητο
-            </Button>
-          </div>
         </div>
-    )
+        <div className="px-4 pb-4">
+            <ViewerTools 
+                activeTool={activeTool}
+                setActiveTool={setActiveTool}
+                showGrid={showGrid}
+                setShowGrid={setShowGrid}
+                snapToGrid={snapToGrid}
+                setSnapToGrid={setSnapToGrid}
+                showMeasurements={showMeasurements}
+                setShowMeasurements={setShowMeasurements}
+                undo={undo}
+                redo={redo}
+                canUndo={canUndo}
+                canRedo={canRedo}
+            />
+        </div>
+      </div>
+    );
 }
 
 
@@ -97,6 +159,7 @@ export function PropertyViewerPage() {
   const [groups, setGroups] = useState<PropertyGroup[]>([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [firstConnectionPoint, setFirstConnectionPoint] = useState<Property | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
 
   const handlePolygonSelect = (propertyId: string, isShiftClick: boolean) => {
@@ -195,33 +258,36 @@ export function PropertyViewerPage() {
 
   return (
     <div className="h-full flex flex-col p-4 gap-4 bg-muted/30">
-        <div className="shrink-0 space-y-4">
-            <PropertyViewerHeader viewMode={viewMode} setViewMode={setViewMode} />
-            <div className="flex justify-between items-start gap-4">
-                <PropertyViewerFilters />
-                <div className="flex flex-col gap-4">
-                    <ViewerTools 
-                        activeTool={activeTool}
-                        setActiveTool={setActiveTool}
-                        showGrid={showGrid}
-                        setShowGrid={setShowGrid}
-                        snapToGrid={snapToGrid}
-                        setSnapToGrid={setSnapToGrid}
-                        showMeasurements={showMeasurements}
-                        setShowMeasurements={setShowMeasurements}
-                        undo={undo}
-                        redo={redo}
-                        canUndo={canUndo}
-                        canRedo={canRedo}
-                    />
-                    <SmartSuggestionsPanel 
-                        properties={properties}
-                        onShowSuggestion={setSuggestionToDisplay}
-                        onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
-                    />
-                </div>
-            </div>
-        </div>
+        <Collapsible open={showFilters} onOpenChange={setShowFilters} className="shrink-0 space-y-4">
+            <PropertyViewerHeader 
+                viewMode={viewMode} 
+                setViewMode={setViewMode}
+                onShowFilters={() => setShowFilters(prev => !prev)}
+                showFilters={showFilters}
+                undo={undo}
+                redo={redo}
+                canUndo={canUndo}
+                canRedo={canRedo}
+                activeTool={activeTool}
+                setActiveTool={setActiveTool}
+                showGrid={showGrid}
+                setShowGrid={setShowGrid}
+                snapToGrid={snapToGrid}
+                setSnapToGrid={setSnapToGrid}
+                showMeasurements={showMeasurements}
+                setShowMeasurements={setShowMeasurements}
+            />
+            <CollapsibleContent>
+              <div className="flex justify-between items-start gap-4">
+                  <PropertyViewerFilters />
+                  <SmartSuggestionsPanel 
+                      properties={properties}
+                      onShowSuggestion={setSuggestionToDisplay}
+                      onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
+                  />
+              </div>
+            </CollapsibleContent>
+        </Collapsible>
         <div className="flex-1 flex gap-4 min-h-0">
             <div className="w-[320px] shrink-0 flex flex-col gap-4">
                 <Card className="flex-1 flex flex-col">

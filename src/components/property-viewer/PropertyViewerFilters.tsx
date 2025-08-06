@@ -106,28 +106,7 @@ export function PropertyViewerFilters() {
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Φίλτρα Αναζήτησης</CardTitle>
-          <div className="flex items-center gap-2">
-            {activeFilters.length > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {activeFilters.length} ενεργά
-              </Badge>
-            )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={clearAllFilters}
-              className="text-xs"
-            >
-              <RotateCcw className="h-3 w-3 mr-1" />
-              Καθαρισμός
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 p-4">
         {/* Active Filters */}
         {activeFilters.length > 0 && (
           <div className="space-y-2">
