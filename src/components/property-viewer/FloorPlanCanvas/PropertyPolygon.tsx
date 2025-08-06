@@ -88,7 +88,7 @@ export function PropertyPolygon({
       strokeDasharray = isNodeEditMode && isSelected ? "5,5" : "none";
   }
 
-  const isMultiLevel = property.parentPropertyId || property.isMultiLevel;
+  const isMultiLevel = property.isMultiLevel || property.type === 'Μεζονέτα';
 
   return (
     <g className="property-polygon">
@@ -124,9 +124,9 @@ export function PropertyPolygon({
             y={centroid.y + 3}
             textAnchor="middle"
             fontSize="10"
-            fill="white"
+            fill="black"
             className="select-none font-medium"
-            style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.8)', strokeWidth: '3px', strokeLinejoin: 'round' }}
+            style={{ paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.8)', strokeWidth: '3px', strokeLinejoin: 'round' }}
           >
             {property.name.replace(/ - .*/, '')}
           </text>
@@ -135,9 +135,9 @@ export function PropertyPolygon({
             y={centroid.y + 15}
             textAnchor="middle"
             fontSize="8"
-            fill="white"
+            fill="black"
             className="select-none"
-            style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.7)', strokeWidth: '2px', strokeLinejoin: 'round' }}
+            style={{ paintOrder: 'stroke', stroke: 'rgba(255,255,255,0.7)', strokeWidth: '2px', strokeLinejoin: 'round' }}
           >
             {property.type}
           </text>
@@ -170,7 +170,7 @@ export function PropertyPolygon({
             fill="white"
             className="font-bold pointer-events-none"
            >
-             {property.name.includes("Ισόγειο") ? "Ισόγειο" : "1ος Όροφος"}
+             {property.name.includes("Ισόγειο") ? "1ος Όροφος" : "Ισόγειο"}
            </text>
         </g>
       )}
