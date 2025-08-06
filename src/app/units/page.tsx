@@ -359,7 +359,7 @@ export default function UnitsPage() {
             setShowDashboard={setShowDashboard}
         />
         
-        <div className="px-4 py-4 shrink-0">
+        <div className="px-4 pt-4 shrink-0">
             <Collapsible className="border bg-card rounded-lg">
                 <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
@@ -374,7 +374,7 @@ export default function UnitsPage() {
         </div>
 
         {showDashboard && (
-            <div className="px-4 pb-4 shrink-0">
+            <div className="px-4 pt-4 shrink-0">
                 <PropertyDashboard stats={dashboardStats} />
             </div>
         )}
@@ -391,7 +391,7 @@ export default function UnitsPage() {
                     <div className="flex-1 flex flex-col gap-4 min-h-0 bg-card border rounded-lg shadow-sm">
                         <UnitDetailsHeader unit={selectedUnit} />
                         <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
-                            <div className="shrink-0 border-b px-4 pb-1">
+                            <div className="shrink-0 border-b px-4">
                                 <TabsList>
                                     <TabsTrigger value="general">Γενικά</TabsTrigger>
                                     <TabsTrigger value="documents">Έγγραφα</TabsTrigger>
@@ -399,55 +399,56 @@ export default function UnitsPage() {
                                     <TabsTrigger value="videos">Videos</TabsTrigger>
                                 </TabsList>
                             </div>
-                            <div className="p-2">
-                                <ViewerTools 
-                                    activeTool={activeTool}
-                                    setActiveTool={setActiveTool}
-                                    showGrid={showGrid}
-                                    setShowGrid={setShowGrid}
-                                    snapToGrid={snapToGrid}
-                                    setSnapToGrid={setSnapToGrid}
-                                    showMeasurements={showMeasurements}
-                                    setShowMeasurements={setShowMeasurements}
-                                    scale={scale}
-                                    setScale={setScale}
-                                    undo={undo}
-                                    redo={redo}
-                                    canUndo={canUndo}
-                                    canRedo={canRedo}
-                                    onShowHistory={() => setShowHistoryPanel(true)}
-                                />
-                            </div>
-                            <div className="flex-1 flex flex-col h-full px-2 pb-2">
-                              <TabsContent value="general" className="flex-1 flex flex-col min-h-0 m-0">
-                                  <FloorPlanViewer
-                                          properties={filteredProperties}
-                                          selectedPropertyIds={selectedPropertyIds}
-                                          selectedFloorId={selectedFloorId}
-                                          onSelectFloor={onSelectFloor}
-                                          hoveredPropertyId={hoveredPropertyId}
-                                          onHoverProperty={onHoverProperty}
-                                          activeTool={activeTool}
-                                          onSelectProperty={handlePolygonSelect}
-                                          onPolygonCreated={handlePolygonCreated}
-                                          onPolygonUpdated={handlePolygonUpdated}
-                                          onDuplicate={handleDuplicate}
-                                          onDelete={handleDelete}
-                                          showGrid={showGrid}
-                                          snapToGrid={snapToGrid}
-                                          gridSize={gridSize}
-                                          showMeasurements={showMeasurements}
-                                          scale={scale}
-                                          suggestionToDisplay={suggestionToDisplay}
-                                          connections={connections}
-                                          setConnections={setConnections}
-                                          groups={groups}
-                                          setGroups={setGroups}
-                                          isConnecting={isConnecting}
-                                          setIsConnecting={setIsConnecting}
-                                          firstConnectionPoint={firstConnectionPoint}
-                                          setFirstConnectionPoint={setFirstConnectionPoint}
-                                      />
+                            
+                            <div className="flex-1 flex flex-col h-full overflow-y-auto">
+                              <TabsContent value="general" className="flex-1 flex flex-col min-h-0 m-0 p-2 space-y-2">
+                                  <ViewerTools 
+                                      activeTool={activeTool}
+                                      setActiveTool={setActiveTool}
+                                      showGrid={showGrid}
+                                      setShowGrid={setShowGrid}
+                                      snapToGrid={snapToGrid}
+                                      setSnapToGrid={setSnapToGrid}
+                                      showMeasurements={showMeasurements}
+                                      setShowMeasurements={setShowMeasurements}
+                                      scale={scale}
+                                      setScale={setScale}
+                                      undo={undo}
+                                      redo={redo}
+                                      canUndo={canUndo}
+                                      canRedo={canRedo}
+                                      onShowHistory={() => setShowHistoryPanel(true)}
+                                  />
+                                  <div className="flex-1 flex flex-col h-full">
+                                    <FloorPlanViewer
+                                            properties={filteredProperties}
+                                            selectedPropertyIds={selectedPropertyIds}
+                                            selectedFloorId={selectedFloorId}
+                                            onSelectFloor={onSelectFloor}
+                                            hoveredPropertyId={hoveredPropertyId}
+                                            onHoverProperty={onHoverProperty}
+                                            activeTool={activeTool}
+                                            onSelectProperty={handlePolygonSelect}
+                                            onPolygonCreated={handlePolygonCreated}
+                                            onPolygonUpdated={handlePolygonUpdated}
+                                            onDuplicate={handleDuplicate}
+                                            onDelete={handleDelete}
+                                            showGrid={showGrid}
+                                            snapToGrid={snapToGrid}
+                                            gridSize={gridSize}
+                                            showMeasurements={showMeasurements}
+                                            scale={scale}
+                                            suggestionToDisplay={suggestionToDisplay}
+                                            connections={connections}
+                                            setConnections={setConnections}
+                                            groups={groups}
+                                            setGroups={setGroups}
+                                            isConnecting={isConnecting}
+                                            setIsConnecting={setIsConnecting}
+                                            firstConnectionPoint={firstConnectionPoint}
+                                            setFirstConnectionPoint={setFirstConnectionPoint}
+                                        />
+                                    </div>
                               </TabsContent>
                               <TabsContent value="documents" className="p-4">Έγγραφα</TabsContent>
                               <TabsContent value="photos" className="p-4">
@@ -480,4 +481,5 @@ export default function UnitsPage() {
     </div>
   );
 }
+
 
