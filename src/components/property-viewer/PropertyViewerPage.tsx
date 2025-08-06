@@ -27,7 +27,7 @@ export function PropertyViewerPage() {
     hoveredProperty: hoveredPropertyId,
     selectedFloor: selectedFloorId,
     setSelectedProperties: setSelectedPropertyIds,
-    setHoveredProperty: setHoveredPropertyId,
+    setHoveredProperty,
     setSelectedFloor: setSelectedFloorId,
     undo,
     redo,
