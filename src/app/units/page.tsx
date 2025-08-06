@@ -251,7 +251,7 @@ export default function UnitsPage() {
           </Collapsible>
       </div>
       
-      <main className="flex-1 flex flex-col overflow-hidden p-4 gap-4">
+      <main className="flex-1 flex overflow-hidden p-4 gap-4">
         {viewMode === 'list' ? (
             <>
                 <div className="min-w-[300px] max-w-[420px] w-full bg-card border rounded-lg flex flex-col shrink-0 shadow-sm max-h-full overflow-hidden">
