@@ -35,6 +35,7 @@ import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcuts';
 import { useToast } from '@/hooks/use-toast';
 import type { Property } from '@/types/property-viewer';
 import type { Suggestion } from '@/types/suggestions';
+import type { Connection, PropertyGroup } from '@/types/connections';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -226,7 +227,7 @@ function SmartSuggestionsPanel({ properties, onShowSuggestion, onAcceptSuggestio
     const analyzePlacement = () => {
         const newSuggestions = suggestionSystem.analyzeFloorPlan(properties);
         setSuggestions(newSuggestions.sort((a, b) => b.score - a.score));
-        toast.info(`Βρέθηκαν ${newSuggestions.length} προτάσεις τοποθέτησης`);
+        toast({ title: 'Ανάλυση Ολοκληρώθηκε', description: `Βρέθηκαν ${newSuggestions.length} προτάσεις τοποθέτησης`, variant: 'info' });
     };
 
     const handleShowSuggestion = (suggestion: Suggestion) => {
@@ -385,6 +386,12 @@ export default function PropertyViewerPage() {
   const [scale, setScale] = useState(0.1);
   const [suggestionToDisplay, setSuggestionToDisplay] = useState<Suggestion | null>(null);
 
+  // Connection and Grouping states
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [groups, setGroups] = useState<PropertyGroup[]>([]);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [firstConnectionPoint, setFirstConnectionPoint] = useState<Property | null>(null);
+
   const {
     properties,
     setProperties,
@@ -404,16 +411,39 @@ export default function PropertyViewerPage() {
   const [clipboard, setClipboard] = useState<Property | null>(null);
 
   const handlePropertySelect = useCallback((propertyId: string, isShiftClick: boolean) => {
-      if (isShiftClick) {
-          setSelectedProperties(prev => 
-              prev.includes(propertyId)
-                ? prev.filter(id => id !== propertyId)
-                : [...prev, propertyId]
-          );
+      const property = properties.find(p => p.id === propertyId);
+      if (!property) return;
+      
+      if (isConnecting) {
+          if(!firstConnectionPoint) {
+              setFirstConnectionPoint(property);
+              toast({title: "Επιλέχθηκε το πρώτο ακίνητο", description: "Επιλέξτε το δεύτερο για να ολοκληρωθεί η σύνδεση."})
+          } else {
+              if (firstConnectionPoint.id !== property.id) {
+                  const newConnection: Connection = {
+                      id: `conn-${Date.now()}`,
+                      from: firstConnectionPoint.id,
+                      to: property.id,
+                      type: 'related' // Default type, can be changed from panel
+                  }
+                  setConnections(prev => [...prev, newConnection]);
+                  toast({title: "Σύνδεση Δημιουργήθηκε", description: ` συνδέθηκε με ${property.name}.`})
+                  setFirstConnectionPoint(null);
+                  setIsConnecting(false);
+              }
+          }
       } else {
-          setSelectedProperties([propertyId]);
+          if (isShiftClick) {
+              setSelectedProperties(prev => 
+                  prev.includes(propertyId)
+                    ? prev.filter(id => id !== propertyId)
+                    : [...prev, propertyId]
+              );
+          } else {
+              setSelectedProperties([propertyId]);
+          }
       }
-  }, [setSelectedProperties]);
+  }, [isConnecting, firstConnectionPoint, properties, toast, setConnections, setSelectedProperties, setIsConnecting]);
 
   // Keyboard shortcuts for Undo/Redo
   useKeyboardShortcut('z', undo, { metaKey: true, ctrlKey: true, shiftKey: false });
@@ -624,7 +654,7 @@ export default function PropertyViewerPage() {
 
   const handleAcceptSuggestion = (suggestion: Suggestion) => {
       setActiveTool('create');
-      toast.info(`Ενεργοποιήθηκε η σχεδίαση για το ${suggestion.propertyName}`);
+      toast({ title: 'Ενεργοποίηση Εργαλείου', description: `Ενεργοποιήθηκε η σχεδίαση για το ${suggestion.propertyName}`, variant: 'info' });
   };
 
 
@@ -750,6 +780,14 @@ export default function PropertyViewerPage() {
                 showMeasurements={showMeasurements}
                 scale={scale}
                 suggestionToDisplay={suggestionToDisplay}
+                connections={connections}
+                setConnections={setConnections}
+                groups={groups}
+                setGroups={setGroups}
+                isConnecting={isConnecting}
+                setIsConnecting={setIsConnecting}
+                firstConnectionPoint={firstConnectionPoint}
+                setFirstConnectionPoint={setFirstConnectionPoint}
               />
             </CardContent>
           </Card>

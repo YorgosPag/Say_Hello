@@ -6,6 +6,7 @@ import { useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import type { Property } from '@/types/property-viewer';
 import type { Suggestion } from '@/types/suggestions';
+import type { Connection, PropertyGroup } from '@/types/connections';
 
 import { ViewerToolbar } from './ViewerToolbar';
 import { FloorCanvasWrapper } from './FloorCanvasWrapper';
@@ -98,6 +99,14 @@ export interface FloorPlanViewerProps {
   showMeasurements: boolean;
   scale: number;
   suggestionToDisplay: Suggestion | null;
+  connections: Connection[];
+  setConnections: React.Dispatch<React.SetStateAction<Connection[]>>;
+  groups: PropertyGroup[];
+  setGroups: React.Dispatch<React.SetStateAction<PropertyGroup[]>>;
+  isConnecting: boolean;
+  setIsConnecting: React.Dispatch<React.SetStateAction<boolean>>;
+  firstConnectionPoint: Property | null;
+  setFirstConnectionPoint: React.Dispatch<React.SetStateAction<Property | null>>;
 }
 
 
@@ -118,7 +127,15 @@ export function FloorPlanViewer({
   gridSize,
   showMeasurements,
   scale,
-  suggestionToDisplay
+  suggestionToDisplay,
+  connections,
+  setConnections,
+  groups,
+  setGroups,
+  isConnecting,
+  setIsConnecting,
+  firstConnectionPoint,
+  setFirstConnectionPoint,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showLabels, setShowLabels] = useState(true);
@@ -177,6 +194,10 @@ export function FloorPlanViewer({
               showMeasurements={showMeasurements}
               scale={scale}
               suggestionToDisplay={suggestionToDisplay}
+              connections={connections}
+              groups={groups}
+              isConnecting={isConnecting}
+              firstConnectionPoint={firstConnectionPoint}
             />
         </FloorCanvasWrapper>
 
@@ -189,6 +210,12 @@ export function FloorPlanViewer({
             onPolygonSelect={onSelectProperty}
             onDuplicate={onDuplicate}
             onDelete={onDelete}
+            connections={connections}
+            setConnections={setConnections}
+            groups={groups}
+            setGroups={setGroups}
+            isConnecting={isConnecting}
+            setIsConnecting={setIsConnecting}
           />
         )}
       </div>

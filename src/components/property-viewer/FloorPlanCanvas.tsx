@@ -8,6 +8,7 @@ import { PolygonEditor } from "./PolygonEditor";
 import type { Property } from '@/types/property-viewer';
 import type { LayerState } from './SidebarPanel';
 import type { Suggestion } from '@/types/suggestions';
+import type { Connection, PropertyGroup } from '@/types/connections';
 
 
 import { GridOverlay } from './FloorPlanCanvas/GridOverlay';
@@ -16,6 +17,8 @@ import { CreationOverlay } from './FloorPlanCanvas/CreationOverlay';
 import { MeasurementOverlay } from './FloorPlanCanvas/MeasurementOverlay';
 import { StatusLegend } from './FloorPlanCanvas/StatusLegend';
 import { PropertyCountOverlay } from './FloorPlanCanvas/PropertyCountOverlay';
+import { ConnectionLine, GroupFrame, getCentroid } from './FloorPlanCanvas/ConnectionElements';
+
 
 interface FloorData {
   id: string;
@@ -47,6 +50,10 @@ interface FloorPlanCanvasProps {
   showMeasurements: boolean;
   scale: number;
   suggestionToDisplay: Suggestion | null;
+  connections: Connection[];
+  groups: PropertyGroup[];
+  isConnecting: boolean;
+  firstConnectionPoint: Property | null;
 }
 
 
@@ -65,7 +72,11 @@ export function FloorPlanCanvas({
   gridSize,
   showMeasurements,
   scale,
-  suggestionToDisplay
+  suggestionToDisplay,
+  connections,
+  groups,
+  isConnecting,
+  firstConnectionPoint
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -165,7 +176,7 @@ export function FloorPlanCanvas({
       onPolygonHover(null);
     }
     
-    if (isCreatingPolygon || isMeasuring) {
+    if (isCreatingPolygon || isMeasuring || isConnecting) {
         const rect = event.currentTarget.getBoundingClientRect();
         const currentPos = {
           x: event.clientX - rect.left,
@@ -175,7 +186,7 @@ export function FloorPlanCanvas({
     } else {
         setMousePosition(null);
     }
-  }, [onPolygonHover, isCreatingPolygon, isMeasuring, snapPoint]);
+  }, [onPolygonHover, isCreatingPolygon, isMeasuring, isConnecting, snapPoint]);
 
   const handleRightClick = (event: React.MouseEvent<SVGSVGElement>) => {
       // Exit creation mode on right click
@@ -195,7 +206,7 @@ export function FloorPlanCanvas({
     <div 
       ref={containerRef} 
       className={cn("w-full h-full relative overflow-hidden", {
-        "cursor-crosshair": isCreatingPolygon || isMeasuring,
+        "cursor-crosshair": isCreatingPolygon || isMeasuring || isConnecting,
       })}
     >
       {/* Floor plan background */}
@@ -224,6 +235,24 @@ export function FloorPlanCanvas({
           height={dimensions.height}
           gridSize={gridSize}
         />
+        
+        {/* Render groups first so they are in the back */}
+        {groups.map((group) => (
+            <GroupFrame key={group.id} group={group} properties={floorData.properties} />
+        ))}
+        
+        {/* Render connections */}
+        {connections.map((connection) => {
+            const prop1 = floorData.properties.find(p => p.id === connection.from);
+            const prop2 = floorData.properties.find(p => p.id === connection.to);
+            if (!prop1 || !prop2) return null;
+            return <ConnectionLine key={connection.id} prop1={prop1} prop2={prop2} type={connection.type} />
+        })}
+        
+        {/* Render temporary connection line */}
+        {isConnecting && firstConnectionPoint && mousePosition && (
+            <ConnectionLine prop1={firstConnectionPoint} prop2={{...firstConnectionPoint, vertices: [mousePosition]}} type="related" />
+        )}
 
         {floorData.properties.map((property) => {
             const layerState = layerStates[property.id] || { visible: true, opacity: 0.3, locked: false };
@@ -240,6 +269,8 @@ export function FloorPlanCanvas({
                     scale={scale}
                     visible={layerState.visible}
                     opacity={layerState.opacity}
+                    isConnecting={isConnecting}
+                    isFirstConnectionPoint={firstConnectionPoint?.id === property.id}
                 />
             );
         })}

@@ -5,7 +5,7 @@ import type { StorageUnit, StorageType } from '@/types/storage';
 import { mockStorageUnits } from './StorageTab/mock-data';
 
 import { StorageList } from './StorageList';
-import { StorageForm } from './StorageForm';
+import { StorageForm } from './StorageForm/index';
 import { StorageTabHeader } from './StorageTab/StorageTabHeader';
 import { StorageTabStats } from './StorageTab/StorageTabStats';
 import { StorageTabFilters } from './StorageTab/StorageTabFilters';

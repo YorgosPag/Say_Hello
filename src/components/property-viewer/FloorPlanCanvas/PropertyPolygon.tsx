@@ -16,6 +16,8 @@ interface PropertyPolygonProps {
   scale: number;
   visible: boolean;
   opacity: number;
+  isConnecting: boolean;
+  isFirstConnectionPoint: boolean;
 }
 
 const statusColors = {
@@ -37,6 +39,8 @@ export function PropertyPolygon({
   scale,
   visible,
   opacity,
+  isConnecting,
+  isFirstConnectionPoint
 }: PropertyPolygonProps) {
   if (!visible) return null;
 
@@ -68,6 +72,14 @@ export function PropertyPolygon({
     fillOpacity = Math.min(1, opacity + 0.15); // Increase opacity on hover
     strokeWidth = 2;
   }
+  
+  if(isConnecting) {
+      strokeWidth = isFirstConnectionPoint ? 4 : (isHovered ? 4 : 2);
+      strokeColor = isFirstConnectionPoint ? '#3B82F6' : (isHovered ? '#8B5CF6' : strokeColor);
+      strokeDasharray = isFirstConnectionPoint ? "none" : (isHovered ? "4 4" : "none");
+  } else {
+      strokeDasharray = isNodeEditMode && isSelected ? "5,5" : "none";
+  }
 
   return (
     <g className="property-polygon">
@@ -77,8 +89,8 @@ export function PropertyPolygon({
         fillOpacity={fillOpacity}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
-        strokeDasharray={isNodeEditMode && isSelected ? "5,5" : "none"}
-        className="cursor-pointer transition-all duration-200"
+        strokeDasharray={strokeDasharray}
+        className={cn("cursor-pointer transition-all duration-200", { "cursor-crosshair": isConnecting })}
         onMouseEnter={() => onHover(property.id)}
         onMouseLeave={() => onHover(null)}
         onClick={(e) => onSelect(property.id, e.shiftKey)}
