@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Heart, MapPin, Calendar, Euro } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Project } from '@/types/project';
+import { PROJECT_STATUS_LABELS, type Project } from '@/types/project';
 
 interface ProjectListItemProps {
   project: Project;
