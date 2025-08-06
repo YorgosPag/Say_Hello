@@ -480,10 +480,12 @@ export default function PropertyViewerPage() {
   );
   
   const handlePolygonUpdated = useCallback((polygonId: string, vertices: Array<{ x: number; y: number }>) => {
-    const newProperties = properties.map(p => 
-        p.id === polygonId ? { ...p, vertices } : p
-    );
-    setProperties(newProperties, 'Επεξεργασία Polygon');
+    requestAnimationFrame(() => {
+        const newProperties = properties.map(p => 
+            p.id === polygonId ? { ...p, vertices } : p
+        );
+        setProperties(newProperties, 'Επεξεργασία Polygon');
+    });
   }, [properties, setProperties]);
 
   const handleCopy = useCallback(() => {
