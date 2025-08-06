@@ -1,4 +1,5 @@
 
+
 'use client';
 
 const statusColors = {
@@ -11,7 +12,7 @@ const statusColors = {
 
 export function StatusLegend() {
   return (
-    <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm border rounded-lg p-3 shadow-sm">
+    <div className="bg-background/80 backdrop-blur-sm border rounded-lg p-3 shadow-sm">
       <h4 className="text-xs font-medium mb-2">Κατάσταση Ακινήτων</h4>
       <div className="space-y-1">
         <div className="flex items-center gap-2 text-xs">

@@ -122,7 +122,6 @@ export function PolygonEditor({
     offset: { x: 0, y: 0 }
   });
   
-  const initialPolygonStateRef = useRef<Record<string, Array<{ x: number; y: number }>>>({});
   const svgRef = useRef<SVGGElement>(null);
 
   const snapPoint = useCallback((point: { x: number; y: number }) => {
@@ -257,4 +256,3 @@ export function PolygonEditor({
     </g>
   );
 }
-
