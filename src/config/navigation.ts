@@ -6,6 +6,7 @@ import {
   Library,
   Briefcase,
   Archive,
+  Keyboard,
 } from "lucide-react"
 import type { MenuItem } from "@/types/sidebar"
 
@@ -45,5 +46,12 @@ export const mainMenuItems: MenuItem[] = [
 export const toolsMenuItems: MenuItem[] = []
 
 export const settingsMenuItem: MenuItem[] = [
-    { title: "Ρυθμίσεις", icon: Settings, href: "/settings" }
+    { 
+      title: "Ρυθμίσεις", 
+      icon: Settings, 
+      href: "/settings",
+      subItems: [
+        { title: 'Συντομεύσεις', icon: Keyboard, href: '/settings/shortcuts' }
+      ]
+    }
 ]
