@@ -138,8 +138,8 @@ export function FloorPlanCanvas({
     const rect = event.currentTarget.getBoundingClientRect();
     const zoom = parseFloat(event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
     let currentPoint = {
-      x: (event.clientX - rect.left) / zoom,
-      y: (event.clientY - rect.top) / zoom
+      x: (event.clientX - rect.left - pan.x) / zoom,
+      y: (event.clientY - rect.top - pan.y) / zoom
     };
     currentPoint = snapPoint(currentPoint);
     
@@ -179,7 +179,7 @@ export function FloorPlanCanvas({
           onPolygonSelect('', false); // Deselect all by passing empty ID
       }
     }
-  }, [isCreatingPolygon, isDrawingPolyline, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart, pan]);
+  }, [isCreatingPolygon, isDrawingPolyline, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart, pan, onPan]);
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
@@ -201,8 +201,8 @@ export function FloorPlanCanvas({
         const rect = event.currentTarget.getBoundingClientRect();
         const zoom = parseFloat(event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
         const currentPos = {
-           x: (event.clientX - rect.left) / zoom,
-           y: (event.clientY - rect.top) / zoom
+           x: (event.clientX - rect.left - pan.x) / zoom,
+           y: (event.clientY - rect.top - pan.y) / zoom
         };
         setMousePosition(snapPoint(currentPos));
     } else {

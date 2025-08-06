@@ -298,7 +298,7 @@ interface UsePropertyViewerReturn {
   selectedProject: string | null;
   
   // Setters
-  setSelectedProperties: (value: React.SetStateAction<string[]>) => void;
+  setSelectedProperties: React.Dispatch<React.SetStateAction<string[]>>;
   setHoveredProperty: (propertyId: string | null) => void;
   setSelectedFloor: (floorId: string | null) => void;
   setSelectedBuilding: (buildingId: string | null) => void;

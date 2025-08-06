@@ -32,6 +32,7 @@ export function PropertyViewerPage() {
     redo,
     canUndo,
     canRedo,
+    setSelectedProperties,
   } = usePropertyViewer();
   
   const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | 'polyline' | null>(null);
@@ -49,7 +50,7 @@ export function PropertyViewerPage() {
 
 
   const handlePolygonSelect = (propertyId: string, isShiftClick: boolean) => {
-    setSelectedPropertyIds(prev => {
+    setSelectedProperties(prev => {
         if (!propertyId) return []; // Deselect all
 
         if (isShiftClick) {
