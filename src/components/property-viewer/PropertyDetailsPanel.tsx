@@ -72,7 +72,7 @@ const mockPropertyDetails: Record<string, PropertyDetails> = {
     status: "for-sale",
     price: 25000,
     area: 15,
-    description: "Ευρύχωρη αποθήκη στο υπόγειο με εύκολη πρόσβαση.",
+    description: "Ευρύχωρη αποθήκη με εύκολη πρόσβαση.",
     features: ["Κλιματισμός", "Ασφάλεια", "Εύκολη Πρόσβαση"],
     owner: {
       name: "Γιάννης Παπαδόπουλος",
@@ -195,7 +195,10 @@ function MultiLevelNavigation({ property, onSelectFloor, currentFloorId }: { pro
 }
 
 function PropertyDetailsContent({ property, onSelectFloor, properties, currentFloorId }: { property: PropertyDetails; onSelectFloor: (floorId: string | null) => void; properties: Property[], currentFloorId: string | null }) {
-  const statusInfo = statusConfig[property.status];
+  const statusInfo = statusConfig[property.status] || {
+    label: property.status,
+    color: 'bg-gray-100 text-gray-900 border-gray-200',
+  };
   const isMultiLevel = property.type === "Μεζονέτα";
 
   return (
