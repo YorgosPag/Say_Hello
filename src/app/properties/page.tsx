@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
-import { PropertyManagementPageContent } from '@/components/property-management/PropertyManagementPageContent';
 
 export default function PropertyManagementPage() {
   return (
-    <div className="h-full">
-      <PropertyManagementPageContent />
+    <div className="h-full flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">Διαχείριση Ακινήτων</h1>
+        <p className="text-muted-foreground">Το περιεχόμενο θα προστεθεί σύντομα.</p>
+      </div>
     </div>
   );
 }
