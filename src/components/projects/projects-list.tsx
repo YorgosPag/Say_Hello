@@ -51,6 +51,7 @@ export function ProjectsList({ selectedProject, onSelectProject }: ProjectsListP
     const [sortBy, setSortBy] = useState<ProjectSortKey>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [filterStatus, setFilterStatus] = useState<ProjectStatus | 'all'>('all');
+    const [favorites, setFavorites] = useState<number[]>([1]);
     
     const filteredProjects = useMemo(() => {
         return projects.filter(p => filterStatus === 'all' || p.status === filterStatus);
@@ -70,6 +71,14 @@ export function ProjectsList({ selectedProject, onSelectProject }: ProjectsListP
             return 0;
         });
     }, [filteredProjects, sortBy, sortOrder]);
+
+    const toggleFavorite = (projectId: number) => {
+        setFavorites(prev =>
+          prev.includes(projectId)
+            ? prev.filter(id => id !== projectId)
+            : [...prev, projectId]
+        );
+      };
 
 
     return (
@@ -92,6 +101,8 @@ export function ProjectsList({ selectedProject, onSelectProject }: ProjectsListP
                             project={project}
                             isSelected={selectedProject?.id === project.id}
                             onSelect={() => onSelectProject?.(project)}
+                            isFavorite={favorites.includes(project.id)}
+                            onToggleFavorite={() => toggleFavorite(project.id)}
                         />
                     ))}
                 </div>

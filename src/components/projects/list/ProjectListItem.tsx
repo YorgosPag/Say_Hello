@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Briefcase, Building, MapPin, Calendar, Check, Clock, Play } from 'lucide-react';
+import { Briefcase, Building, MapPin, Calendar, Check, Clock, Play, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Project, ProjectStatus } from '@/types/project';
 import { PROJECT_STATUS_LABELS } from '@/types/project';
@@ -13,6 +13,8 @@ interface ProjectListItemProps {
     project: Project;
     isSelected: boolean;
     onSelect: () => void;
+    isFavorite: boolean;
+    onToggleFavorite: () => void;
 }
 
 const statusConfig: Record<ProjectStatus, { icon: React.ElementType, color: string }> = {
@@ -23,24 +25,39 @@ const statusConfig: Record<ProjectStatus, { icon: React.ElementType, color: stri
     'cancelled': { icon: Check, color: 'bg-red-100 text-red-800' },
 };
 
-export function ProjectListItem({ project, isSelected, onSelect }: ProjectListItemProps) {
+export function ProjectListItem({ 
+    project, 
+    isSelected, 
+    onSelect,
+    isFavorite,
+    onToggleFavorite,
+}: ProjectListItemProps) {
     const { icon: StatusIcon, color: statusColor } = statusConfig[project.status];
     
     return (
         <Card
             className={cn(
-                "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
+                "cursor-pointer transition-all duration-200 hover:shadow-md border-2 relative group",
                 isSelected
                     ? "border-primary shadow-lg ring-2 ring-primary/20"
                     : "border-transparent hover:border-primary/50"
             )}
             onClick={onSelect}
         >
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite();
+                }}
+                className="absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            >
+                <Star className={cn("w-4 h-4 text-gray-300", isFavorite && "text-yellow-400 fill-yellow-400")} />
+            </button>
             <CardContent className="p-3 space-y-3">
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                         <Briefcase className="w-5 h-5 text-primary shrink-0" />
-                        <h4 className="font-semibold text-sm leading-tight">{project.name}</h4>
+                        <h4 className="font-semibold text-sm leading-tight pr-6">{project.name}</h4>
                     </div>
                     <Badge variant="secondary" className={cn("text-xs", statusColor)}>
                         <StatusIcon className="w-3 h-3 mr-1" />
