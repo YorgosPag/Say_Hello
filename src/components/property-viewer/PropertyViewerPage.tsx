@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -14,6 +15,7 @@ import { PropertyViewerFilters } from './PropertyViewerFilters';
 import { ViewerTools } from './ViewerTools';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { SmartSuggestionsPanel } from './SmartSuggestionsPanel';
 
 export function PropertyViewerPage() {
   const {
@@ -42,7 +44,7 @@ export function PropertyViewerPage() {
   const [showMeasurements, setShowMeasurements] = useState(false);
   const [scale, setScale] = useState(0.05); // 1 pixel = 0.05 meters
 
-  const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  const [suggestionToDisplay, setSuggestionToDisplay] = useState<Suggestion | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [groups, setGroups] = useState<PropertyGroup[]>([]);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -193,7 +195,7 @@ export function PropertyViewerPage() {
                     gridSize={gridSize}
                     showMeasurements={showMeasurements}
                     scale={scale}
-                    suggestionToDisplay={suggestion}
+                    suggestionToDisplay={suggestionToDisplay}
                     connections={connections}
                     setConnections={setConnections}
                     groups={groups}
@@ -220,6 +222,11 @@ export function PropertyViewerPage() {
                     redo={redo}
                     canUndo={canUndo}
                     canRedo={canRedo}
+                 />
+                 <SmartSuggestionsPanel 
+                    properties={properties}
+                    onShowSuggestion={setSuggestionToDisplay}
+                    onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
                  />
                 <Card className="flex-1">
                     <CardHeader className="py-3 px-4">
