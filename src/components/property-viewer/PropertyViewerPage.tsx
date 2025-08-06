@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -16,65 +17,60 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SmartSuggestionsPanel } from './SmartSuggestionsPanel';
 import { Button } from '@/components/ui/button';
-import { Plus, LayoutGrid, List, Filter } from 'lucide-react';
+import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { PropertyGrid } from './PropertyGrid';
 
 function PropertyViewerHeader({
   viewMode,
   setViewMode,
-  onShowFilters,
-  showFilters,
 }: {
   viewMode: string;
   setViewMode: (mode: 'list' | 'grid') => void;
-  onShowFilters: () => void;
-  showFilters: boolean;
 }) {
     return (
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-                <div>
-                <h1 className="text-2xl font-bold text-foreground">Ευρετήριο Ακινήτων</h1>
-                <p className="text-sm text-muted-foreground">
-                    Οπτική διαχείριση και ανάλυση ακινήτων σε κάτοψη.
-                </p>
-                </div>
-            </div>
-            <div className="flex items-center gap-2">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                    <Button
-                        variant={viewMode === 'list' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setViewMode('list')}
-                    >
-                        <List className="w-4 h-4" />
-                    </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Προβολή Λίστας</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                    <Button
-                        variant={viewMode === 'grid' ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setViewMode('grid')}
-                    >
-                        <LayoutGrid className="w-4 h-4" />
-                    </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Προβολή Πλέγματος</TooltipContent>
-                </Tooltip>
-                    <Button variant="outline" size="sm" onClick={onShowFilters}>
-                    <Filter className="w-4 h-4 mr-2" />
-                    {showFilters ? 'Απόκρυψη' : 'Εμφάνιση'} Φίλτρων
-                </Button>
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Νέο Ακίνητο
-                </Button>
+        <div className="border-b bg-card">
+            <div className="p-4 flex items-start justify-between">
+              <div className="flex-1 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h1 className="text-2xl font-bold text-foreground">Ευρετήριο Ακινήτων</h1>
+                      <p className="text-sm text-muted-foreground">
+                          Οπτική διαχείριση και ανάλυση ακινήτων σε κάτοψη.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                            <Button
+                                variant={viewMode === 'list' ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setViewMode('list')}
+                            >
+                                <List className="w-4 h-4" />
+                            </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Προβολή Λίστας</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                            <Button
+                                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setViewMode('grid')}
+                            >
+                                <LayoutGrid className="w-4 h-4" />
+                            </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Προβολή Πλέγματος</TooltipContent>
+                        </Tooltip>
+                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Νέο Ακίνητο
+                        </Button>
+                    </div>
+                  </div>
+              </div>
             </div>
         </div>
     );
@@ -114,7 +110,6 @@ export function PropertyViewerPage() {
   const [groups, setGroups] = useState<PropertyGroup[]>([]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [firstConnectionPoint, setFirstConnectionPoint] = useState<Property | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     searchTerm: '',
     project: [],
@@ -240,21 +235,28 @@ export function PropertyViewerPage() {
 
   return (
     <div className="h-full flex flex-col p-4 gap-4 bg-muted/30">
-        <div className="border bg-card rounded-lg">
-            <div className="p-4 flex items-start justify-between">
-                <PropertyViewerHeader 
-                    viewMode={viewMode} 
-                    setViewMode={setViewMode}
-                    onShowFilters={() => setShowFilters(prev => !prev)}
-                    showFilters={showFilters}
-                />
-            </div>
-            <Collapsible open={showFilters} onOpenChange={setShowFilters} className="px-4 pb-4">
-                 <CollapsibleContent>
-                    <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
-                 </CollapsibleContent>
-            </Collapsible>
-        </div>
+        <PropertyViewerHeader 
+            viewMode={viewMode} 
+            setViewMode={setViewMode}
+        />
+        <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+
+        <ViewerTools 
+            activeTool={activeTool}
+            setActiveTool={setActiveTool}
+            showGrid={showGrid}
+            setShowGrid={setShowGrid}
+            snapToGrid={snapToGrid}
+            setSnapToGrid={setSnapToGrid}
+            showMeasurements={showMeasurements}
+            setShowMeasurements={setShowMeasurements}
+            scale={scale}
+            setScale={setScale}
+            undo={undo}
+            redo={redo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+        />
         
         <main className="flex-1 flex gap-4 min-h-0">
           {viewMode === 'list' ? (
@@ -286,22 +288,6 @@ export function PropertyViewerPage() {
                   </div>
 
                   <div className="flex-1 flex flex-col gap-4 min-w-0">
-                       <ViewerTools 
-                          activeTool={activeTool}
-                          setActiveTool={setActiveTool}
-                          showGrid={showGrid}
-                          setShowGrid={setShowGrid}
-                          snapToGrid={snapToGrid}
-                          setSnapToGrid={setSnapToGrid}
-                          showMeasurements={showMeasurements}
-                          setShowMeasurements={setShowMeasurements}
-                          scale={scale}
-                          setScale={setScale}
-                          undo={undo}
-                          redo={redo}
-                          canUndo={canUndo}
-                          canRedo={canRedo}
-                      />
                       <FloorPlanViewer
                           selectedPropertyIds={selectedPropertyIds}
                           selectedFloorId={selectedFloorId}
