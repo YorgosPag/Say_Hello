@@ -108,7 +108,7 @@ const projects = [
 
 export function BuildingsPageContent() {
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(buildings[0]);
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'byType' | 'byStatus'>('grid');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'byType' | 'byStatus'>('list');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCompany, setFilterCompany] = useState('all');
   const [filterProject, setFilterProject] = useState('all');
@@ -160,7 +160,7 @@ export function BuildingsPageContent() {
 
         {showDashboard && <BuildingsDashboard stats={stats} />}
 
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden p-4 gap-4">
           {viewMode === 'list' ? (
             <>
               <BuildingsList

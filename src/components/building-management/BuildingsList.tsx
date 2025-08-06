@@ -69,7 +69,7 @@ export function BuildingsList({
   });
 
   return (
-    <div className="w-[420px] bg-card border-r flex flex-col shrink-0 shadow-sm">
+    <div className="min-w-[300px] max-w-[420px] w-full bg-card border rounded-lg flex flex-col shrink-0 shadow-sm max-h-full overflow-hidden">
       <BuildingsListHeader 
         buildingCount={buildings.length}
         activeProjectsCount={buildings.filter(b => b.status === 'active' || b.status === 'construction').length}
