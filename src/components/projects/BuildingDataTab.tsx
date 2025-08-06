@@ -137,7 +137,7 @@ export function BuildingDataTab() {
             <TabsContent value="actual-data" className="pt-4">
                 <ActualBuildingDataTab 
                     actualData={actualData}
-                    calculatedData={calculatedAllowedData}
+                    calculatedData={calculatedActualData}
                     onActualDataChange={handleActualDataChange}
                     isEditing={isEditing}
                 />

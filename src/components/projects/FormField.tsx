@@ -4,6 +4,8 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Info } from 'lucide-react';
 
 interface FormFieldProps {
     id: string;
@@ -19,6 +21,7 @@ interface FormFieldProps {
     unitPosition?: 'left' | 'right';
     useGrouping?: boolean;
     isPercentage?: boolean;
+    tooltipText?: string;
 }
 
 export function FormField({
@@ -35,6 +38,7 @@ export function FormField({
     unitPosition = 'right',
     useGrouping = false,
     isPercentage = false,
+    tooltipText,
 }: FormFieldProps) {
 
     const formatValue = (val: number | string) => {
@@ -72,9 +76,27 @@ export function FormField({
         </div>
     );
 
+    const labelElement = (
+        <div className="flex items-center gap-1">
+            <Label htmlFor={id} className={cn('text-sm font-medium text-left', labelClassName)}>{label}</Label>
+            {tooltipText && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="max-w-xs">{tooltipText}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
+        </div>
+    );
+
     return (
         <div className={cn('grid items-center gap-2', labelPosition === 'left' ? 'grid-cols-[1fr_auto]' : 'grid-cols-1')}>
-            <Label htmlFor={id} className={cn('text-sm font-medium text-left', labelClassName)}>{label}</Label>
+            {labelElement}
             {inputElement}
         </div>
     );
