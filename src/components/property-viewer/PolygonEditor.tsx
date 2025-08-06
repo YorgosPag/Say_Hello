@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -6,22 +7,18 @@ import { cn } from "@/lib/utils";
 import type { Property } from '@/types/property-viewer';
 import type { LayerState } from './SidebarPanel';
 
-type EditableProperty = Property & {
-    color: string; // Assuming a color property exists
-};
-
 interface FloorData {
   id: string;
   name: string;
   level: number;
   buildingId: string;
   floorPlanUrl?: string;
-  properties: EditableProperty[];
+  properties: Property[];
 }
 
 interface PolygonEditorProps {
   floorData: FloorData;
-  selectedPolygon: string | null;
+  selectedPolygonId: string | null;
   onPolygonUpdate: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
   snapToGrid: boolean;
   gridSize: number;
@@ -31,6 +28,7 @@ interface PolygonEditorProps {
 interface DragState {
   isDragging: boolean;
   dragType: 'vertex' | 'polygon' | 'edge' | null;
+  polygonId: string | null;
   dragIndex?: number;
   startPos: { x: number; y: number };
   offset: { x: number; y: number };
@@ -40,27 +38,36 @@ interface DragState {
 function VertexHandle({
   vertex,
   index,
-  isSelected,
-  isShiftDown,
   onMouseDown
 }: {
   vertex: { x: number; y: number };
   index: number;
-  isSelected: boolean;
-  isShiftDown: boolean;
   onMouseDown: (index: number, event: React.MouseEvent) => void;
 }) {
+  const [isShiftDown, setIsShiftDown] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => e.key === 'Shift' && setIsShiftDown(true);
+    const handleKeyUp = (e: KeyboardEvent) => e.key === 'Shift' && setIsShiftDown(false);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
   return (
     <circle
       cx={vertex.x}
       cy={vertex.y}
-      r={isSelected ? 6 : 4}
-      fill={isShiftDown ? "#ef4444" : isSelected ? "#7c3aed" : "#ffffff"}
-      stroke={isShiftDown ? "#ef4444" : isSelected ? "#7c3aed" : "#4b5563"}
+      r={5}
+      fill={isShiftDown ? "#ef4444" : "#7c3aed"}
+      stroke="#ffffff"
       strokeWidth={2}
       className={cn(
         "transition-colors",
-        isShiftDown ? "cursor-crosshair" : "cursor-move hover:fill-violet-200"
+        isShiftDown ? "cursor-crosshair" : "cursor-move hover:fill-violet-500"
       )}
       onMouseDown={(e) => onMouseDown(index, e)}
     />
@@ -88,169 +95,75 @@ function EdgeMidpoint({
     <circle
       cx={midpoint.x}
       cy={midpoint.y}
-      r={3}
+      r={4}
       fill="#10b981"
       stroke="#ffffff"
       strokeWidth={1}
-      className="cursor-pointer opacity-60 hover:opacity-100 hover:r-4 transition-all"
+      className="cursor-pointer opacity-70 hover:opacity-100 hover:r-5 transition-all"
       onMouseDown={(e) => onMouseDown(index, e)}
     />
   );
 }
 
-// --- Geometry Helper Functions ---
-function distanceToLine(point: {x: number, y: number}, lineStart: {x: number, y: number}, lineEnd: {x: number, y: number}) {
-    const A = point.x - lineStart.x;
-    const B = point.y - lineStart.y;
-    const C = lineEnd.x - lineStart.x;
-    const D = lineEnd.y - lineStart.y;
 
-    const dot = A * C + B * D;
-    const lenSq = C * C + D * D;
-    let param = -1;
-
-    if (lenSq !== 0) param = dot / lenSq;
-
-    let xx, yy;
-
-    if (param < 0) {
-        xx = lineStart.x;
-        yy = lineStart.y;
-    } else if (param > 1) {
-        xx = lineEnd.x;
-        yy = lineEnd.y;
-    } else {
-        xx = lineStart.x + param * C;
-        yy = lineStart.y + param * D;
-    }
-
-    const dx = point.x - xx;
-    const dy = point.y - yy;
-
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
-function findClosestEdge(polygon: EditableProperty, point: {x: number, y: number}) {
-    const points = polygon.vertices;
-    let minDistance = Infinity;
-    let closestEdgeIndex = -1;
-
-    for (let i = 0; i < points.length; i++) {
-        const p1 = points[i];
-        const p2 = points[(i + 1) % points.length];
-        
-        const dist = distanceToLine(point, p1, p2);
-        
-        if (dist < minDistance) {
-            minDistance = dist;
-            closestEdgeIndex = i;
-        }
-    }
-    
-    return { index: closestEdgeIndex, distance: minDistance };
-}
-
-
-// Polygon editor component
-function EditablePolygon({
-  property,
-  isSelected,
-  isLocked,
-  opacity,
-  onVertexDrag,
-  onVertexAdd,
-  onVertexRemove,
-  onPolygonDrag,
-  snapPoint,
-}: {
-  property: EditableProperty;
-  isSelected: boolean;
-  isLocked: boolean;
-  opacity: number;
-  onVertexDrag: (vertexIndex: number, newPos: { x: number; y: number }) => void;
-  onVertexAdd: (edgeIndex: number, newPos: { x: number; y: number }) => void;
-  onVertexRemove: (vertexIndex: number) => void;
-  onPolygonDrag: (offset: { x: number; y: number }) => void;
-  snapPoint: (point: { x: number; y: number }) => { x: number; y: number };
-}) {
+export function PolygonEditor({
+  floorData,
+  selectedPolygonId,
+  onPolygonUpdate,
+  snapToGrid,
+  gridSize,
+  layerStates,
+}: PolygonEditorProps) {
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
     dragType: null,
+    polygonId: null,
     startPos: { x: 0, y: 0 },
     offset: { x: 0, y: 0 }
   });
-  const [isShiftDown, setIsShiftDown] = useState(false);
+  
+  const initialPolygonStateRef = useRef<Record<string, Array<{ x: number; y: number }>>>({});
   const svgRef = useRef<SVGGElement>(null);
-  const initialVerticesRef = useRef<Array<{ x: number; y: number }>>([]);
 
-  // Listen for Shift key presses globally
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') {
-        setIsShiftDown(true);
-      }
+  const snapPoint = useCallback((point: { x: number; y: number }) => {
+    if (!snapToGrid) return point;
+    return {
+      x: Math.round(point.x / gridSize) * gridSize,
+      y: Math.round(point.y / gridSize) * gridSize,
     };
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Shift') {
-        setIsShiftDown(false);
-      }
-    };
+  }, [snapToGrid, gridSize]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  const pathData = property.vertices
-    .map((vertex, index) => `${index === 0 ? 'M' : 'L'} ${vertex.x} ${vertex.y}`)
-    .join(' ') + ' Z';
-    
-  if (isLocked) {
-    return (
-        <path
-            d={pathData}
-            fill={property.color}
-            fillOpacity={opacity}
-            stroke={property.color}
-            strokeWidth={1}
-            className="cursor-not-allowed"
-        />
-    );
-  }
-
-  // Handle vertex drag start or deletion
-  const handleVertexMouseDown = useCallback((vertexIndex: number, event: React.MouseEvent) => {
+  const handleVertexMouseDown = useCallback((polygonId: string, vertexIndex: number, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     
-    // Shift+Click to delete vertex
-    if (event.shiftKey && property.vertices.length > 3) {
-      onVertexRemove(vertexIndex);
+    const polygon = floorData.properties.find(p => p.id === polygonId);
+    if (!polygon) return;
+    
+    if (event.shiftKey && polygon.vertices.length > 3) {
+      const newVertices = polygon.vertices.filter((_, i) => i !== vertexIndex);
+      onPolygonUpdate(polygonId, newVertices);
       return;
     }
-
-    const rect = (event.target as SVGElement).ownerSVGElement?.getBoundingClientRect();
-    if (!rect) return;
 
     setDragState({
       isDragging: true,
       dragType: 'vertex',
+      polygonId,
       dragIndex: vertexIndex,
-      startPos: { x: event.clientX - rect.left, y: event.clientY - rect.top },
+      startPos: { x: event.clientX, y: event.clientY },
       offset: { x: 0, y: 0 }
     });
-  }, [property.vertices.length, onVertexRemove]);
-
-  // Handle edge midpoint click (add vertex)
-  const handleEdgeMouseDown = useCallback((edgeIndex: number, event: React.MouseEvent) => {
+  }, [floorData.properties, onPolygonUpdate]);
+  
+  const handleEdgeMouseDown = useCallback((polygonId: string, edgeIndex: number, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     
-    const rect = (event.target as SVGElement).ownerSVGElement?.getBoundingClientRect();
+    const polygon = floorData.properties.find(p => p.id === polygonId);
+    if (!polygon) return;
+    
+    const rect = svgRef.current?.ownerSVGElement?.getBoundingClientRect();
     if (!rect) return;
 
     let newPos = {
@@ -258,82 +171,39 @@ function EditablePolygon({
       y: event.clientY - rect.top
     };
     newPos = snapPoint(newPos);
-    onVertexAdd(edgeIndex, newPos);
-  }, [onVertexAdd, snapPoint]);
-
-  // Handle polygon drag start
-  const handlePolygonMouseDown = useCallback((event: React.MouseEvent) => {
-    if (!isSelected) return;
     
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const rect = (event.target as SVGElement).ownerSVGElement?.getBoundingClientRect();
-    if (!rect) return;
-    
-    initialVerticesRef.current = property.vertices;
-    setDragState({
-      isDragging: true,
-      dragType: 'polygon',
-      startPos: { x: event.clientX - rect.left, y: event.clientY - rect.top },
-      offset: { x: 0, y: 0 }
-    });
-  }, [isSelected, property.vertices]);
-  
-  // Handle right-click on edge to add a new vertex
-  const handleEdgeRightClick = useCallback((event: React.MouseEvent) => {
-      event.preventDefault();
-      if (!isSelected) return;
+    const newVertices = [...polygon.vertices];
+    newVertices.splice(edgeIndex + 1, 0, newPos);
+    onPolygonUpdate(polygonId, newVertices);
+  }, [floorData.properties, onPolygonUpdate, snapPoint]);
 
-      const rect = (event.target as SVGElement).ownerSVGElement?.getBoundingClientRect();
-      if (!rect) return;
-      
-      let clickPos = {
-          x: event.clientX - rect.left,
-          y: event.clientY - rect.top,
-      };
-
-      const edge = findClosestEdge(property, clickPos);
-      
-      if (edge.distance < 10) { // Add vertex if click is close to an edge
-          clickPos = snapPoint(clickPos);
-          onVertexAdd(edge.index, clickPos);
-      }
-  }, [isSelected, property, onVertexAdd, snapPoint]);
-
-
-  // Mouse move handler
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
-      if (!dragState.isDragging || !svgRef.current) return;
+      if (!dragState.isDragging || !dragState.polygonId) return;
 
-      const rect = svgRef.current.ownerSVGElement?.getBoundingClientRect();
+      const polygon = floorData.properties.find(p => p.id === dragState.polygonId);
+      if(!polygon || layerStates[polygon.id]?.locked) return;
+
+      const rect = svgRef.current?.ownerSVGElement?.getBoundingClientRect();
       if (!rect) return;
 
-      const currentPos = {
+      const currentPos = snapPoint({
         x: event.clientX - rect.left,
         y: event.clientY - rect.top
-      };
-
+      });
+      
       if (dragState.dragType === 'vertex' && dragState.dragIndex !== undefined) {
-        const newPos = snapPoint(currentPos);
-        onVertexDrag(dragState.dragIndex, newPos);
-      } else if (dragState.dragType === 'polygon') {
-        const offset = {
-            x: currentPos.x - dragState.startPos.x,
-            y: currentPos.y - dragState.startPos.y
-        };
-        onPolygonDrag(offset);
+        const newVertices = [...polygon.vertices];
+        newVertices[dragState.dragIndex] = currentPos;
+        onPolygonUpdate(dragState.polygonId, newVertices);
       }
     };
 
     const handleMouseUp = () => {
-      if(dragState.isDragging && dragState.dragType === 'polygon') {
-          initialVerticesRef.current = [];
-      }
       setDragState({
         isDragging: false,
         dragType: null,
+        polygonId: null,
         startPos: { x: 0, y: 0 },
         offset: { x: 0, y: 0 }
       });
@@ -348,245 +218,43 @@ function EditablePolygon({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragState, property.vertices, onVertexDrag, onPolygonDrag, snapPoint]);
+  }, [dragState, floorData.properties, onPolygonUpdate, snapPoint, layerStates]);
+
+
+  const selectedPolygonData = floorData.properties.find(p => p.id === selectedPolygonId);
+
+  if (!selectedPolygonId || !selectedPolygonData || layerStates[selectedPolygonId]?.locked) {
+    return null; // Don't render if no polygon is selected or if it's locked
+  }
 
   return (
-    <g ref={svgRef} className="editable-polygon">
-      {/* Main polygon */}
-      <path
-        d={pathData}
-        fill={property.color}
-        fillOpacity={opacity}
-        stroke={isSelected ? "#7c3aed" : property.color}
-        strokeWidth={isSelected ? 2 : 1}
-        strokeDasharray={isSelected ? "5,5" : "none"}
-        className={cn(
-          "transition-all duration-200",
-          isSelected ? "cursor-move" : "cursor-pointer"
-        )}
-        onMouseDown={handlePolygonMouseDown}
-        onContextMenu={handleEdgeRightClick}
-      />
-
-      {/* Edit handles only when selected */}
-      {isSelected && (
-        <>
-          {/* Vertex handles */}
-          {property.vertices.map((vertex, index) => (
-            <VertexHandle
-              key={`vertex-${index}`}
-              vertex={vertex}
-              index={index}
-              isSelected={true}
-              isShiftDown={isShiftDown}
-              onMouseDown={handleVertexMouseDown}
-            />
-          ))}
-
-          {/* Edge midpoints for adding vertices */}
-          {property.vertices.map((vertex, index) => {
-            const nextIndex = (index + 1) % property.vertices.length;
-            const nextVertex = property.vertices[nextIndex];
-            
-            return (
-              <EdgeMidpoint
-                key={`edge-${index}`}
-                start={vertex}
-                end={nextVertex}
-                index={index}
-                onMouseDown={handleEdgeMouseDown}
-              />
-            );
-          })}
-
-          {/* Selection indicator */}
-          <path
-            d={pathData}
-            fill="none"
-            stroke="#7c3aed"
-            strokeWidth={3}
-            strokeDasharray="8,4"
-            opacity={0.6}
-            className="pointer-events-none animate-pulse"
+    <g ref={svgRef} className="polygon-editor">
+        {/* Vertex handles */}
+        {selectedPolygonData.vertices.map((vertex, index) => (
+          <VertexHandle
+            key={`vertex-${selectedPolygonId}-${index}`}
+            vertex={vertex}
+            index={index}
+            onMouseDown={(vertexIndex, event) => handleVertexMouseDown(selectedPolygonId, vertexIndex, event)}
           />
-        </>
-      )}
-    </g>
-  );
-}
+        ))}
 
-export function PolygonEditor({
-  floorData,
-  selectedPolygon,
-  onPolygonUpdate,
-  snapToGrid,
-  gridSize,
-  layerStates,
-}: PolygonEditorProps) {
-  const [editedVertices, setEditedVertices] = useState<Record<string, Array<{ x: number; y: number }>>>({});
-  const initialPolygonStateRef = useRef<Record<string, Array<{ x: number; y: number }>>>({});
-
-  const snapPoint = useCallback((point: { x: number; y: number }) => {
-    if (!snapToGrid) return point;
-    return {
-      x: Math.round(point.x / gridSize) * gridSize,
-      y: Math.round(point.y / gridSize) * gridSize,
-    };
-  }, [snapToGrid, gridSize]);
-
-  // Get current vertices (edited or original)
-  const getCurrentVertices = useCallback((polygonId: string) => {
-    return editedVertices[polygonId] || floorData.properties.find(p => p.id === polygonId)?.vertices || [];
-  }, [editedVertices, floorData.properties]);
-
-  // Handle vertex drag
-  const handleVertexDrag = useCallback((polygonId: string, vertexIndex: number, newPos: { x: number; y: number }) => {
-    setEditedVertices(prev => {
-      const currentVertices = getCurrentVertices(polygonId);
-      const newVertices = [...currentVertices];
-      newVertices[vertexIndex] = newPos;
-      
-      onPolygonUpdate(polygonId, newVertices);
-      return {
-        ...prev,
-        [polygonId]: newVertices
-      };
-    });
-  }, [getCurrentVertices, onPolygonUpdate]);
-
-  // Handle vertex addition
-  const handleVertexAdd = useCallback((polygonId: string, edgeIndex: number, newPos: { x: number; y: number }) => {
-    setEditedVertices(prev => {
-      const currentVertices = getCurrentVertices(polygonId);
-      const newVertices = [...currentVertices];
-      newVertices.splice(edgeIndex + 1, 0, newPos);
-      
-      onPolygonUpdate(polygonId, newVertices);
-      return {
-        ...prev,
-        [polygonId]: newVertices
-      };
-    });
-  }, [getCurrentVertices, onPolygonUpdate]);
-
-  // Handle vertex removal
-  const handleVertexRemove = useCallback((polygonId: string, vertexIndex: number) => {
-    setEditedVertices(prev => {
-      const currentVertices = getCurrentVertices(polygonId);
-      if (currentVertices.length <= 3) return prev; // Minimum 3 vertices
-      
-      const newVertices = currentVertices.filter((_, index) => index !== vertexIndex);
-      
-      onPolygonUpdate(polygonId, newVertices);
-      return {
-        ...prev,
-        [polygonId]: newVertices
-      };
-    });
-  }, [getCurrentVertices, onPolygonUpdate]);
-
-  // Handle polygon drag
-  const handlePolygonDrag = useCallback((polygonId: string, offset: { x: number; y: number }) => {
-    // Store initial state on first drag move
-    if (!initialPolygonStateRef.current[polygonId]) {
-      initialPolygonStateRef.current[polygonId] = getCurrentVertices(polygonId);
-    }
-    
-    const initialVertices = initialPolygonStateRef.current[polygonId];
-    const newVertices = initialVertices.map(vertex => {
-        const moved = {
-            x: vertex.x + offset.x,
-            y: vertex.y + offset.y
-        };
-        return snapPoint(moved);
-    });
-
-    setEditedVertices(prev => ({
-      ...prev,
-      [polygonId]: newVertices
-    }));
-  }, [getCurrentVertices, snapPoint]);
-
-  // Clear initial state when drag ends
-  useEffect(() => {
-      const handleMouseUp = () => {
-          initialPolygonStateRef.current = {};
+        {/* Edge midpoints for adding vertices */}
+        {selectedPolygonData.vertices.map((vertex, index) => {
+          const nextIndex = (index + 1) % selectedPolygonData.vertices.length;
+          const nextVertex = selectedPolygonData.vertices[nextIndex];
           
-          // Final update call
-          Object.entries(editedVertices).forEach(([polygonId, vertices]) => {
-              onPolygonUpdate(polygonId, vertices);
-          });
-      };
-      
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => {
-          window.removeEventListener('mouseup', handleMouseUp);
-      };
-  }, [editedVertices, onPolygonUpdate]);
-
-
-  return (
-    <g className="polygon-editor">
-      {floorData.properties.map((property) => {
-        const layerState = layerStates[property.id] ?? { visible: true, opacity: 1, locked: false };
-
-        if (!layerState.visible) return null;
-
-        const currentVertices = getCurrentVertices(property.id);
-        const editedProperty: EditableProperty = {
-          ...property,
-          vertices: currentVertices,
-          color: property.color || '#cccccc' // Add default color if not present
-        };
-
-        return (
-          <EditablePolygon
-            key={property.id}
-            property={editedProperty}
-            isSelected={selectedPolygon === property.id}
-            isLocked={layerState.locked}
-            opacity={layerState.opacity}
-            onVertexDrag={(vertexIndex, newPos) => handleVertexDrag(property.id, vertexIndex, newPos)}
-            onVertexAdd={(edgeIndex, newPos) => handleVertexAdd(property.id, edgeIndex, newPos)}
-            onVertexRemove={(vertexIndex) => handleVertexRemove(property.id, vertexIndex)}
-            onPolygonDrag={(offset) => handlePolygonDrag(property.id, offset)}
-            snapPoint={snapPoint}
-          />
-        );
-      })}
-
-      {/* Instructions overlay */}
-      {selectedPolygon && (
-        <g className="instructions">
-          <rect
-            x={10}
-            y={60}
-            width={280}
-            height={80}
-            fill="white"
-            fillOpacity={0.95}
-            stroke="#d1d5db"
-            strokeWidth={1}
-            rx={4}
-            className="drop-shadow-sm"
-          />
-          <text x={20} y={80} fontSize="11" fill="#374151" className="font-medium">
-            Οδηγίες Επεξεργασίας:
-          </text>
-          <text x={20} y={95} fontSize="10" fill="#6b7280">
-            • Σύρετε τους κόμβους για μετακίνηση
-          </text>
-          <text x={20} y={108} fontSize="10" fill="#6b7280">
-            • Κλικ στα πράσινα σημεία για προσθήκη κόμβου
-          </text>
-          <text x={20} y={121} fontSize="10" fill="#6b7280">
-            • Shift+Click σε κόμβο για διαγραφή
-          </text>
-          <text x={20} y={134} fontSize="10" fill="#6b7280">
-            • Δεξί κλικ σε ακμή για νέο κόμβο
-          </text>
-        </g>
-      )}
+          return (
+            <EdgeMidpoint
+              key={`edge-${selectedPolygonId}-${index}`}
+              start={vertex}
+              end={nextVertex}
+              index={index}
+              onMouseDown={(edgeIndex, event) => handleEdgeMouseDown(selectedPolygonId, edgeIndex, event)}
+            />
+          );
+        })}
     </g>
   );
 }
+

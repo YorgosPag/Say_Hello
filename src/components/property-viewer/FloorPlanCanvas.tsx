@@ -293,7 +293,7 @@ export function FloorPlanCanvas({
                     property={property}
                     isSelected={selectedPropertyIds.includes(property.id)}
                     isHovered={hoveredProperty === property.id}
-                    isNodeEditMode={isNodeEditMode && primarySelectedPolygon === property.id}
+                    isNodeEditMode={isNodeEditMode && selectedPropertyIds.includes(property.id)}
                     onHover={onPolygonHover}
                     onSelect={onPolygonSelect}
                     onNavigateLevels={onNavigateLevels}
@@ -331,7 +331,7 @@ export function FloorPlanCanvas({
         {isNodeEditMode && (
           <PolygonEditor
             floorData={floorData}
-            selectedPolygon={primarySelectedPolygon}
+            selectedPolygonId={primarySelectedPolygon}
             onPolygonUpdate={onPolygonUpdated}
             snapToGrid={snapToGrid}
             gridSize={gridSize}
