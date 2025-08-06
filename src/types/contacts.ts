@@ -2,12 +2,14 @@ import { Timestamp } from 'firebase/firestore'
 
 // Βασικοί τύποι επαφών
 export type ContactType = 'individual' | 'company' | 'service'
+export type ContactStatus = 'active' | 'inactive' | 'archived';
 
 // Βασικό interface για όλες τις επαφές
 export interface BaseContact {
   id?: string
   type: ContactType
   isFavorite: boolean
+  status: ContactStatus;
   tags?: string[]
   notes?: string
   customFields?: Record<string, any>
@@ -65,7 +67,7 @@ export interface CompanyContact extends BaseContact {
   tradeName?: string
   
   // Νομικά στοιχεία
-  legalForm: 'ΑΕ' | 'ΕΠΕ' | 'ΟΕ' | 'ΕΕ' | 'ΙΚΕ' | 'ΚΟΙΝΣΕΠ' | 'OTHER'
+  legalForm?: 'ΑΕ' | 'ΕΠΕ' | 'ΟΕ' | 'ΕΕ' | 'ΙΚΕ' | 'ΚΟΙΝΣΕΠ' | 'OTHER'
   vatNumber: string // ΑΦΜ
   registrationNumber?: string // ΓΕΜΗ
   taxOffice?: string // ΔΟΥ
