@@ -34,9 +34,6 @@ export function FormField({
     unitPosition = 'right',
     useGrouping = false,
 }: FormFieldProps) {
-    const formattedValue = useGrouping && typeof value === 'number'
-        ? value.toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-        : value;
 
     const inputElement = (
         <div className="relative flex items-center">
@@ -48,7 +45,7 @@ export function FormField({
                 onChange={onChange}
                 onKeyDown={(e) => { if (e.key === 'Enter') onEnterPress(e); }}
                 readOnly={readOnly}
-                className={cn('h-8 text-right', inputClassName, unit && unitPosition === 'left' && "pl-8")}
+                className={cn('h-8 text-right', inputClassName, unit && unitPosition === 'left' && "pl-8", unit && unitPosition === 'right' && "pr-8")}
                 type="text"
             />
             {unit && unitPosition === 'right' && <span className="absolute right-3 text-sm text-muted-foreground">{unit}</span>}
