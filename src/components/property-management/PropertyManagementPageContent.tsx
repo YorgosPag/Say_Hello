@@ -8,6 +8,17 @@ import { PropertyPageFilters } from './page/PropertyPageFilters';
 import { PropertyDashboard } from './PropertyDashboard';
 import { usePropertyFilters } from '@/hooks/usePropertyFilters';
 import type { Property, PropertyFilters } from '@/types/property';
+import { FloorPlanViewer } from '@/components/property-viewer/FloorPlanViewer';
+import { usePropertyViewer } from '@/hooks/use-property-viewer';
+import type { Suggestion } from '@/types/suggestions';
+import type { Connection, PropertyGroup } from '@/types/connections';
+import { ViewerTools } from '@/components/property-viewer/ViewerTools';
+import { SmartSuggestionsPanel } from '@/components/property-viewer/SmartSuggestionsPanel';
+import { PropertyHoverInfo } from '@/components/property-viewer/PropertyHoverInfo';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { VersionHistoryPanel } from '../property-viewer/VersionHistoryPanel';
+
 
 // Mock data - This would typically come from a hook or props
 const propertiesData: Property[] = [
@@ -153,9 +164,38 @@ const propertiesData: Property[] = [
 ];
 
 export function PropertyManagementPageContent() {
+  const {
+    properties,
+    setProperties,
+    selectedProperties: selectedPropertyIds,
+    hoveredProperty: hoveredPropertyId,
+    selectedFloor: selectedFloorId,
+    setHoveredProperty: onHoverProperty,
+    setSelectedFloor: onSelectFloor,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    setSelectedProperties,
+  } = usePropertyViewer();
+
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(propertiesData.length > 0 ? propertiesData[0] : null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showDashboard, setShowDashboard] = useState(true);
+
+  const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | 'polyline' | null>(null);
+  const [showGrid, setShowGrid] = useState(true);
+  const [snapToGrid, setSnapToGrid] = useState(true);
+  const [gridSize, setGridSize] = useState(10);
+  const [showMeasurements, setShowMeasurements] = useState(false);
+  const [scale, setScale] = useState(0.05); // 1 pixel = 0.05 meters
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [suggestionToDisplay, setSuggestionToDisplay] = useState<Suggestion | null>(null);
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [groups, setGroups] = useState<PropertyGroup[]>([]);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [firstConnectionPoint, setFirstConnectionPoint] = useState<any>(null);
+
 
   // State for filters
   const [filters, setFilters] = useState<PropertyFilters>({
@@ -186,6 +226,88 @@ export function PropertyManagementPageContent() {
   const handleSelectProperty = (property: Property) => {
     setSelectedProperty(property);
   };
+  
+    const handlePolygonSelect = (propertyId: string, isShiftClick: boolean) => {
+    setSelectedProperties(prev => {
+        if (!propertyId) return []; // Deselect all
+
+        if (isShiftClick) {
+            return prev.includes(propertyId)
+                ? prev.filter(id => id !== propertyId)
+                : [...prev, propertyId];
+        } else {
+            return prev.length === 1 && prev[0] === propertyId ? [] : [propertyId];
+        }
+    });
+
+    if (isConnecting && !isShiftClick) {
+        const property = properties.find(p => p.id === propertyId);
+        if (!property) return;
+
+        if (!firstConnectionPoint) {
+            setFirstConnectionPoint(property);
+        } else {
+            if (firstConnectionPoint.id === property.id) return;
+            const newConnection: Connection = {
+                id: `conn_${firstConnectionPoint.id}_${property.id}`,
+                from: firstConnectionPoint.id,
+                to: property.id,
+                type: 'related'
+            };
+            setConnections(prev => [...prev, newConnection]);
+            setFirstConnectionPoint(null);
+            setIsConnecting(false);
+        }
+    }
+  };
+
+  const handlePolygonCreated = (newPropertyData: Omit<Property, 'id' | 'name' | 'type' | 'status' | 'building' | 'floor' | 'project' | 'buildingId' | 'floorId'>) => {
+      const newProperty: any = {
+          id: `prop_${Date.now()}`,
+          name: `Νέο Ακίνητο ${properties.length + 1}`,
+          type: 'Διαμέρισμα 2Δ',
+          status: 'for-sale',
+          building: 'Κτίριο Alpha',
+          floor: 1,
+          project: 'Έργο Κέντρο',
+          buildingId: 'building-1',
+          floorId: selectedFloorId || 'floor-1',
+          ...newPropertyData,
+      };
+      const description = `Created property ${newProperty.name}`;
+      setProperties([...properties, newProperty], description);
+  };
+  
+  const handlePolygonUpdated = (polygonId: string, vertices: Array<{ x: number; y: number }>) => {
+      const description = `Updated vertices for property ${polygonId}`;
+      setProperties(
+        properties.map(p => p.id === polygonId ? { ...p, vertices } : p),
+        description
+      );
+  };
+
+  const handleDuplicate = (propertyId: string) => {
+      const propertyToDuplicate = properties.find(p => p.id === propertyId);
+      if (!propertyToDuplicate) return;
+
+      const newProperty: any = {
+          ...propertyToDuplicate,
+          id: `prop_${Date.now()}`,
+          name: `${propertyToDuplicate.name} (Αντίγραφο)`,
+          vertices: propertyToDuplicate.vertices.map(v => ({ x: v.x + 20, y: v.y + 20 })),
+      };
+      
+      const description = `Duplicated property ${propertyToDuplicate.name}`;
+      setProperties([...properties, newProperty], description);
+  };
+
+  const handleDelete = (propertyId: string) => {
+      const description = `Deleted property ${propertyId}`;
+      setProperties(
+        properties.filter(p => p.id !== propertyId),
+        description
+      );
+  };
 
   return (
     <div className="h-full flex flex-col bg-background p-4 gap-4">
@@ -215,7 +337,6 @@ export function PropertyManagementPageContent() {
       {showDashboard && <div className="shrink-0"><PropertyDashboard stats={stats} /></div>}
 
       <div className="flex-1 flex overflow-hidden gap-4">
-        {viewMode === 'list' ? (
           <>
             <PropertyList
               properties={filteredProperties}
@@ -224,29 +345,65 @@ export function PropertyManagementPageContent() {
               filters={filters}
               onFiltersChange={handleFiltersChange}
             />
-            {selectedProperty && (
-              <PropertyDetails property={selectedProperty} />
-            )}
-          </>
-        ) : (
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProperties.map((property) => (
-                <div
-                  key={property.id}
-                  className="p-4 border rounded-lg cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setSelectedProperty(property)}
-                >
-                  <h3 className="font-semibold">{property.code}</h3>
-                  <p className="text-sm text-muted-foreground">{property.description}</p>
-                  <p className="text-sm">Εμβαδόν: {property.area} m²</p>
-                  <p className="text-sm">Τιμή: €{property.price.toLocaleString()}</p>
-                </div>
-              ))}
+            <div className="flex-1 flex flex-col gap-4 min-w-0">
+                <ViewerTools 
+                    activeTool={activeTool}
+                    setActiveTool={setActiveTool}
+                    showGrid={showGrid}
+                    setShowGrid={setShowGrid}
+                    snapToGrid={snapToGrid}
+                    setSnapToGrid={setSnapToGrid}
+                    showMeasurements={showMeasurements}
+                    setShowMeasurements={setShowMeasurements}
+                    scale={scale}
+                    setScale={setScale}
+                    undo={undo}
+                    redo={redo}
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                    onShowHistory={() => setShowHistoryPanel(true)}
+                />
+                <FloorPlanViewer
+                    selectedPropertyIds={selectedPropertyIds}
+                    selectedFloorId={selectedFloorId}
+                    onSelectFloor={onSelectFloor}
+                    hoveredPropertyId={hoveredPropertyId}
+                    onHoverProperty={onHoverProperty}
+                    activeTool={activeTool}
+                    onSelectProperty={handlePolygonSelect}
+                    onPolygonCreated={handlePolygonCreated}
+                    onPolygonUpdated={handlePolygonUpdated}
+                    onDuplicate={handleDuplicate}
+                    onDelete={handleDelete}
+                    showGrid={showGrid}
+                    snapToGrid={snapToGrid}
+                    gridSize={gridSize}
+                    showMeasurements={showMeasurements}
+                    scale={scale}
+                    suggestionToDisplay={suggestionToDisplay}
+                    connections={connections}
+                    setConnections={setConnections}
+                    groups={groups}
+                    setGroups={setGroups}
+                    isConnecting={isConnecting}
+                    setIsConnecting={setIsConnecting}
+                    firstConnectionPoint={firstConnectionPoint}
+                    setFirstConnectionPoint={setFirstConnectionPoint}
+                    properties={filteredProperties as any[]}
+                />
+                 {selectedProperty && (
+                    <PropertyDetails property={selectedProperty} />
+                )}
             </div>
-          </div>
-        )}
+          </>
       </div>
+       {showHistoryPanel && (
+            <VersionHistoryPanel 
+                buildingId={selectedFloorId || 'building-1'}
+                isOpen={showHistoryPanel}
+                onClose={() => setShowHistoryPanel(false)}
+            />
+        )}
     </div>
   );
 }
