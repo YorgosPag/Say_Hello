@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import type { Property } from '@/types/property-viewer';
 import type { Suggestion } from '@/types/suggestions';
@@ -10,7 +10,7 @@ import type { Connection, PropertyGroup } from '@/types/connections';
 
 import { ViewerToolbar } from './ViewerToolbar';
 import { FloorCanvasWrapper } from './FloorCanvasWrapper';
-import { SidebarPanel, type LayerState } from './SidebarPanel';
+import { SidebarPanel } from './SidebarPanel';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
 
 interface FloorData {
@@ -195,7 +195,9 @@ export function FloorPlanViewer({
     return initialStates;
   });
 
-  const currentFloor = mockFloors.find(f => f.id === selectedFloorId) || mockFloors[0];
+  const currentFloor = useMemo(() => {
+    return mockFloors.find(f => f.id === selectedFloorId) || mockFloors[0]
+  }, [selectedFloorId]);
   
   // Update floor data with properties from the main state
   currentFloor.properties = properties.filter(p => p.floorId === currentFloor.id);

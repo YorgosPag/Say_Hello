@@ -8,22 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Home, Building, MapPin, Euro, Ruler } from "lucide-react";
 import { formatFloorLabel } from "../building-management/BuildingCard/BuildingCardUtils";
-
-interface Property {
-  id: string;
-  name: string;
-  type: string;
-  building: string;
-  floor: number;
-  status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'reserved';
-  price?: number;
-  area?: number;
-  project: string;
-  description?: string;
-  vertices: Array<{x: number, y: number}>;
-  buildingId: string;
-  floorId: string;
-}
+import type { Property } from '@/types/property-viewer';
 
 interface PropertyListProps {
   properties: Property[];
@@ -32,7 +17,7 @@ interface PropertyListProps {
   isLoading: boolean;
 }
 
-const statusConfig = {
+const statusConfig: Record<Property['status'], { label: string, color: string }> = {
   'for-sale': {
     label: 'Προς Πώληση',
     color: 'bg-green-100 text-green-900 border-green-200',

@@ -1,16 +1,17 @@
+
 "use client";
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { X, RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { X, RotateCcw, Search } from "lucide-react";
+import type { PropertyStatus } from '@/types/property-viewer';
 
-interface FilterState {
+export interface FilterState {
+  searchTerm: string;
   project: string[];
   building: string[];
   floor: string[];
@@ -20,67 +21,31 @@ interface FilterState {
   areaRange: { min: number | null; max: number | null };
 }
 
-export function PropertyViewerFilters() {
-  const [filters, setFilters] = useState<FilterState>({
-    project: [],
-    building: [],
-    floor: [],
-    propertyType: [],
-    status: [],
-    priceRange: { min: null, max: null },
-    areaRange: { min: null, max: null },
-  });
+interface PropertyViewerFiltersProps {
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
+}
 
-  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
-  // Mock data - θα αντικατασταθεί με πραγματικά δεδομένα
-  const mockProjects = ["Έργο Α", "Έργο Β", "Έργο Γ"];
-  const mockBuildings = ["Κτίριο 1", "Κτίριο 2", "Κτίριο 3"];
-  const mockFloors = ["Υπόγειο", "Ισόγειο", "1ος Όροφος", "2ος Όροφος"];
-  const mockPropertyTypes = ["Στούντιο", "Γκαρσονιέρα", "Διαμέρισμα 2Δ", "Διαμέρισμα 3Δ", "Μεζονέτα", "Κατάστημα"];
-  const mockStatuses = ["Προς Πώληση", "Προς Ενοικίαση", "Πουλημένο", "Ενοικιασμένο", "Δεσμευμένο"];
+export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyViewerFiltersProps) {
 
-  const statusColors = {
-    "Προς Πώληση": "bg-green-100 text-green-800 border-green-200",
-    "Προς Ενοικίαση": "bg-blue-100 text-blue-800 border-blue-200",
-    "Πουλημένο": "bg-red-100 text-red-800 border-red-200",
-    "Ενοικιασμένο": "bg-orange-100 text-orange-800 border-orange-200",
-    "Δεσμευμένο": "bg-yellow-100 text-yellow-800 border-yellow-200",
+  const handleFilterChange = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
+    onFiltersChange({ ...filters, [key]: value });
   };
 
-  const handleMultiSelectChange = (filterType: keyof FilterState, value: string, checked: boolean) => {
-    setFilters(prev => {
-      const currentArray = prev[filterType] as string[];
-      const newArray = checked 
-        ? [...currentArray, value]
-        : currentArray.filter(item => item !== value);
-      
-      return {
-        ...prev,
-        [filterType]: newArray
-      };
-    });
+  const handleRangeChange = (
+    key: 'priceRange' | 'areaRange',
+    subKey: 'min' | 'max',
+    value: string
+  ) => {
+    const numericValue = value ? parseFloat(value) : null;
+    handleFilterChange(key, { ...filters[key], [subKey]: numericValue });
   };
 
-  const clearFilter = (filterType: keyof FilterState, value?: string) => {
-    setFilters(prev => {
-      if (value) {
-        const currentArray = prev[filterType] as string[];
-        return {
-          ...prev,
-          [filterType]: currentArray.filter(item => item !== value)
-        };
-      } else {
-        return {
-          ...prev,
-          [filterType]: Array.isArray(prev[filterType]) ? [] : { min: null, max: null }
-        };
-      }
-    });
-  };
 
   const clearAllFilters = () => {
-    setFilters({
+    onFiltersChange({
+      searchTerm: '',
       project: [],
       building: [],
       floor: [],
@@ -89,193 +54,106 @@ export function PropertyViewerFilters() {
       priceRange: { min: null, max: null },
       areaRange: { min: null, max: null },
     });
-    setActiveFiltersCount(0);
   };
 
-  const getActiveFilters = () => {
-    const active: { type: string, value: string }[] = [];
-    Object.entries(filters).forEach(([key, value]) => {
-      if (Array.isArray(value) && value.length > 0) {
-        active.push(...value.map(v => ({ type: key, value: v })));
-      }
-    });
-    return active;
-  };
-
-  const activeFilters = getActiveFilters();
+  const hasActiveFilters =
+    filters.searchTerm ||
+    filters.project.length > 0 ||
+    filters.building.length > 0 ||
+    filters.floor.length > 0 ||
+    filters.propertyType.length > 0 ||
+    filters.status.length > 0 ||
+    filters.priceRange.min !== null ||
+    filters.priceRange.max !== null ||
+    filters.areaRange.min !== null ||
+    filters.areaRange.max !== null;
 
   return (
     <Card className="w-full">
-      <CardContent className="space-y-6 p-4">
-        {/* Active Filters */}
-        {activeFilters.length > 0 && (
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Ενεργά Φίλτρα:</Label>
-            <div className="flex flex-wrap gap-2">
-              {activeFilters.map((filter, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className={`text-xs ${filter.type === 'status' ? statusColors[filter.value as keyof typeof statusColors] : ''}`}
-                >
-                  {filter.value}
-                  <button
-                    onClick={() => clearFilter(filter.type as keyof FilterState, filter.value)}
-                    className="ml-1 hover:bg-black/10 rounded-full p-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            <Separator />
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {/* Έργο */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Έργο</Label>
-            <div className="space-y-2">
-              {mockProjects.map((project) => (
-                <div key={project} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`project-${project}`}
-                    checked={filters.project.includes(project)}
-                    onCheckedChange={(checked) => 
-                      handleMultiSelectChange('project', project, checked as boolean)
-                    }
-                  />
-                  <Label 
-                    htmlFor={`project-${project}`} 
-                    className="text-sm cursor-pointer"
-                  >
-                    {project}
-                  </Label>
+      <CardContent className="space-y-4 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Search */}
+             <div className="space-y-2 lg:col-span-1">
+                <Label htmlFor="search" className="text-sm font-medium">Αναζήτηση</Label>
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        id="search"
+                        placeholder="Όνομα, περιγραφή..."
+                        className="pl-9"
+                        value={filters.searchTerm}
+                        onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+                    />
                 </div>
-              ))}
             </div>
-          </div>
 
-          {/* Κτίριο */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Κτίριο</Label>
+            {/* Price Range */}
             <div className="space-y-2">
-              {mockBuildings.map((building) => (
-                <div key={building} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`building-${building}`}
-                    checked={filters.building.includes(building)}
-                    onCheckedChange={(checked) => 
-                      handleMultiSelectChange('building', building, checked as boolean)
-                    }
-                  />
-                  <Label 
-                    htmlFor={`building-${building}`} 
-                    className="text-sm cursor-pointer"
-                  >
-                    {building}
-                  </Label>
+                <Label className="text-sm font-medium">Εύρος Τιμής (€)</Label>
+                <div className="flex items-center gap-2">
+                    <Input
+                        type="number"
+                        placeholder="Από"
+                        value={filters.priceRange.min ?? ''}
+                        onChange={(e) => handleRangeChange('priceRange', 'min', e.target.value)}
+                    />
+                    <Input
+                        type="number"
+                        placeholder="Έως"
+                        value={filters.priceRange.max ?? ''}
+                        onChange={(e) => handleRangeChange('priceRange', 'max', e.target.value)}
+                    />
                 </div>
-              ))}
             </div>
-          </div>
 
-          {/* Όροφος */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Όροφος</Label>
-            <div className="space-y-2">
-              {mockFloors.map((floor) => (
-                <div key={floor} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`floor-${floor}`}
-                    checked={filters.floor.includes(floor)}
-                    onCheckedChange={(checked) => 
-                      handleMultiSelectChange('floor', floor, checked as boolean)
-                    }
-                  />
-                  <Label 
-                    htmlFor={`floor-${floor}`} 
-                    className="text-sm cursor-pointer"
-                  >
-                    {floor}
-                  </Label>
+            {/* Area Range */}
+             <div className="space-y-2">
+                <Label className="text-sm font-medium">Εύρος Εμβαδού (m²)</Label>
+                <div className="flex items-center gap-2">
+                    <Input
+                        type="number"
+                        placeholder="Από"
+                        value={filters.areaRange.min ?? ''}
+                        onChange={(e) => handleRangeChange('areaRange', 'min', e.target.value)}
+                    />
+                    <Input
+                        type="number"
+                        placeholder="Έως"
+                         value={filters.areaRange.max ?? ''}
+                        onChange={(e) => handleRangeChange('areaRange', 'max', e.target.value)}
+                    />
                 </div>
-              ))}
             </div>
-          </div>
-
-          {/* Τύπος Ακινήτου */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Τύπος</Label>
-            <div className="space-y-2">
-              {mockPropertyTypes.map((type) => (
-                <div key={type} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`type-${type}`}
-                    checked={filters.propertyType.includes(type)}
-                    onCheckedChange={(checked) => 
-                      handleMultiSelectChange('propertyType', type, checked as boolean)
-                    }
-                  />
-                  <Label 
-                    htmlFor={`type-${type}`} 
-                    className="text-sm cursor-pointer"
-                  >
-                    {type}
-                  </Label>
-                </div>
-              ))}
+            
+             <div className="space-y-2">
+                <Label className="text-sm font-medium">Κατάσταση</Label>
+                 <Select
+                  onValueChange={(value) => handleFilterChange('status', value === 'all' ? [] : [value])}
+                  value={filters.status.length === 1 ? filters.status[0] : 'all'}
+                 >
+                    <SelectTrigger>
+                        <SelectValue placeholder="Επιλογή κατάστασης..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Όλες οι καταστάσεις</SelectItem>
+                        <SelectItem value="for-sale">Προς Πώληση</SelectItem>
+                        <SelectItem value="for-rent">Προς Ενοικίαση</SelectItem>
+                        <SelectItem value="sold">Πουλημένο</SelectItem>
+                        <SelectItem value="rented">Ενοικιασμένο</SelectItem>
+                        <SelectItem value="reserved">Δεσμευμένο</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
-          </div>
-
-          {/* Κατάσταση */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Κατάσταση</Label>
-            <div className="space-y-2">
-              {mockStatuses.map((status) => (
-                <div key={status} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`status-${status}`}
-                    checked={filters.status.includes(status)}
-                    onCheckedChange={(checked) => 
-                      handleMultiSelectChange('status', status, checked as boolean)
-                    }
-                  />
-                  <Label 
-                    htmlFor={`status-${status}`} 
-                    className="text-sm cursor-pointer"
-                  >
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${statusColors[status as keyof typeof statusColors]}`}
-                    >
-                      {status}
-                    </Badge>
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Ταξινόμηση */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Ταξινόμηση</Label>
-            <Select>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Επιλέξτε..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name-asc">Όνομα (Α-Ω)</SelectItem>
-                <SelectItem value="name-desc">Όνομα (Ω-Α)</SelectItem>
-                <SelectItem value="price-asc">Τιμή (Χαμηλή-Υψηλή)</SelectItem>
-                <SelectItem value="price-desc">Τιμή (Υψηλή-Χαμηλή)</SelectItem>
-                <SelectItem value="area-asc">Εμβαδόν (Μικρό-Μεγάλο)</SelectItem>
-                <SelectItem value="area-desc">Εμβαδόν (Μεγάλο-Μικρό)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
+
+        {hasActiveFilters && (
+            <div className="flex items-center justify-end">
+                <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Επαναφορά Φίλτρων
+                </Button>
+            </div>
+        )}
       </CardContent>
     </Card>
   );

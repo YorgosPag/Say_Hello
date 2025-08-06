@@ -10,7 +10,7 @@ import { PropertyList } from './PropertyList';
 import { PropertyDetailsPanel } from './PropertyDetailsPanel';
 import { PropertyHoverInfo } from './PropertyHoverInfo';
 import { FloorPlanViewer } from './FloorPlanViewer';
-import { PropertyViewerFilters } from './PropertyViewerFilters';
+import { PropertyViewerFilters, type FilterState } from './PropertyViewerFilters';
 import { ViewerTools } from './ViewerTools';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -115,6 +115,33 @@ export function PropertyViewerPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [firstConnectionPoint, setFirstConnectionPoint] = useState<Property | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    searchTerm: '',
+    project: [],
+    building: [],
+    floor: [],
+    propertyType: [],
+    status: [],
+    priceRange: { min: null, max: null },
+    areaRange: { min: null, max: null },
+  });
+
+  const filteredProperties = useMemo(() => {
+    return properties.filter(property => {
+      const { searchTerm, project, building, floor, propertyType, status, priceRange, areaRange } = filters;
+      if (searchTerm && !property.name.toLowerCase().includes(searchTerm.toLowerCase()) && !property.description?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      if (project.length > 0 && !project.includes(property.project)) return false;
+      if (building.length > 0 && !building.includes(property.building)) return false;
+      if (floor.length > 0 && !floor.includes(String(property.floor))) return false;
+      if (propertyType.length > 0 && !propertyType.includes(property.type)) return false;
+      if (status.length > 0 && !status.includes(property.status)) return false;
+      if (priceRange.min !== null && (property.price ?? 0) < priceRange.min) return false;
+      if (priceRange.max !== null && (property.price ?? 0) > priceRange.max) return false;
+      if (areaRange.min !== null && (property.area ?? 0) < areaRange.min) return false;
+      if (areaRange.max !== null && (property.area ?? 0) > areaRange.max) return false;
+      return true;
+    });
+  }, [properties, filters]);
 
 
   const handlePolygonSelect = (propertyId: string, isShiftClick: boolean) => {
@@ -213,7 +240,7 @@ export function PropertyViewerPage() {
 
   return (
     <div className="h-full flex flex-col p-4 gap-4 bg-muted/30">
-        <div className="border-b bg-card rounded-t-lg">
+        <div className="border bg-card rounded-lg">
             <div className="p-4 flex items-start justify-between">
                 <PropertyViewerHeader 
                     viewMode={viewMode} 
@@ -222,37 +249,12 @@ export function PropertyViewerPage() {
                     showFilters={showFilters}
                 />
             </div>
-            <div className="px-4 pb-4">
-                <ViewerTools 
-                    activeTool={activeTool}
-                    setActiveTool={setActiveTool}
-                    showGrid={showGrid}
-                    setShowGrid={setShowGrid}
-                    snapToGrid={snapToGrid}
-                    setSnapToGrid={setSnapToGrid}
-                    showMeasurements={showMeasurements}
-                    setShowMeasurements={setShowMeasurements}
-                    scale={scale}
-                    setScale={setScale}
-                    undo={undo}
-                    redo={redo}
-                    canUndo={canUndo}
-                    canRedo={canRedo}
-                />
-            </div>
+            <Collapsible open={showFilters} onOpenChange={setShowFilters} className="px-4 pb-4">
+                 <CollapsibleContent>
+                    <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+                 </CollapsibleContent>
+            </Collapsible>
         </div>
-        <Collapsible open={showFilters} onOpenChange={setShowFilters} className="shrink-0 space-y-4">
-            <CollapsibleContent>
-              <div className="flex justify-between items-start gap-4">
-                  <PropertyViewerFilters />
-                  <SmartSuggestionsPanel 
-                      properties={properties}
-                      onShowSuggestion={setSuggestionToDisplay}
-                      onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
-                  />
-              </div>
-            </CollapsibleContent>
-        </Collapsible>
         
         <main className="flex-1 flex gap-4 min-h-0">
           {viewMode === 'list' ? (
@@ -265,7 +267,7 @@ export function PropertyViewerPage() {
                           <CardContent className="flex-1 p-0 overflow-hidden">
                               <ScrollArea className="h-full">
                                   <PropertyList
-                                      properties={properties}
+                                      properties={filteredProperties}
                                       selectedPropertyIds={selectedPropertyIds}
                                       onSelectProperty={handlePolygonSelect}
                                       isLoading={isLoading}
@@ -284,6 +286,22 @@ export function PropertyViewerPage() {
                   </div>
 
                   <div className="flex-1 flex flex-col gap-4 min-w-0">
+                       <ViewerTools 
+                          activeTool={activeTool}
+                          setActiveTool={setActiveTool}
+                          showGrid={showGrid}
+                          setShowGrid={setShowGrid}
+                          snapToGrid={snapToGrid}
+                          setSnapToGrid={setSnapToGrid}
+                          showMeasurements={showMeasurements}
+                          setShowMeasurements={setShowMeasurements}
+                          scale={scale}
+                          setScale={setScale}
+                          undo={undo}
+                          redo={redo}
+                          canUndo={canUndo}
+                          canRedo={canRedo}
+                      />
                       <FloorPlanViewer
                           selectedPropertyIds={selectedPropertyIds}
                           selectedFloorId={selectedFloorId}
@@ -310,12 +328,12 @@ export function PropertyViewerPage() {
                           setIsConnecting={setIsConnecting}
                           firstConnectionPoint={firstConnectionPoint}
                           setFirstConnectionPoint={setFirstConnectionPoint}
-                          properties={properties}
+                          properties={filteredProperties}
                       />
                   </div>
                   
                   <div className="w-[320px] shrink-0 flex flex-col gap-4">
-                      <Card className="flex-1">
+                       <Card className="flex-1">
                           <CardHeader className="py-3 px-4">
                               <CardTitle className="text-sm">Λεπτομέρειες Ακινήτου</CardTitle>
                           </CardHeader>
@@ -328,11 +346,16 @@ export function PropertyViewerPage() {
                               />
                           </CardContent>
                       </Card>
+                      <SmartSuggestionsPanel 
+                          properties={properties}
+                          onShowSuggestion={setSuggestionToDisplay}
+                          onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
+                      />
                   </div>
               </div>
           ) : (
             <PropertyGrid 
-              properties={properties}
+              properties={filteredProperties}
               onSelect={handlePolygonSelect}
               selectedPropertyIds={selectedPropertyIds}
             />
