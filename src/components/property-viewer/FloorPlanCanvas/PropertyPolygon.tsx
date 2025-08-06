@@ -19,6 +19,7 @@ interface PropertyPolygonProps {
   opacity: number;
   isConnecting: boolean;
   isFirstConnectionPoint: boolean;
+  onNavigateLevels?: (property: Property) => void;
 }
 
 const statusColors = {
@@ -41,7 +42,8 @@ export function PropertyPolygon({
   visible,
   opacity,
   isConnecting,
-  isFirstConnectionPoint
+  isFirstConnectionPoint,
+  onNavigateLevels,
 }: PropertyPolygonProps) {
   if (!visible) return null;
 
@@ -120,7 +122,7 @@ export function PropertyPolygon({
           fontSize="10"
           fill="white"
           className="select-none font-medium"
-          style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.5)', strokeWidth: '3px', strokeLinejoin: 'round' }}
+          style={{ textShadow: '0px 1px 2px rgba(0,0,0,0.8)' }}
         >
           {property.name.replace(/ - .*/, '')}
         </text>
@@ -131,14 +133,22 @@ export function PropertyPolygon({
           fontSize="8"
           fill="white"
           className="select-none"
-           style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.5)', strokeWidth: '2px', strokeLinejoin: 'round' }}
+          style={{ textShadow: '0px 1px 2px rgba(0,0,0,0.7)' }}
         >
           {property.type}
         </text>
       </g>
       
       {isMultiLevel && (
-        <g className="multi-level-indicator pointer-events-none">
+        <g 
+          className="multi-level-indicator cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onNavigateLevels) {
+              onNavigateLevels(property);
+            }
+          }}
+        >
            <rect
             x={centroid.x - 30}
             y={centroid.y + 22}
@@ -148,14 +158,14 @@ export function PropertyPolygon({
             fillOpacity={0.8}
             rx={2}
           />
-          <ChevronsUpDown className="h-3 w-3 text-white" x={centroid.x - 28} y={centroid.y + 24} />
+          <ChevronsUpDown className="h-3 w-3 text-white pointer-events-none" x={centroid.x - 28} y={centroid.y + 24} />
            <text
             x={centroid.x - 12}
             y={centroid.y + 33}
             textAnchor="start"
             fontSize="8"
             fill="white"
-            className="font-bold"
+            className="font-bold pointer-events-none"
            >
              {property.name.includes("Ισόγειο") ? "Ισόγειο" : "1ος Όροφος"}
            </text>

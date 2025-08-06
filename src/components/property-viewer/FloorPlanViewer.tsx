@@ -207,6 +207,18 @@ export function FloorPlanViewer({
     }
   }, []);
 
+  const handleNavigateLevels = (property: Property) => {
+    if (!property.isMultiLevel || !property.levels) return;
+    const currentLevelInfo = property.levels.find(l => l.floorId === property.floorId);
+    if (!currentLevelInfo) return;
+
+    const currentIndex = property.levels.indexOf(currentLevelInfo);
+    const nextIndex = (currentIndex + 1) % property.levels.length;
+    const nextLevel = property.levels[nextIndex];
+    onSelectFloor(nextLevel.floorId);
+  };
+
+
   return (
     <div className="h-full flex flex-col bg-card rounded-lg overflow-hidden">
       <ViewerToolbar 
@@ -232,6 +244,7 @@ export function FloorPlanViewer({
               onPolygonSelect={onSelectProperty}
               onPolygonCreated={onPolygonCreated}
               onPolygonUpdated={onPolygonUpdated}
+              onNavigateLevels={handleNavigateLevels}
               showGrid={showGrid}
               snapToGrid={snapToGrid}
               gridSize={gridSize}
@@ -248,7 +261,7 @@ export function FloorPlanViewer({
         {activeTool === 'edit_nodes' && (
           <SidebarPanel
             floorData={currentFloor}
-            selectedPolygonIds={selectedPropertyIds}
+            selectedPolygonIds={selectedPolygonIds}
             layerStates={layerStates}
             setLayerStates={setLayerStates}
             onPolygonSelect={onSelectProperty}

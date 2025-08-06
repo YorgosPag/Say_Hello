@@ -44,6 +44,7 @@ interface FloorPlanCanvasProps {
   onPolygonSelect: (propertyId: string, isShiftClick: boolean) => void;
   onPolygonCreated: (newProperty: Omit<Property, 'id'>) => void;
   onPolygonUpdated: (polygonId: string, vertices: Array<{ x: number; y: number }>) => void;
+  onNavigateLevels: (property: Property) => void;
   showGrid: boolean;
   snapToGrid: boolean;
   gridSize: number;
@@ -67,6 +68,7 @@ export function FloorPlanCanvas({
   onPolygonSelect,
   onPolygonCreated,
   onPolygonUpdated,
+  onNavigateLevels,
   showGrid,
   snapToGrid,
   gridSize,
@@ -265,6 +267,7 @@ export function FloorPlanCanvas({
                     isNodeEditMode={isNodeEditMode && primarySelectedPolygon === property.id}
                     onHover={onPolygonHover}
                     onSelect={onPolygonSelect}
+                    onNavigateLevels={onNavigateLevels}
                     showMeasurements={showMeasurements}
                     scale={scale}
                     visible={layerState.visible}
