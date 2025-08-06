@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -22,9 +23,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PropertyDashboard } from '@/components/property-management/PropertyDashboard';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { getStatusColor as getBuildingStatusColor, getStatusLabel as getBuildingStatusLabel } from '@/components/building-management/BuildingCard/BuildingCardUtils';
+import { getStatusColor, getStatusLabel } from '@/components/building-management/BuildingCard/BuildingCardUtils';
 import { UnitsList } from '@/components/units/UnitsList';
 import type { UnitSortKey } from '@/types/unit';
+import PhotosTabContent from '@/components/building-management/tabs/PhotosTabContent';
+import VideosTabContent from '@/components/building-management/tabs/VideosTabContent';
 
 
 function UnitDetailsHeader({ unit }: { unit: Property | null }) {
@@ -57,8 +60,8 @@ function UnitDetailsHeader({ unit }: { unit: Property | null }) {
                     {unit.name}
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
-                    <Badge className={cn("text-xs", getBuildingStatusColor(unit.status as any).replace('bg-','bg-') + ' text-white')}>
-                      {getBuildingStatusLabel(unit.status as any)}
+                    <Badge className={cn("text-xs", getStatusColor(unit.status as any).replace('bg-','bg-') + ' text-white')}>
+                      {getStatusLabel(unit.status as any)}
                     </Badge>
                 </div>
                 </div>
@@ -294,7 +297,7 @@ export default function UnitsPage() {
   const handlePolygonUpdated = (polygonId: string, vertices: Array<{ x: number; y: number }>) => {
       const description = `Updated vertices for property ${polygonId}`;
       setProperties(
-        properties.map(p => p.id === polygonId ? { ...p, vertices } : p),
+        properties.map(p => p.id === polygonId ? { ...p, ...vertices } : p),
         description
       );
   };
@@ -396,27 +399,27 @@ export default function UnitsPage() {
                                     <TabsTrigger value="videos">Videos</TabsTrigger>
                                 </TabsList>
                             </div>
-                            <TabsContent value="general" className="flex-1 flex flex-col min-h-0 p-4 pt-2">
-                                <div className="py-1">
-                                    <ViewerTools 
-                                        activeTool={activeTool}
-                                        setActiveTool={setActiveTool}
-                                        showGrid={showGrid}
-                                        setShowGrid={setShowGrid}
-                                        snapToGrid={snapToGrid}
-                                        setSnapToGrid={setSnapToGrid}
-                                        showMeasurements={showMeasurements}
-                                        setShowMeasurements={setShowMeasurements}
-                                        scale={scale}
-                                        setScale={setScale}
-                                        undo={undo}
-                                        redo={redo}
-                                        canUndo={canUndo}
-                                        canRedo={canRedo}
-                                        onShowHistory={() => setShowHistoryPanel(true)}
-                                    />
-                                </div>
-                                <div className="flex-1 flex flex-col h-full pt-1">
+                            <div className="p-2">
+                                <ViewerTools 
+                                    activeTool={activeTool}
+                                    setActiveTool={setActiveTool}
+                                    showGrid={showGrid}
+                                    setShowGrid={setShowGrid}
+                                    snapToGrid={snapToGrid}
+                                    setSnapToGrid={setSnapToGrid}
+                                    showMeasurements={showMeasurements}
+                                    setShowMeasurements={setShowMeasurements}
+                                    scale={scale}
+                                    setScale={setScale}
+                                    undo={undo}
+                                    redo={redo}
+                                    canUndo={canUndo}
+                                    canRedo={canRedo}
+                                    onShowHistory={() => setShowHistoryPanel(true)}
+                                />
+                            </div>
+                            <div className="flex-1 flex flex-col h-full px-2 pb-2">
+                              <TabsContent value="general" className="flex-1 flex flex-col min-h-0 m-0">
                                   <FloorPlanViewer
                                           properties={filteredProperties}
                                           selectedPropertyIds={selectedPropertyIds}
@@ -445,11 +448,15 @@ export default function UnitsPage() {
                                           firstConnectionPoint={firstConnectionPoint}
                                           setFirstConnectionPoint={setFirstConnectionPoint}
                                       />
-                                </div>
-                            </TabsContent>
-                            <TabsContent value="documents" className="p-4">Έγγραφα</TabsContent>
-                            <TabsContent value="photos" className="p-4">Φωτογραφίες</TabsContent>
-                            <TabsContent value="videos" className="p-4">Videos</TabsContent>
+                              </TabsContent>
+                              <TabsContent value="documents" className="p-4">Έγγραφα</TabsContent>
+                              <TabsContent value="photos" className="p-4">
+                                <PhotosTabContent />
+                              </TabsContent>
+                              <TabsContent value="videos" className="p-4">
+                                <VideosTabContent />
+                              </TabsContent>
+                            </div>
                         </Tabs>
                     </div>
                  </div>
@@ -473,3 +480,4 @@ export default function UnitsPage() {
     </div>
   );
 }
+
