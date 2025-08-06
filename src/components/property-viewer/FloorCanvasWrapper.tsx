@@ -18,8 +18,12 @@ export function FloorCanvasWrapper({ zoom, pan, onPan, isPanningAllowed, childre
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleMouseUp = () => setIsPanning(false);
-
+    const handleMouseUp = () => {
+      if (isPanning) {
+        setIsPanning(false);
+      }
+    };
+    
     const handleMouseMove = (e: MouseEvent) => {
       if (!isPanning) return;
       onPan({
@@ -42,7 +46,6 @@ export function FloorCanvasWrapper({ zoom, pan, onPan, isPanningAllowed, childre
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isPanningAllowed || e.button !== 0) return;
-    // Prevent panning when clicking on interactive elements inside the canvas
     const target = e.target as HTMLElement;
     if (target.closest('path, circle, rect:not(.group-frame rect)')) {
       return;
@@ -52,6 +55,12 @@ export function FloorCanvasWrapper({ zoom, pan, onPan, isPanningAllowed, childre
     setIsPanning(true);
     setStartPan({ x: e.clientX, y: e.clientY });
   };
+  
+  const handleMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+      if(isPanning) {
+          setIsPanning(false);
+      }
+  }
 
   return (
     <div
@@ -62,12 +71,13 @@ export function FloorCanvasWrapper({ zoom, pan, onPan, isPanningAllowed, childre
         { "cursor-grabbing": isPanningAllowed && isPanning }
       )}
       onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
     >
       <div
-        className="w-full h-full relative"
+        className="w-full h-full"
         style={{
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-          transformOrigin: '0 0',
+          transformOrigin: 'top left',
         }}
         data-zoom={zoom}
       >

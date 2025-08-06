@@ -133,9 +133,10 @@ export function FloorPlanCanvas({
     }
 
     const rect = event.currentTarget.getBoundingClientRect();
+    const zoom = parseFloat(event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
     let currentPoint = {
-      x: (event.clientX - rect.left - pan.x) / (event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || 1),
-      y: (event.clientY - rect.top - pan.y) / (event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || 1)
+      x: (event.clientX - rect.left) / zoom,
+      y: (event.clientY - rect.top) / zoom
     };
     currentPoint = snapPoint(currentPoint);
 
@@ -188,9 +189,10 @@ export function FloorPlanCanvas({
     
     if (isCreatingPolygon || isMeasuring || isConnecting) {
         const rect = event.currentTarget.getBoundingClientRect();
+        const zoom = parseFloat(event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
         const currentPos = {
-           x: (event.clientX - rect.left - pan.x) / (event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || 1),
-           y: (event.clientY - rect.top - pan.y) / (event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || 1)
+           x: (event.clientX - rect.left) / zoom,
+           y: (event.clientY - rect.top) / zoom
         };
         setMousePosition(snapPoint(currentPos));
     } else {
@@ -216,7 +218,6 @@ export function FloorPlanCanvas({
       ref={containerRef} 
       className={cn("w-full h-full relative overflow-hidden", {
         "cursor-crosshair": isCreatingPolygon || isMeasuring || isConnecting,
-        "cursor-grab active:cursor-grabbing": !activeTool,
       })}
     >
       {/* Floor plan background */}
@@ -282,7 +283,7 @@ export function FloorPlanCanvas({
                     showLabels={showLabels}
                     scale={scale}
                     visible={layerState.visible}
-                    opacity={layerState.opacity}
+                    opacity={layerState.opacity ?? 0.3}
                     isConnecting={isConnecting}
                     isFirstConnectionPoint={firstConnectionPoint?.id === property.id}
                 />
