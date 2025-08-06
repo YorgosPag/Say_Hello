@@ -11,16 +11,12 @@ interface ProjectsListProps {
   projects: Project[];
   selectedProject: Project;
   onSelectProject?: (project: Project) => void;
-  getStatusColor: (status: string) => string;
-  getStatusLabel: (status: string) => string;
 }
 
 export function ProjectsList({
   projects,
   selectedProject,
   onSelectProject,
-  getStatusColor,
-  getStatusLabel
 }: ProjectsListProps) {
   const [favorites, setFavorites] = useState<number[]>([1]);
   const [sortBy, setSortBy] = useState<ProjectSortKey>('name');

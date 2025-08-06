@@ -1,100 +1,130 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Briefcase, Building, MapPin, Calendar, Check, Clock, Play, Star } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Heart, MapPin, Calendar, Euro } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Project, ProjectStatus } from '@/types/project';
-import { PROJECT_STATUS_LABELS } from '@/types/project';
+import type { Project } from '@/types/project';
 
 interface ProjectListItemProps {
-    project: Project;
-    isSelected: boolean;
-    onSelect: () => void;
-    isFavorite: boolean;
-    onToggleFavorite: () => void;
+  project: Project;
+  isSelected: boolean;
+  onSelect: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }
 
-const statusConfig: Record<ProjectStatus, { icon: React.ElementType, color: string }> = {
-    'planning': { icon: Clock, color: 'bg-yellow-100 text-yellow-800' },
-    'in_progress': { icon: Play, color: 'bg-blue-100 text-blue-800' },
-    'completed': { icon: Check, color: 'bg-green-100 text-green-800' },
-    'on_hold': { icon: Clock, color: 'bg-gray-100 text-gray-800' },
-    'cancelled': { icon: Check, color: 'bg-red-100 text-red-800' },
-};
-
-export function ProjectListItem({ 
-    project, 
-    isSelected, 
-    onSelect,
-    isFavorite,
-    onToggleFavorite,
+export function ProjectListItem({
+  project,
+  isSelected,
+  onSelect,
+  isFavorite,
+  onToggleFavorite,
 }: ProjectListItemProps) {
-    if (!project) return null;
-    const { icon: StatusIcon, color: statusColor } = statusConfig[project.status];
-    
-    return (
-        <Card
-            className={cn(
-                "cursor-pointer transition-all duration-200 hover:shadow-md border-2 relative group",
-                isSelected
-                    ? "border-primary shadow-lg ring-2 ring-primary/20"
-                    : "border-transparent hover:border-primary/50"
-            )}
-            onClick={onSelect}
-        >
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleFavorite();
-                }}
-                className="absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+
+  const handleClick = () => {
+    onSelect();
+  };
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite();
+  };
+  
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('el-GR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+  
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('el-GR');
+  };
+
+  return (
+    <Card
+      className={cn(
+        "cursor-pointer transition-all duration-200 hover:shadow-md",
+        isSelected ? "ring-2 ring-primary shadow-md" : "hover:ring-1 hover:ring-primary/50"
+      )}
+      onClick={handleClick}
+    >
+      <CardContent className="p-4">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-sm leading-tight truncate">
+              {project.name}
+            </h4>
+            <p className="text-xs text-muted-foreground truncate">
+              {project.title}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-1 ml-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleFavoriteClick}
+              className="h-6 w-6 p-0"
             >
-                <Star className={cn("w-4 h-4 text-gray-300", isFavorite && "text-yellow-400 fill-yellow-400")} />
-            </button>
-            <CardContent className="p-3 space-y-3">
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <Briefcase className="w-5 h-5 text-primary shrink-0" />
-                        <h4 className="font-semibold text-sm leading-tight pr-6">{project.name}</h4>
-                    </div>
-                    <Badge variant="secondary" className={cn("text-xs", statusColor)}>
-                        <StatusIcon className="w-3 h-3 mr-1" />
-                        {PROJECT_STATUS_LABELS[project.status]}
-                    </Badge>
-                </div>
+              <Heart 
+                className={cn(
+                  "w-4 h-4",
+                  isFavorite 
+                    ? "fill-red-500 text-red-500" 
+                    : "text-muted-foreground hover:text-red-500"
+                )}
+              />
+            </Button>
+          </div>
+        </div>
 
-                <div className="space-y-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                        <Building className="w-3 h-3" />
-                        <span>{project.company}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <MapPin className="w-3 h-3" />
-                        <span>{project.city}</span>
-                    </div>
-                </div>
+        {/* Status and Progress */}
+        <div className="flex items-center justify-between mb-3">
+          <Badge 
+            variant="secondary" 
+            className={cn("text-xs", project.status === 'completed' ? 'bg-green-100 text-green-800' : project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800')}
+          >
+            {PROJECT_STATUS_LABELS[project.status]}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {project.progress}% ολοκληρωμένο
+          </span>
+        </div>
 
-                <div>
-                    <div className="flex justify-between items-center text-xs mb-1">
-                        <span className="text-muted-foreground">Πρόοδος</span>
-                        <span className="font-medium">{project.progress}%</span>
-                    </div>
-                    <Progress value={project.progress} className="h-2" />
-                </div>
-                
-                <div className="flex justify-between items-center text-xs text-muted-foreground pt-2 border-t">
-                    <div className="flex items-center gap-1">
-                         <Calendar className="w-3 h-3" />
-                         <span>Ενημ: {new Date(project.lastUpdate).toLocaleDateString('el-GR')}</span>
-                    </div>
-                    <span className="font-medium text-green-600">
-                        {project.totalValue.toLocaleString('el-GR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 })}
-                    </span>
-                </div>
-            </CardContent>
-        </Card>
-    );
+        <Progress value={project.progress} className="h-2 mb-3" />
+
+        {/* Location */}
+        <div className="flex items-center gap-1 mb-2">
+          <MapPin className="w-3 h-3 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground truncate">
+            {project.address}, {project.city}
+          </span>
+        </div>
+        
+        {/* Value and Dates */}
+        <div className="pt-3 border-t space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <Euro className="w-4 h-4 text-green-600" />
+              <span className="font-semibold text-green-600">{formatCurrency(project.totalValue)}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Έναρξη: {formatDate(project.startDate)}</span>
+            <span>Λήξη: {formatDate(project.completionDate)}</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
