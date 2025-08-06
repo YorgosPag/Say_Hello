@@ -273,7 +273,7 @@ export function FloorPlanViewer({
         {activeTool === 'edit_nodes' && (
           <SidebarPanel
             floorData={currentFloor}
-            selectedPolygonIds={selectedPolygonIds}
+            selectedPolygonIds={selectedPropertyIds}
             layerStates={layerStates}
             setLayerStates={setLayerStates}
             onPolygonSelect={onSelectProperty}
