@@ -11,7 +11,7 @@ export interface Project {
   lastUpdate: string;
 }
 
-export type ProjectSortKey = keyof Project;
+export type ProjectSortKey = 'name' | 'progress' | 'totalValue' | 'status';
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
     planning: 'Σχεδιασμός',
