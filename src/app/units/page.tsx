@@ -340,12 +340,7 @@ export default function UnitsPage() {
             setShowDashboard={setShowDashboard}
         />
         
-        {showDashboard && (
-            <div className="px-4 py-4 shrink-0">
-                <PropertyDashboard stats={dashboardStats} />
-            </div>
-        )}
-        <div className="px-4 pb-4 shrink-0">
+        <div className="px-4 py-4 shrink-0">
             <Collapsible className="border bg-card rounded-lg">
                 <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
@@ -358,6 +353,12 @@ export default function UnitsPage() {
                 </CollapsibleContent>
             </Collapsible>
         </div>
+
+        {showDashboard && (
+            <div className="px-4 pb-4 shrink-0">
+                <PropertyDashboard stats={dashboardStats} />
+            </div>
+        )}
         
         <main className="flex-1 flex overflow-hidden px-4 pb-4 gap-4 h-full">
             {viewMode === 'list' ? (
@@ -379,8 +380,8 @@ export default function UnitsPage() {
                     </div>
 
                     <div className="flex-1 flex flex-col min-h-0 gap-4">
-                       {selectedUnit && <UnitDetailsHeader unit={selectedUnit}/> }
-                        <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
+                       <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
+                            {selectedUnit && <UnitDetailsHeader unit={selectedUnit}/> }
                              <div className="shrink-0 border-b">
                                 <TabsList>
                                     <TabsTrigger value="general">Γενικά</TabsTrigger>
