@@ -49,7 +49,7 @@ export default function KPICards() {
                     <div className="text-center">
                         <div className="text-2xl font-bold text-orange-600">{kpis.roi}%</div>
                         <div className="text-xs text-muted-foreground">ROI</div>
-                        <div className="text-xs px-2 py-1 rounded mt-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                        <div className="text-xs px-2 py-1 rounded mt-1 text-green-800 dark:text-green-300">
                             Πάνω από στόχο
                         </div>
                     </div>
@@ -61,7 +61,7 @@ export default function KPICards() {
                     <div className="text-center">
                         <div className="text-2xl font-bold text-red-600">{kpis.profitMargin}%</div>
                         <div className="text-xs text-muted-foreground">Περιθώριο Κέρδους</div>
-                        <div className="text-xs px-2 py-1 rounded mt-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                        <div className="text-xs px-2 py-1 rounded mt-1 text-green-800 dark:text-green-300">
                             Εντός στόχων
                         </div>
                     </div>
@@ -73,7 +73,7 @@ export default function KPICards() {
                     <div className="text-center">
                         <div className="text-2xl font-bold text-gray-600">{kpis.riskLevel}</div>
                         <div className="text-xs text-muted-foreground">Επίπεδο Κινδύνου</div>
-                        <div className="text-xs px-2 py-1 rounded mt-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                        <div className="text-xs px-2 py-1 rounded mt-1 text-green-800 dark:text-green-300">
                             Υπό έλεγχο
                         </div>
                     </div>

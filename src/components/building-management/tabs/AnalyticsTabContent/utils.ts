@@ -27,7 +27,7 @@ export const kpis = {
 };
 
 export const getEfficiencyColor = (value: number) => {
-    if (value >= 90) return 'text-green-600 bg-green-50 dark:bg-green-950/20 dark:text-green-400';
-    if (value >= 75) return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950/20 dark:text-yellow-400';
-    return 'text-red-600 bg-red-50 dark:bg-red-950/20 dark:text-red-400';
+    if (value >= 90) return 'text-green-600 dark:text-green-400';
+    if (value >= 75) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
 };
