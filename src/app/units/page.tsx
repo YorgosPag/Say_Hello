@@ -236,42 +236,52 @@ export default function UnitsPage() {
         viewMode={viewMode} 
         setViewMode={setViewMode}
       />
-      
-      <div className="px-4 shrink-0 mt-4">
-          <Collapsible className="border bg-card rounded-lg">
-              <CollapsibleTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
-                  <Filter className="w-4 h-4 mr-2"/>
-                  Φίλτρα Αναζήτησης
-                  </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                  <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
-              </CollapsibleContent>
-          </Collapsible>
-      </div>
-      
-      <main className="flex-1 flex overflow-hidden p-4 gap-4">
-        {viewMode === 'list' ? (
-            <>
-                <div className="min-w-[300px] max-w-[420px] w-full bg-card border rounded-lg flex flex-col shrink-0 shadow-sm max-h-full overflow-hidden">
-                    <CardHeader className="pb-4 shrink-0">
-                        <CardTitle className="text-base">Λίστα Μονάδων</CardTitle>
-                    </CardHeader>
-                    <ScrollArea className="flex-1">
-                        <CardContent className="p-0">
-                            <PropertyList
-                                properties={filteredProperties}
-                                selectedPropertyIds={selectedPropertyIds}
-                                onSelectProperty={handlePolygonSelect}
-                                isLoading={isLoading}
-                            />
-                        </CardContent>
-                    </ScrollArea>
-                </div>
+      <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
+        <div className="px-4 shrink-0 mt-4 border-b">
+          <TabsList>
+            <TabsTrigger value="general">Γενικά</TabsTrigger>
+            <TabsTrigger value="documents">Έγγραφα</TabsTrigger>
+            <TabsTrigger value="photos">Φωτογραφίες</TabsTrigger>
+            <TabsTrigger value="videos">Videos</TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2">
+           <div className="px-4 shrink-0">
+              <Collapsible className="border bg-card rounded-lg">
+                  <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
+                      <Filter className="w-4 h-4 mr-2"/>
+                      Φίλτρα Αναζήτησης
+                      </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                      <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+                  </CollapsibleContent>
+              </Collapsible>
+            </div>
+          
+            <main className="flex-1 flex overflow-hidden p-4 gap-4">
+              {viewMode === 'list' ? (
+                <div className="flex-1 flex gap-4 min-h-0">
+                  <div className="w-[320px] bg-card border rounded-lg flex flex-col shrink-0 shadow-sm">
+                        <CardHeader className="pb-4 shrink-0">
+                            <CardTitle className="text-base">Λίστα Μονάδων</CardTitle>
+                        </CardHeader>
+                         <ScrollArea className="flex-1 min-h-0">
+                            <CardContent className="p-0">
+                                <PropertyList
+                                    properties={filteredProperties}
+                                    selectedPropertyIds={selectedPropertyIds}
+                                    onSelectProperty={handlePolygonSelect}
+                                    isLoading={isLoading}
+                                />
+                            </CardContent>
+                        </ScrollArea>
+                    </div>
 
-                <div className="flex-1 flex flex-col gap-4 min-w-0">
-                   <div className="p-2 border-b bg-card rounded-t-lg">
+                  <div className="flex-1 flex flex-col gap-4 min-w-0">
+                    <div className="p-2 border-b bg-card rounded-t-lg">
                       <ViewerTools 
                           activeTool={activeTool}
                           setActiveTool={setActiveTool}
@@ -320,16 +330,21 @@ export default function UnitsPage() {
                             setFirstConnectionPoint={setFirstConnectionPoint}
                         />
                       </div>
+                  </div>
                 </div>
-            </>
-        ) : (
-          <PropertyGrid 
-            properties={filteredProperties}
-            onSelect={handlePolygonSelect}
-            selectedPropertyIds={selectedPropertyIds}
-          />
-        )}
-      </main>
+              ) : (
+                <PropertyGrid 
+                  properties={filteredProperties}
+                  onSelect={handlePolygonSelect}
+                  selectedPropertyIds={selectedPropertyIds}
+                />
+              )}
+            </main>
+        </TabsContent>
+        <TabsContent value="documents" className="p-4">Έγγραφα</TabsContent>
+        <TabsContent value="photos" className="p-4">Φωτογραφίες</TabsContent>
+        <TabsContent value="videos" className="p-4">Videos</TabsContent>
+      </Tabs>
       {showHistoryPanel && (
           <VersionHistoryPanel 
               buildingId={selectedFloorId || 'building-1'}
@@ -340,3 +355,4 @@ export default function UnitsPage() {
     </div>
   );
 }
+
