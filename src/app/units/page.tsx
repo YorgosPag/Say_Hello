@@ -343,15 +343,15 @@ export default function UnitsPage() {
                     </div>
 
                     <div className="flex-1 flex flex-col min-h-0 gap-4">
-                       <div className="shrink-0 border-b">
-                            <TabsList>
-                                <TabsTrigger value="general">Γενικά</TabsTrigger>
-                                <TabsTrigger value="documents">Έγγραφα</TabsTrigger>
-                                <TabsTrigger value="photos">Φωτογραφίες</TabsTrigger>
-                                <TabsTrigger value="videos">Videos</TabsTrigger>
-                            </TabsList>
-                        </div>
                         <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
+                             <div className="shrink-0 border-b">
+                                <TabsList>
+                                    <TabsTrigger value="general">Γενικά</TabsTrigger>
+                                    <TabsTrigger value="documents">Έγγραφα</TabsTrigger>
+                                    <TabsTrigger value="photos">Φωτογραφίες</TabsTrigger>
+                                    <TabsTrigger value="videos">Videos</TabsTrigger>
+                                </TabsList>
+                            </div>
                             <TabsContent value="general" className="flex-1 flex flex-col gap-4 min-h-0 mt-2 h-full">
                                 <div className="p-2 border-b bg-card rounded-t-lg">
                                 <ViewerTools 
@@ -372,7 +372,7 @@ export default function UnitsPage() {
                                     onShowHistory={() => setShowHistoryPanel(true)}
                                 />
                                 </div>
-                                <div className="flex-1 flex flex-col min-h-0">
+                                <div className="flex-1 flex flex-col h-full">
                                   <FloorPlanViewer
                                           properties={filteredProperties}
                                           selectedPropertyIds={selectedPropertyIds}
@@ -429,4 +429,3 @@ export default function UnitsPage() {
     </div>
   );
 }
-
