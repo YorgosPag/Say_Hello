@@ -3,10 +3,9 @@
 import React, { useState, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ProjectToolbar } from './ProjectToolbar';
-import type { Project, ProjectStatus, ProjectSortKey } from '@/types/project';
+import type { Project, ProjectSortKey } from '@/types/project';
 import { ProjectListHeader } from './list/ProjectListHeader';
 import { ProjectListItem } from './list/ProjectListItem';
-import { PROJECT_STATUS_LABELS } from '@/types/project';
 
 interface ProjectsListProps {
   projects: Project[];
@@ -99,8 +98,8 @@ export function ProjectsList({
               <ProjectListItem
                 project={project}
                 isSelected={selectedProject?.id === project.id}
-                onSelect={() => onSelectProject?.(project)}
                 isFavorite={favorites.includes(project.id)}
+                onSelect={() => onSelectProject?.(project)}
                 onToggleFavorite={() => toggleFavorite(project.id)}
               />
             </div>

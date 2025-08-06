@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowUpDown, ArrowUp, ArrowDown, FileText } from 'lucide-react';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import { Button } from "@/components/ui/button";
+import { Briefcase, TrendingUp, DollarSign } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { Project, ProjectSortKey } from '@/types/project';
 
@@ -25,77 +24,67 @@ export function ProjectListHeader({
   sortBy,
   setSortBy,
   sortOrder,
-  setSortOrder
+  setSortOrder,
 }: ProjectListHeaderProps) {
-  const handleSort = (newSortBy: ProjectSortKey) => {
-    if (sortBy === newSortBy) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(newSortBy);
-      setSortOrder('asc');
-    }
-  };
-
-  const getSortIcon = (field: ProjectSortKey) => {
-    if (sortBy !== field) return <ArrowUpDown className="w-4 h-4" />;
-    return sortOrder === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
-  };
-
-  const getSortLabel = (field: ProjectSortKey) => {
-    switch (field) {
-      case 'name': return 'Όνομα';
-      case 'progress': return 'Πρόοδος';
-      case 'totalValue': return 'Αξία';
-      case 'status': return 'Κατάσταση';
-      default: return field;
-    }
-  };
-
   return (
-    <div className="p-3 border-b bg-muted/30">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" />
-          <h3 className="text-sm font-semibold">Λίστα Έργων</h3>
-          <Badge variant="secondary" className="text-xs">
-            {projects.length} {projects.length === 1 ? 'έργο' : 'έργα'}
-          </Badge>
+    <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm">
+          <Briefcase className="w-4 h-4 text-white" />
         </div>
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Έργα</h3>
+          <p className="text-xs text-muted-foreground">
+            {projects.length} έργα συνολικά
+          </p>
+        </div>
+      </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 gap-1">
-              {getSortIcon(sortBy)}
-              <span className="text-xs">Ταξινόμηση: {getSortLabel(sortBy)}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => handleSort('name')}>
-              <div className="flex items-center justify-between w-full">
-                <span>Όνομα</span>
-                {sortBy === 'name' && getSortIcon('name')}
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSort('progress')}>
-              <div className="flex items-center justify-between w-full">
-                <span>Πρόοδος</span>
-                {sortBy === 'progress' && getSortIcon('progress')}
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSort('totalValue')}>
-              <div className="flex items-center justify-between w-full">
-                <span>Αξία</span>
-                {sortBy === 'totalValue' && getSortIcon('totalValue')}
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSort('status')}>
-              <div className="flex items-center justify-between w-full">
-                <span>Κατάσταση</span>
-                {sortBy === 'status' && getSortIcon('status')}
-              </div>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 border">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-green-500" />
+            <div>
+              <p className="text-xs text-muted-foreground">Ενεργά</p>
+              <p className="text-sm font-semibold">
+                {projects.filter(p => p.status === 'in_progress').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white/50 dark:bg-black/20 rounded-lg p-3 border">
+          <div className="flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-blue-500" />
+            <div>
+              <p className="text-xs text-muted-foreground">Αξία</p>
+              <p className="text-sm font-semibold">
+                €{(projects.reduce((sum, p) => sum + p.totalValue, 0) / 1000000).toFixed(1)}M
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as any)}
+          className="text-xs px-2 py-1 rounded border bg-background"
+        >
+          <option value="name">Όνομα</option>
+          <option value="progress">Πρόοδος</option>
+          <option value="totalValue">Αξία</option>
+          <option value="area">Επιφάνεια</option>
+          <option value="status">Κατάσταση</option>
+        </select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+          className="text-xs h-7"
+        >
+          {sortOrder === 'asc' ? '↑' : '↓'}
+        </Button>
       </div>
     </div>
   );
