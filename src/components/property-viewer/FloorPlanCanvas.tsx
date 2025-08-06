@@ -56,6 +56,8 @@ interface FloorPlanCanvasProps {
   groups: PropertyGroup[];
   isConnecting: boolean;
   firstConnectionPoint: Property | null;
+  pan: { x: number; y: number };
+  onPan: (pan: { x: number; y: number }) => void;
 }
 
 
@@ -80,7 +82,9 @@ export function FloorPlanCanvas({
   connections,
   groups,
   isConnecting,
-  firstConnectionPoint
+  firstConnectionPoint,
+  pan,
+  onPan
 }: FloorPlanCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
@@ -130,8 +134,8 @@ export function FloorPlanCanvas({
 
     const rect = event.currentTarget.getBoundingClientRect();
     let currentPoint = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: (event.clientX - rect.left - pan.x) / (event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || 1),
+      y: (event.clientY - rect.top - pan.y) / (event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || 1)
     };
     currentPoint = snapPoint(currentPoint);
 
@@ -163,9 +167,11 @@ export function FloorPlanCanvas({
     }
     // Default action (deselect)
     else {
-      onPolygonSelect('', false); // Deselect all by passing empty ID
+      if (event.target === event.currentTarget) {
+          onPolygonSelect('', false); // Deselect all by passing empty ID
+      }
     }
-  }, [isCreatingPolygon, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart]);
+  }, [isCreatingPolygon, isMeasuring, onPolygonSelect, creatingVertices, onPolygonCreated, snapPoint, measurementStart, pan]);
 
   const handleCanvasDoubleClick = useCallback(() => {
     if (isCreatingPolygon && creatingVertices.length >= 3) {
@@ -183,14 +189,14 @@ export function FloorPlanCanvas({
     if (isCreatingPolygon || isMeasuring || isConnecting) {
         const rect = event.currentTarget.getBoundingClientRect();
         const currentPos = {
-          x: event.clientX - rect.left,
-          y: event.clientY - rect.top
+           x: (event.clientX - rect.left - pan.x) / (event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || 1),
+           y: (event.clientY - rect.top - pan.y) / (event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || 1)
         };
         setMousePosition(snapPoint(currentPos));
     } else {
         setMousePosition(null);
     }
-  }, [onPolygonHover, isCreatingPolygon, isMeasuring, isConnecting, snapPoint]);
+  }, [onPolygonHover, isCreatingPolygon, isMeasuring, isConnecting, snapPoint, pan]);
 
   const handleRightClick = (event: React.MouseEvent<SVGSVGElement>) => {
       // Exit creation mode on right click
@@ -208,9 +214,9 @@ export function FloorPlanCanvas({
   return (
     <div 
       ref={containerRef} 
-      className={cn("w-full h-full relative overflow-auto", {
+      className={cn("w-full h-full relative overflow-hidden", {
         "cursor-crosshair": isCreatingPolygon || isMeasuring || isConnecting,
-        "cursor-grab": !activeTool,
+        "cursor-grab active:cursor-grabbing": !activeTool,
       })}
     >
       {/* Floor plan background */}
@@ -233,10 +239,12 @@ export function FloorPlanCanvas({
         onMouseMove={handleCanvasMouseMove}
         onContextMenu={handleRightClick}
       >
+        <g transform={`translate(${pan.x}, ${pan.y})`}>
+
         <GridOverlay 
           showGrid={showGrid}
-          width={dimensions.width}
-          height={dimensions.height}
+          width={dimensions.width*4}
+          height={dimensions.height*4}
           gridSize={gridSize}
         />
         
@@ -339,6 +347,7 @@ export function FloorPlanCanvas({
                 className="pointer-events-none"
             />
         )}
+        </g>
       </svg>
 
       <div className="absolute top-4 left-4 z-10">

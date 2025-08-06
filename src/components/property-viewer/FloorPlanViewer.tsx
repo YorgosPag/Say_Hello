@@ -179,6 +179,7 @@ export function FloorPlanViewer({
   properties,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [showLabels, setShowLabels] = useState(true);
   
   // State for layer visibility and opacity, managed here
@@ -208,22 +209,14 @@ export function FloorPlanViewer({
   }, []);
 
   const handleNavigateLevels = useCallback((property: Property) => {
-      if (!property.isMultiLevel) {
-          const relatedPart = properties.find(p => p.parentPropertyId === property.id || p.id === property.parentPropertyId);
-          if (relatedPart) {
-              onSelectFloor(relatedPart.floorId);
-          }
-          return;
-      }
-  
-      const parentPropertyId = property.parentPropertyId || property.id;
-      const parentProperty = properties.find(p => p.id === parentPropertyId);
-  
-      if (!parentProperty || !parentProperty.isMultiLevel || !parentProperty.levels) return;
-  
+      const parentId = property.parentPropertyId || property.id;
+      const parentProperty = properties.find(p => p.id === parentId && p.isMultiLevel);
+
+      if (!parentProperty || !parentProperty.levels) return;
+
       const currentLevelIndex = parentProperty.levels.findIndex(l => l.floorId === selectedFloorId);
       if (currentLevelIndex === -1) return;
-  
+
       const nextLevelIndex = (currentLevelIndex + 1) % parentProperty.levels.length;
       const nextLevel = parentProperty.levels[nextLevelIndex];
       onSelectFloor(nextLevel.floorId);
@@ -244,7 +237,12 @@ export function FloorPlanViewer({
       />
 
       <div className="flex-1 p-0 flex overflow-hidden">
-        <FloorCanvasWrapper zoom={zoom}>
+        <FloorCanvasWrapper 
+            zoom={zoom} 
+            pan={pan}
+            onPan={setPan}
+            isPanningAllowed={!activeTool}
+        >
             <FloorPlanCanvas
               floorData={currentFloor}
               selectedPropertyIds={selectedPropertyIds}
@@ -267,6 +265,8 @@ export function FloorPlanViewer({
               isConnecting={isConnecting}
               firstConnectionPoint={firstConnectionPoint}
               showLabels={showLabels}
+              pan={pan}
+              onPan={setPan}
             />
         </FloorCanvasWrapper>
 
