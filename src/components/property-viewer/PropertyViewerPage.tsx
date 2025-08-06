@@ -228,10 +228,6 @@ export function PropertyViewerPage() {
       );
   };
 
-  const currentFloor = useMemo(() => {
-    return floors.find(f => f.id === selectedFloorId) || null;
-  }, [selectedFloorId, floors]);
-
   return (
     <div className="h-full flex flex-col bg-muted/30">
         <PropertyViewerHeader 
@@ -292,14 +288,6 @@ export function PropertyViewerPage() {
                               </ScrollArea>
                           </CardContent>
                       </Card>
-                      <Card className="h-[280px] shrink-0">
-                          <CardHeader className="py-3 px-4">
-                              <CardTitle className="text-sm">Γρήγορες Πληροφορίες</CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-3 pt-0 h-[calc(100%-48px)]">
-                              <PropertyHoverInfo propertyId={hoveredPropertyId} properties={properties} />
-                          </CardContent>
-                      </Card>
                   </div>
 
                   <div className="flex-1 flex flex-col gap-4 min-w-0">
@@ -331,6 +319,11 @@ export function PropertyViewerPage() {
                           setFirstConnectionPoint={setFirstConnectionPoint}
                           properties={filteredProperties}
                       />
+                      <SmartSuggestionsPanel 
+                          properties={properties}
+                          onShowSuggestion={setSuggestionToDisplay}
+                          onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
+                      />
                   </div>
                   
                   <div className="w-[320px] shrink-0 flex flex-col gap-4">
@@ -347,11 +340,14 @@ export function PropertyViewerPage() {
                               />
                           </CardContent>
                       </Card>
-                      <SmartSuggestionsPanel 
-                          properties={properties}
-                          onShowSuggestion={setSuggestionToDisplay}
-                          onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
-                      />
+                      <Card className="h-[280px] shrink-0">
+                          <CardHeader className="py-3 px-4">
+                              <CardTitle className="text-sm">Γρήγορες Πληροφορίες</CardTitle>
+                          </CardHeader>
+                          <CardContent className="p-3 pt-0 h-[calc(100%-48px)]">
+                              <PropertyHoverInfo propertyId={hoveredPropertyId} properties={properties} />
+                          </CardContent>
+                      </Card>
                   </div>
               </div>
           ) : (
