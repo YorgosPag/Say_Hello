@@ -286,7 +286,7 @@ export default function UnitsPage() {
                                     onShowHistory={() => setShowHistoryPanel(true)}
                                 />
                             </div>
-                            <FloorPlanViewer
+                           <FloorPlanViewer
                                 selectedPropertyIds={selectedPropertyIds}
                                 selectedFloorId={selectedFloorId}
                                 onSelectFloor={onSelectFloor}
@@ -314,19 +314,6 @@ export default function UnitsPage() {
                                 setFirstConnectionPoint={setFirstConnectionPoint}
                                 properties={filteredProperties}
                             />
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-base">Λεπτομέρειες Ακινήτου</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <PropertyDetailsPanel 
-                                        propertyIds={selectedPropertyIds} 
-                                        onSelectFloor={onSelectFloor}
-                                        properties={properties}
-                                        onUpdateProperty={handleUpdateProperty}
-                                    />
-                                </CardContent>
-                            </Card>
                         </TabsContent>
                         <TabsContent value="documents" className="flex-1 flex flex-col gap-4 min-h-0 mt-2">
                             <p>Documents tab content</p>
