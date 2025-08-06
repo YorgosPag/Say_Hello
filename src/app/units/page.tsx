@@ -15,7 +15,7 @@ import { ViewerTools } from '@/components/property-viewer/ViewerTools';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Plus, LayoutGrid, List } from 'lucide-react';
+import { Plus, LayoutGrid, List, BarChart3, FolderOpen, CheckSquare } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PropertyGrid } from '@/components/property-viewer/PropertyGrid';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
@@ -27,9 +27,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 function PropertyViewerHeader({
   viewMode,
   setViewMode,
+  showDashboard,
+  setShowDashboard,
 }: {
-  viewMode: string;
-  setViewMode: (mode: 'list' | 'grid') => void;
+  viewMode: 'list' | 'grid' | 'byType' | 'byStatus';
+  setViewMode: (mode: 'list' | 'grid' | 'byType' | 'byStatus') => void;
+  showDashboard: boolean;
+  setShowDashboard: (show: boolean) => void;
 }) {
     return (
         <div className="border-b bg-card p-4">
@@ -41,6 +45,19 @@ function PropertyViewerHeader({
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                   <Tooltip>
+                      <TooltipTrigger asChild>
+                           <Button
+                              variant={showDashboard ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setShowDashboard(!showDashboard)}
+                            >
+                              <BarChart3 className="w-4 h-4 mr-2" />
+                              Dashboard
+                            </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Εμφάνιση/Απόκρυψη Dashboard</TooltipContent>
+                  </Tooltip>
                   <Tooltip>
                       <TooltipTrigger asChild>
                       <Button
@@ -65,6 +82,32 @@ function PropertyViewerHeader({
                       </TooltipTrigger>
                       <TooltipContent>Προβολή Πλέγματος</TooltipContent>
                   </Tooltip>
+                   <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={viewMode === 'byType' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setViewMode('byType')}
+                        >
+                          <FolderOpen className="w-4 h-4 mr-2" />
+                          Ομαδοποίηση ανά Τύπο
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Ομαδοποίηση των κτιρίων ανά τύπο (π.χ. Κατοικίες, Εμπορικό).</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={viewMode === 'byStatus' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setViewMode('byStatus')}
+                        >
+                          <CheckSquare className="w-4 h-4 mr-2" />
+                          Ομαδοποίηση ανά Κατάσταση
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Ομαδοποίηση των κτιρίων ανά κατάσταση (π.χ. Ενεργό, Υπό Κατασκευή).</TooltipContent>
+                    </Tooltip>
                   <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                       <Plus className="w-4 h-4 mr-2" />
                       Νέο Ακίνητο
@@ -97,13 +140,15 @@ export default function UnitsPage() {
   } = usePropertyViewer();
   
   const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | 'polyline' | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'byType' | 'byStatus'>('list');
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [gridSize, setGridSize] = useState(10);
   const [showMeasurements, setShowMeasurements] = useState(false);
   const [scale, setScale] = useState(0.05); // 1 pixel = 0.05 meters
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(true);
+
 
   const [suggestionToDisplay, setSuggestionToDisplay] = useState<Suggestion | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -235,6 +280,8 @@ export default function UnitsPage() {
       <PropertyViewerHeader 
         viewMode={viewMode} 
         setViewMode={setViewMode}
+        showDashboard={showDashboard}
+        setShowDashboard={setShowDashboard}
       />
       <div className="flex-1 flex flex-col min-h-0">
         <div className="px-4 shrink-0 mt-4">
@@ -299,35 +346,35 @@ export default function UnitsPage() {
                             onShowHistory={() => setShowHistoryPanel(true)}
                         />
                         </div>
-                        <div className="flex-1 min-h-0 bg-card border rounded-b-lg">
-                        <FloorPlanViewer
-                                properties={filteredProperties}
-                                selectedPropertyIds={selectedPropertyIds}
-                                selectedFloorId={selectedFloorId}
-                                onSelectFloor={onSelectFloor}
-                                hoveredPropertyId={hoveredPropertyId}
-                                onHoverProperty={onHoverProperty}
-                                activeTool={activeTool}
-                                onSelectProperty={handlePolygonSelect}
-                                onPolygonCreated={handlePolygonCreated}
-                                onPolygonUpdated={handlePolygonUpdated}
-                                onDuplicate={handleDuplicate}
-                                onDelete={handleDelete}
-                                showGrid={showGrid}
-                                snapToGrid={snapToGrid}
-                                gridSize={gridSize}
-                                showMeasurements={showMeasurements}
-                                scale={scale}
-                                suggestionToDisplay={suggestionToDisplay}
-                                connections={connections}
-                                setConnections={setConnections}
-                                groups={groups}
-                                setGroups={setGroups}
-                                isConnecting={isConnecting}
-                                setIsConnecting={setIsConnecting}
-                                firstConnectionPoint={firstConnectionPoint}
-                                setFirstConnectionPoint={setFirstConnectionPoint}
-                            />
+                        <div className="flex-1 flex flex-col min-h-0">
+                          <FloorPlanViewer
+                                  properties={filteredProperties}
+                                  selectedPropertyIds={selectedPropertyIds}
+                                  selectedFloorId={selectedFloorId}
+                                  onSelectFloor={onSelectFloor}
+                                  hoveredPropertyId={hoveredPropertyId}
+                                  onHoverProperty={onHoverProperty}
+                                  activeTool={activeTool}
+                                  onSelectProperty={handlePolygonSelect}
+                                  onPolygonCreated={handlePolygonCreated}
+                                  onPolygonUpdated={handlePolygonUpdated}
+                                  onDuplicate={handleDuplicate}
+                                  onDelete={handleDelete}
+                                  showGrid={showGrid}
+                                  snapToGrid={snapToGrid}
+                                  gridSize={gridSize}
+                                  showMeasurements={showMeasurements}
+                                  scale={scale}
+                                  suggestionToDisplay={suggestionToDisplay}
+                                  connections={connections}
+                                  setConnections={setConnections}
+                                  groups={groups}
+                                  setGroups={setGroups}
+                                  isConnecting={isConnecting}
+                                  setIsConnecting={setIsConnecting}
+                                  firstConnectionPoint={firstConnectionPoint}
+                                  setFirstConnectionPoint={setFirstConnectionPoint}
+                              />
                         </div>
                     </TabsContent>
                     <TabsContent value="documents" className="p-4">Έγγραφα</TabsContent>
