@@ -8,7 +8,6 @@ import { ParkingTab } from './parking/ParkingTab';
 import { ContributorsTab } from './contributors-tab';
 import { DocumentsProjectTab } from './documents-project-tab';
 import { IkaTab } from './ika-tab';
-import { parkingSpots } from './parking/data';
 import { PhotosTab } from './PhotosTab';
 import { VideosTab } from './VideosTab';
 
@@ -48,7 +47,7 @@ export function ProjectDetails({ project }: ProjectDetailsProps) {
                             <BuildingDataTab />
                         </TabsContent>
                         <TabsContent value="parking" className="flex-grow overflow-auto mt-4">
-                             <ParkingTab parkingSpots={parkingSpots} />
+                             <ParkingTab />
                         </TabsContent>
                         <TabsContent value="contributors" className="flex-grow overflow-auto mt-4">
                             <ContributorsTab />

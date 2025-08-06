@@ -7,5 +7,5 @@ export interface ParkingSpot {
     area: number;
     price: number;
     status: ParkingStatus;
-    linkedProperty?: string;
+    linkedProperty: string | null;
 }
