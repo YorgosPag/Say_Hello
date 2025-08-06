@@ -5,7 +5,8 @@ import { ProjectsList } from './projects-list';
 import { ProjectDetails } from './project-details';
 import { PageLayout } from '@/components/app/page-layout';
 import type { Project, ProjectStatus } from '@/types/project';
-import { PROJECT_STATUS_LABELS } from '@/types/project';
+import { ProjectsHeader } from './ProjectsHeader';
+import { ProjectsDashboard } from './ProjectsDashboard';
 
 const projects: Project[] = [
     {
@@ -55,17 +56,86 @@ const projects: Project[] = [
     }
 ];
 
+const companies = [
+  { id: 'pagonis', name: 'ΠΑΓΩΝΗΣ ΝΕΣΤ. ΓΕΩΡΓΙΟΣ' },
+  { id: 'devconstruct', name: 'DevConstruct AE' },
+];
+
 export function ProjectsPageContent() {
   const [selectedProject, setSelectedProject] = useState<Project>(projects[0]);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCompany, setFilterCompany] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [showDashboard, setShowDashboard] = useState(true);
+
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         project.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCompany = filterCompany === 'all' || project.company === filterCompany;
+    const matchesStatus = filterStatus === 'all' || project.status === filterStatus;
+    
+    return matchesSearch && matchesCompany && matchesStatus;
+  });
+
+  const stats = {
+    totalProjects: projects.length,
+    activeProjects: projects.filter(p => p.status === 'in_progress').length,
+    totalValue: projects.reduce((sum, p) => sum + p.totalValue, 0),
+    totalArea: projects.reduce((sum, p) => sum + p.totalArea, 0),
+    averageProgress: projects.length > 0 ? Math.round(projects.reduce((sum, p) => sum + p.progress, 0) / projects.length) : 0,
+  };
+  
+  const getStatusLabel = (status: ProjectStatus): string => {
+    const labels: Record<ProjectStatus, string> = {
+      planning: 'Σχεδιασμός',
+      in_progress: 'Σε εξέλιξη',
+      completed: 'Ολοκληρωμένο',
+      on_hold: 'Σε αναμονή',
+      cancelled: 'Ακυρωμένο',
+    };
+    return labels[status];
+  };
+
+  const getStatusColor = (status: ProjectStatus): string => {
+    const colors: Record<ProjectStatus, string> = {
+      planning: 'bg-yellow-100 text-yellow-800',
+      in_progress: 'bg-blue-100 text-blue-800',
+      completed: 'bg-green-100 text-green-800',
+      on_hold: 'bg-gray-100 text-gray-800',
+      cancelled: 'bg-red-100 text-red-800',
+    };
+    return colors[status];
+  };
 
   return (
-    <PageLayout>
-        <ProjectsList
-            projects={projects}
-            selectedProject={selectedProject}
-            onSelectProject={setSelectedProject}
+    <div className="h-full flex flex-col bg-background">
+        <ProjectsHeader 
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            showDashboard={showDashboard}
+            setShowDashboard={setShowDashboard}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterCompany={filterCompany}
+            setFilterCompany={setFilterCompany}
+            companies={companies}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
         />
-        <ProjectDetails project={selectedProject} />
-    </PageLayout>
-  )
+        
+        {showDashboard && <ProjectsDashboard stats={stats} />}
+
+        <div className="flex-1 flex overflow-hidden p-4 gap-4">
+             <ProjectsList
+                projects={filteredProjects}
+                selectedProject={selectedProject}
+                onSelectProject={setSelectedProject}
+                getStatusColor={getStatusColor}
+                getStatusLabel={getStatusLabel}
+            />
+            <ProjectDetails project={selectedProject} />
+        </div>
+    </div>
+  );
 }
