@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { cn } from "@/lib/utils";
@@ -19,7 +20,7 @@ interface PropertyPolygonProps {
   opacity: number;
   isConnecting: boolean;
   isFirstConnectionPoint: boolean;
-  onNavigateLevels?: (property: Property) => void;
+  onNavigateLevels: (property: Property) => void;
 }
 
 const statusColors = {
@@ -85,7 +86,7 @@ export function PropertyPolygon({
       strokeDasharray = isNodeEditMode && isSelected ? "5,5" : "none";
   }
 
-  const isMultiLevel = property.type === 'Μεζονέτα';
+  const isMultiLevel = property.parentPropertyId || property.isMultiLevel;
 
   return (
     <g className="property-polygon">
@@ -122,7 +123,7 @@ export function PropertyPolygon({
           fontSize="10"
           fill="white"
           className="select-none font-medium"
-          style={{ textShadow: '0px 1px 2px rgba(0,0,0,0.8)' }}
+          style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.8)', strokeWidth: '3px', strokeLinejoin: 'round' }}
         >
           {property.name.replace(/ - .*/, '')}
         </text>
@@ -133,7 +134,7 @@ export function PropertyPolygon({
           fontSize="8"
           fill="white"
           className="select-none"
-          style={{ textShadow: '0px 1px 2px rgba(0,0,0,0.7)' }}
+          style={{ paintOrder: 'stroke', stroke: 'rgba(0,0,0,0.7)', strokeWidth: '2px', strokeLinejoin: 'round' }}
         >
           {property.type}
         </text>
@@ -144,9 +145,7 @@ export function PropertyPolygon({
           className="multi-level-indicator cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            if (onNavigateLevels) {
-              onNavigateLevels(property);
-            }
+            onNavigateLevels(property);
           }}
         >
            <rect

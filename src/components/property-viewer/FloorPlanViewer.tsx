@@ -207,16 +207,19 @@ export function FloorPlanViewer({
     }
   }, []);
 
-  const handleNavigateLevels = (property: Property) => {
-    if (!property.isMultiLevel || !property.levels) return;
-    const currentLevelInfo = property.levels.find(l => l.floorId === property.floorId);
-    if (!currentLevelInfo) return;
-
-    const currentIndex = property.levels.indexOf(currentLevelInfo);
-    const nextIndex = (currentIndex + 1) % property.levels.length;
-    const nextLevel = property.levels[nextIndex];
-    onSelectFloor(nextLevel.floorId);
-  };
+  const handleNavigateLevels = useCallback((property: Property) => {
+      const parentPropertyId = property.parentPropertyId || property.id;
+      const parentProperty = properties.find(p => p.id === parentPropertyId);
+  
+      if (!parentProperty || !parentProperty.isMultiLevel || !parentProperty.levels) return;
+  
+      const currentLevelIndex = parentProperty.levels.findIndex(l => l.floorId === selectedFloorId);
+      if (currentLevelIndex === -1) return;
+  
+      const nextLevelIndex = (currentLevelIndex + 1) % parentProperty.levels.length;
+      const nextLevel = parentProperty.levels[nextLevelIndex];
+      onSelectFloor(nextLevel.floorId);
+  }, [properties, selectedFloorId, onSelectFloor]);
 
 
   return (
@@ -261,7 +264,7 @@ export function FloorPlanViewer({
         {activeTool === 'edit_nodes' && (
           <SidebarPanel
             floorData={currentFloor}
-            selectedPolygonIds={selectedPolygonIds}
+            selectedPolygonIds={selectedPropertyIds}
             layerStates={layerStates}
             setLayerStates={setLayerStates}
             onPolygonSelect={onSelectProperty}
