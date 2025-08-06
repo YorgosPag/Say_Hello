@@ -1,33 +1,58 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Trash2 } from 'lucide-react';
 import { ParkingTableHeader } from './ParkingTableHeader';
-import type { ParkingSpot, ParkingStatus } from '@/types/parking';
-
-const statusConfig: Record<ParkingStatus, { label: string; className: string }> = {
-    available: { label: 'Διαθέσιμο', className: 'bg-green-100 text-green-800' },
-    sold: { label: 'Πωλημένο', className: 'bg-red-100 text-red-800' },
-    reserved: { label: 'Κρατημένο', className: 'bg-yellow-100 text-yellow-800' },
-};
+import type { ParkingSpot, ParkingFilters, ParkingStatus, ParkingSpotType } from '@/types/parking';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { PARKING_STATUS_LABELS, PARKING_TYPE_LABELS, PARKING_STATUS_COLORS } from '@/types/parking';
 
 interface ParkingSpotTableProps {
-    parkingSpots: ParkingSpot[];
+    spots: ParkingSpot[];
+    filters: ParkingFilters;
     selectedSpots: string[];
-    setSelectedSpots: (ids: string[]) => void;
+    onSelectionChange: (ids: string[]) => void;
+    onEdit: (spot: ParkingSpot) => void;
+    onView: (spot: ParkingSpot) => void;
+    onViewFloorPlan: (spot: ParkingSpot) => void;
 }
 
-export function ParkingSpotTable({ parkingSpots, selectedSpots, setSelectedSpots }: ParkingSpotTableProps) {
+export function ParkingSpotTable({
+  spots,
+  filters,
+  selectedSpots,
+  onSelectionChange,
+  onEdit,
+  onView,
+  onViewFloorPlan
+}: ParkingSpotTableProps) {
+
+    const filteredSpots = useMemo(() => {
+        return spots.filter(spot => {
+            const searchTermLower = filters.searchTerm.toLowerCase();
+            const matchesSearch =
+                spot.code.toLowerCase().includes(searchTermLower) ||
+                spot.owner.toLowerCase().includes(searchTermLower) ||
+                spot.propertyCode?.toLowerCase().includes(searchTermLower);
+
+            const matchesType = filters.type === 'all' || spot.type === filters.type;
+            const matchesStatus = filters.status === 'all' || spot.status === filters.status;
+            const matchesLevel = filters.level === 'all' || spot.level === filters.level;
+
+            return matchesSearch && matchesType && matchesStatus && matchesLevel;
+        });
+    }, [spots, filters]);
+
     const handleSelectAll = (checked: boolean | 'indeterminate') => {
         if (checked === true) {
-            setSelectedSpots(parkingSpots.map(spot => spot.id));
+            onSelectionChange(filteredSpots.map(spot => spot.id));
         } else {
-            setSelectedSpots([]);
+            onSelectionChange([]);
         }
     };
 
@@ -35,69 +60,81 @@ export function ParkingSpotTable({ parkingSpots, selectedSpots, setSelectedSpots
         const newSelection = selectedSpots.includes(id)
             ? selectedSpots.filter(spotId => spotId !== id)
             : [...selectedSpots, id];
-        setSelectedSpots(newSelection);
+        onSelectionChange(newSelection);
     };
     
-    const allSelected = selectedSpots.length === parkingSpots.length && parkingSpots.length > 0;
+    const allSelected = selectedSpots.length === filteredSpots.length && filteredSpots.length > 0;
     const isIndeterminate = selectedSpots.length > 0 && !allSelected;
 
     return (
-        <Card>
-            <CardHeader>
-                <ParkingTableHeader />
-            </CardHeader>
-            <CardContent>
-                <div className="border rounded-md">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[50px]">
-                                    <Checkbox
-                                        checked={allSelected}
-                                        onCheckedChange={handleSelectAll}
-                                        data-state={isIndeterminate ? 'indeterminate' : (allSelected ? 'checked' : 'unchecked')}
-
-                                    />
-                                </TableHead>
-                                <TableHead>Κωδικός</TableHead>
-                                <TableHead>Όροφος</TableHead>
-                                <TableHead>Εμβαδόν (m²)</TableHead>
-                                <TableHead>Τιμή (€)</TableHead>
-                                <TableHead>Κατάσταση</TableHead>
-                                <TableHead>Συνδεδεμένο Ακίνητο</TableHead>
-                                <TableHead className="text-right">Ενέργειες</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {parkingSpots.map((spot) => (
-                                <TableRow key={spot.id} data-state={selectedSpots.includes(spot.id) ? 'selected' : ''}>
-                                    <TableCell>
-                                        <Checkbox
-                                            checked={selectedSpots.includes(spot.id)}
-                                            onCheckedChange={() => handleSelectRow(spot.id)}
-                                        />
-                                    </TableCell>
-                                    <TableCell className="font-medium">{spot.code}</TableCell>
-                                    <TableCell>{spot.floor}</TableCell>
-                                    <TableCell>{spot.area.toFixed(2)}</TableCell>
-                                    <TableCell>{spot.price.toLocaleString('el-GR')}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className={statusConfig[spot.status].className}>
-                                            {statusConfig[spot.status].label}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{spot.linkedProperty || '-'}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon">
+        <div className="border rounded-md">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[50px]">
+                            <Checkbox
+                                checked={allSelected}
+                                onCheckedChange={handleSelectAll}
+                                aria-label="Επιλογή όλων"
+                            />
+                        </TableHead>
+                        <TableHead>Κωδικός</TableHead>
+                        <TableHead>Επίπεδο</TableHead>
+                        <TableHead>Εμβαδόν (m²)</TableHead>
+                        <TableHead>Τιμή (€)</TableHead>
+                        <TableHead>Κατάσταση</TableHead>
+                        <TableHead>Συνδεδεμένο Ακίνητο</TableHead>
+                        <TableHead>Ιδιοκτήτης</TableHead>
+                        <TableHead className="text-right">Ενέργειες</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {filteredSpots.map((spot) => (
+                        <TableRow key={spot.id} data-state={selectedSpots.includes(spot.id) ? 'selected' : ''}>
+                            <TableCell>
+                                <Checkbox
+                                    checked={selectedSpots.includes(spot.id)}
+                                    onCheckedChange={() => handleSelectRow(spot.id)}
+                                />
+                            </TableCell>
+                            <TableCell className="font-medium">{spot.code}</TableCell>
+                            <TableCell>{spot.level}</TableCell>
+                            <TableCell>{spot.area.toFixed(2)}</TableCell>
+                            <TableCell>{spot.price.toLocaleString('el-GR')}</TableCell>
+                            <TableCell>
+                                <Badge variant="outline" className={PARKING_STATUS_COLORS[spot.status]}>
+                                    {PARKING_STATUS_LABELS[spot.status]}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>{spot.propertyCode || '-'}</TableCell>
+                             <TableCell className="max-w-[150px] truncate">{spot.owner}</TableCell>
+                            <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8">
                                             <MoreHorizontal className="h-4 w-4" />
                                         </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => onView(spot)}>
+                                            <Eye className="mr-2 h-4 w-4" /> Προβολή
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => onEdit(spot)}>
+                                            <Pencil className="mr-2 h-4 w-4" /> Επεξεργασία
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => onViewFloorPlan(spot)}>
+                                            <Eye className="mr-2 h-4 w-4" /> Κάτοψη
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="text-red-600">
+                                            <Trash2 className="mr-2 h-4 w-4" /> Διαγραφή
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     );
 }
