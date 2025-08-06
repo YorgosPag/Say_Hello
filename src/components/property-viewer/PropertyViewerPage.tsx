@@ -197,7 +197,30 @@ export function PropertyViewerPage() {
     <div className="h-full flex flex-col p-4 gap-4 bg-muted/30">
         <div className="shrink-0 space-y-4">
             <PropertyViewerHeader viewMode={viewMode} setViewMode={setViewMode} />
-            <PropertyViewerFilters />
+            <div className="flex justify-between items-start gap-4">
+                <PropertyViewerFilters />
+                <div className="flex flex-col gap-4">
+                    <ViewerTools 
+                        activeTool={activeTool}
+                        setActiveTool={setActiveTool}
+                        showGrid={showGrid}
+                        setShowGrid={setShowGrid}
+                        snapToGrid={snapToGrid}
+                        setSnapToGrid={setSnapToGrid}
+                        showMeasurements={showMeasurements}
+                        setShowMeasurements={setShowMeasurements}
+                        undo={undo}
+                        redo={redo}
+                        canUndo={canUndo}
+                        canRedo={canRedo}
+                    />
+                    <SmartSuggestionsPanel 
+                        properties={properties}
+                        onShowSuggestion={setSuggestionToDisplay}
+                        onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
+                    />
+                </div>
+            </div>
         </div>
         <div className="flex-1 flex gap-4 min-h-0">
             <div className="w-[320px] shrink-0 flex flex-col gap-4">
@@ -258,25 +281,6 @@ export function PropertyViewerPage() {
             </div>
             
             <div className="w-[320px] shrink-0 flex flex-col gap-4">
-                 <ViewerTools 
-                    activeTool={activeTool}
-                    setActiveTool={setActiveTool}
-                    showGrid={showGrid}
-                    setShowGrid={setShowGrid}
-                    snapToGrid={snapToGrid}
-                    setSnapToGrid={setSnapToGrid}
-                    showMeasurements={showMeasurements}
-                    setShowMeasurements={setShowMeasurements}
-                    undo={undo}
-                    redo={redo}
-                    canUndo={canUndo}
-                    canRedo={canRedo}
-                 />
-                 <SmartSuggestionsPanel 
-                    properties={properties}
-                    onShowSuggestion={setSuggestionToDisplay}
-                    onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
-                 />
                 <Card className="flex-1">
                     <CardHeader className="py-3 px-4">
                         <CardTitle className="text-sm">Λεπτομέρειες Ακινήτου</CardTitle>
