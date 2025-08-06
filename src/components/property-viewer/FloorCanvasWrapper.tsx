@@ -72,6 +72,8 @@ export function FloorCanvasWrapper({ zoom, pan, onPan, isPanningAllowed, childre
       )}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
+      data-pan-x={pan.x}
+      data-pan-y={pan.y}
     >
       <div
         className="w-full h-full"

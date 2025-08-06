@@ -1,6 +1,6 @@
 
 
-"use client";
+'use client';
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -166,10 +166,14 @@ export function PolygonEditor({
     if (!rect) return;
     
     const zoom = parseFloat(svgRef.current?.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
+    const pan = {
+        x: parseFloat(svgRef.current?.closest('div[data-pan-x]')?.getAttribute('data-pan-x') || '0'),
+        y: parseFloat(svgRef.current?.closest('div[data-pan-y]')?.getAttribute('data-pan-y') || '0')
+    };
     
     let newPos = {
-      x: (event.clientX - rect.left) / zoom,
-      y: (event.clientY - rect.top) / zoom
+      x: (event.clientX - rect.left - pan.x) / zoom,
+      y: (event.clientY - rect.top - pan.y) / zoom
     };
     newPos = snapPoint(newPos);
     
@@ -200,10 +204,14 @@ export function PolygonEditor({
       if (!rect) return;
       
       const zoom = parseFloat(svgRef.current?.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
+       const pan = {
+        x: parseFloat(svgRef.current?.closest('div[data-pan-x]')?.getAttribute('data-pan-x') || '0'),
+        y: parseFloat(svgRef.current?.closest('div[data-pan-y]')?.getAttribute('data-pan-y') || '0')
+    };
 
       const currentPos = snapPoint({
-        x: (event.clientX - rect.left) / zoom,
-        y: (event.clientY - rect.top) / zoom
+        x: (event.clientX - rect.left - pan.x) / zoom,
+        y: (event.clientY - rect.top - pan.y) / zoom
       });
       
       if (dragState.dragType === 'vertex' && dragState.dragIndex !== undefined) {

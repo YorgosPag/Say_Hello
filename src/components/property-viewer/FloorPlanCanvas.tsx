@@ -57,6 +57,32 @@ interface FloorPlanCanvasProps {
   pan: { x: number; y: number };
 }
 
+// Helper functions for geometry
+const distanceToLineSegment = (p: Point, v: Point, w: Point) => {
+    const l2 = (v.x - w.x)**2 + (v.y - w.y)**2;
+    if (l2 === 0) return Math.sqrt((p.x - v.x)**2 + (p.y - v.y)**2);
+    let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    t = Math.max(0, Math.min(1, t));
+    const closestPoint = { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) };
+    return Math.sqrt((p.x - closestPoint.x)**2 + (p.y - closestPoint.y)**2);
+}
+
+const findClosestEdge = (polygon: Property, point: Point) => {
+    let minDistance = Infinity;
+    let closestEdgeIndex = -1;
+
+    for (let i = 0; i < polygon.vertices.length; i++) {
+        const p1 = polygon.vertices[i];
+        const p2 = polygon.vertices[(i + 1) % polygon.vertices.length];
+        const distance = distanceToLineSegment(point, p1, p2);
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestEdgeIndex = i;
+        }
+    }
+    return { index: closestEdgeIndex, distance: minDistance };
+}
 
 export function FloorPlanCanvas({
   floorData,
@@ -212,21 +238,36 @@ export function FloorPlanCanvas({
   }, [onPolygonHover, isCreatingPolygon, isMeasuring, isConnecting, isDrawingPolyline, snapPoint, pan]);
 
   const handleRightClick = (event: React.MouseEvent<SVGSVGElement>) => {
-      // Exit creation mode on right click
-      if(isCreatingPolygon && creatingVertices.length > 0) {
-          event.preventDefault();
-          setCreatingVertices([]);
-      }
-      // Exit measurement mode on right click
-      if(isMeasuring && measurementStart) {
-          event.preventDefault();
-          setMeasurementStart(null);
-      }
-      if(isDrawingPolyline && polylinePoints.length > 0) {
-        event.preventDefault();
-        setCurrentPolylines(prev => [...prev, polylinePoints]);
-        setPolylinePoints([]);
-      }
+    event.preventDefault();
+
+    if(isCreatingPolygon && creatingVertices.length > 0) {
+      setCreatingVertices([]);
+    }
+    else if(isMeasuring && measurementStart) {
+      setMeasurementStart(null);
+    }
+    else if(isDrawingPolyline && polylinePoints.length > 0) {
+      setCurrentPolylines(prev => [...prev, polylinePoints]);
+      setPolylinePoints([]);
+    }
+    else if (isNodeEditMode && primarySelectedPolygon) {
+        const polygon = floorData.properties.find(p => p.id === primarySelectedPolygon);
+        if (!polygon) return;
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        const zoom = parseFloat(event.currentTarget.closest('[data-zoom]')?.getAttribute('data-zoom') || '1');
+        const point = snapPoint({
+            x: (event.clientX - rect.left - pan.x) / zoom,
+            y: (event.clientY - rect.top - pan.y) / zoom,
+        });
+
+        const edge = findClosestEdge(polygon, point);
+        if (edge.distance < 10) { // Add vertex if click is close to an edge
+            const newVertices = [...polygon.vertices];
+            newVertices.splice(edge.index + 1, 0, point);
+            onPolygonUpdated(polygon.id, newVertices);
+        }
+    }
   }
 
   return (
