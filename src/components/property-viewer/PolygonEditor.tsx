@@ -45,6 +45,7 @@ function VertexHandle({
   onMouseDown: (index: number, event: React.MouseEvent) => void;
 }) {
   const [isShiftDown, setIsShiftDown] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => e.key === 'Shift' && setIsShiftDown(true);
@@ -56,13 +57,20 @@ function VertexHandle({
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+  
+  const getFillColor = () => {
+      if (isHovered) {
+          return isShiftDown ? "#ef4444" : "#facc15"; // red on shift-hover, yellow on hover
+      }
+      return isShiftDown ? "#a78bfa" : "#7c3aed"; // lighter violet on shift, default violet
+  }
 
   return (
     <circle
       cx={vertex.x}
       cy={vertex.y}
       r={5}
-      fill={isShiftDown ? "#ef4444" : "#7c3aed"}
+      fill={getFillColor()}
       stroke="#ffffff"
       strokeWidth={2}
       className={cn(
@@ -70,6 +78,8 @@ function VertexHandle({
         isShiftDown ? "cursor-crosshair" : "cursor-move hover:fill-violet-500"
       )}
       onMouseDown={(e) => onMouseDown(index, e)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     />
   );
 }
