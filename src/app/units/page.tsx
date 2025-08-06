@@ -316,13 +316,6 @@ export default function UnitsPage() {
                                   properties={filteredProperties}
                               />
                            </div>
-                           <div className="shrink-0 mt-4">
-                              <SmartSuggestionsPanel 
-                                  properties={properties}
-                                  onShowSuggestion={setSuggestionToDisplay}
-                                  onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
-                              />
-                           </div>
                         </TabsContent>
                         <TabsContent value="documents" className="flex-1 flex flex-col gap-4 min-h-0 mt-2">
                             <p>Documents tab content</p>
