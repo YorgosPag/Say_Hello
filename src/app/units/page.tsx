@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -313,6 +314,11 @@ export default function UnitsPage() {
                                 firstConnectionPoint={firstConnectionPoint}
                                 setFirstConnectionPoint={setFirstConnectionPoint}
                                 properties={filteredProperties}
+                            />
+                            <SmartSuggestionsPanel 
+                                properties={properties}
+                                onShowSuggestion={setSuggestionToDisplay}
+                                onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
                             />
                         </TabsContent>
                         <TabsContent value="documents" className="flex-1 flex flex-col gap-4 min-h-0 mt-2">

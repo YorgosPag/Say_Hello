@@ -66,10 +66,6 @@ function PropertyViewerHeader({
                       </TooltipTrigger>
                       <TooltipContent>Προβολή Πλέγματος</TooltipContent>
                   </Tooltip>
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Νέο Ακίνητο
-                  </Button>
               </div>
             </div>
         </div>
@@ -301,11 +297,6 @@ export function PropertyViewerPage() {
                           firstConnectionPoint={firstConnectionPoint}
                           setFirstConnectionPoint={setFirstConnectionPoint}
                           properties={filteredProperties}
-                      />
-                      <SmartSuggestionsPanel 
-                          properties={properties}
-                          onShowSuggestion={setSuggestionToDisplay}
-                          onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
                       />
                   </div>
                   
