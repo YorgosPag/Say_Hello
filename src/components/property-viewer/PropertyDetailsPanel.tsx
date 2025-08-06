@@ -19,28 +19,23 @@ import {
   Eye,
   Edit3,
   ExternalLink,
-  Layers
+  Layers,
+  ChevronsUpDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatFloorLabel } from "../building-management/BuildingCard/BuildingCardUtils";
+import type { Property } from '@/types/property-viewer';
 
 interface PropertyDetailsProps {
   propertyIds: string[];
+  onSelectFloor: (floorId: string | null) => void;
+  properties: Property[];
 }
 
-interface PropertyDetails {
-  id: string;
-  name: string;
-  type: string;
-  building: string;
-  floor: number;
-  project: string;
-  status: 'for-sale' | 'for-rent' | 'sold' | 'rented' | 'reserved';
-  price?: number;
-  area?: number;
+interface PropertyDetails extends Property {
+  // Overriding with more detailed mock data
   rooms?: number;
   bathrooms?: number;
-  description?: string;
   features: string[];
   owner?: {
     name: string;
@@ -107,7 +102,10 @@ const mockPropertyDetails: Record<string, PropertyDetails> = {
         type: "DWG",
         url: "/documents/floor-plan.dwg"
       }
-    ]
+    ],
+    buildingId: "building-1",
+    floorId: "floor-1",
+    vertices: [{x: 50, y: 50}, {x: 150, y: 50}, {x: 150, y: 120}, {x: 50, y: 120}],
   },
   "prop-2": {
     id: "prop-2",
@@ -139,7 +137,10 @@ const mockPropertyDetails: Record<string, PropertyDetails> = {
         type: "PDF",
         url: "/documents/title-deed.pdf"
       }
-    ]
+    ],
+     buildingId: "building-1",
+    floorId: "floor-3",
+    vertices: [{x: 180, y: 50}, {x: 300, y: 50}, {x: 300, y: 150}, {x: 180, y: 150}],
   }
 };
 
@@ -166,12 +167,43 @@ const statusConfig = {
   },
 };
 
-function PropertyDetailsContent({ property }: { property: PropertyDetails }) {
+function MultiLevelNavigation({ property, onSelectFloor, currentFloorId }: { property: Property; onSelectFloor: (floorId: string | null) => void; currentFloorId: string | null; }) {
+  if (!property.levels) return null;
+
+  return (
+    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3 space-y-2">
+      <h4 className="text-xs font-semibold text-blue-800 dark:text-blue-200 flex items-center gap-2">
+        <ChevronsUpDown className="h-4 w-4" />
+        Επίπεδα Ακινήτου
+      </h4>
+      {property.levels.map((level) => (
+        <div 
+          key={level.floorId}
+          className={cn(
+            "p-2 rounded-md flex items-center justify-between transition-colors",
+            currentFloorId === level.floorId ? "bg-blue-100 dark:bg-blue-900" : "bg-white/50 dark:bg-black/20"
+          )}
+        >
+          <span className="text-sm font-medium">{level.name}</span>
+          <Button size="sm" className="h-7 text-xs" onClick={() => onSelectFloor(level.floorId)}>
+            Μετάβαση
+          </Button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function PropertyDetailsContent({ property, onSelectFloor, properties, currentFloorId }: { property: PropertyDetails; onSelectFloor: (floorId: string | null) => void; properties: Property[], currentFloorId: string | null }) {
   const statusInfo = statusConfig[property.status];
+  const isMultiLevel = property.type === "Μεζονέτα";
 
   return (
     <ScrollArea className="h-full">
       <div className="space-y-4 p-1">
+
+        {isMultiLevel && <MultiLevelNavigation property={property} onSelectFloor={onSelectFloor} currentFloorId={currentFloorId} />}
+
         {/* Header */}
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-2">
@@ -374,7 +406,7 @@ function PropertyDetailsContent({ property }: { property: PropertyDetails }) {
   );
 }
 
-export function PropertyDetailsPanel({ propertyIds }: PropertyDetailsProps) {
+export function PropertyDetailsPanel({ propertyIds, onSelectFloor, properties }: PropertyDetailsProps) {
   if (propertyIds.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
@@ -396,7 +428,7 @@ export function PropertyDetailsPanel({ propertyIds }: PropertyDetailsProps) {
   }
 
   const propertyId = propertyIds[0];
-  const property = mockPropertyDetails[propertyId];
+  const property = properties.find(p => p.id === propertyId);
   
   if (!property) {
     return (
@@ -408,5 +440,10 @@ export function PropertyDetailsPanel({ propertyIds }: PropertyDetailsProps) {
     );
   }
 
-  return <PropertyDetailsContent property={property} />;
+  const detailedProperty: PropertyDetails = {
+    ...property,
+    ...mockPropertyDetails[property.id],
+  };
+
+  return <PropertyDetailsContent property={detailedProperty} onSelectFloor={onSelectFloor} properties={properties} currentFloorId={property.floorId} />;
 }

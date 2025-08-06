@@ -50,7 +50,38 @@ const mockFloors: FloorData[] = [
         buildingId: 'building-1',
         floorId: 'floor-1',
       },
-      {
+    ]
+  },
+  {
+    id: "floor-2",
+    name: "Ισόγειο",
+    level: 0,
+    buildingId: "building-1",
+    properties: [
+       {
+        id: "prop-5_level1",
+        parentPropertyId: "prop-5",
+        name: "Μεζονέτα E1 - Ισόγειο",
+        type: "Μεζονέτα",
+        status: "reserved",
+        price: 145000,
+        area: 50,
+        building: 'Κτίριο Epsilon',
+        floor: 0,
+        project: 'Έργο Κέντρο',
+        buildingId: 'building-1',
+        floorId: 'floor-2',
+        vertices: [{x: 280, y: 220}, {x: 480, y: 220}, {x: 480, y: 350}, {x: 280, y: 350}],
+      },
+    ]
+  },
+  {
+    id: "floor-3",
+    name: "1ος Όροφος",
+    level: 1,
+    buildingId: "building-1",
+    properties: [
+       {
         id: "prop-2",
         name: "Στούντιο B1",
         type: "Στούντιο",
@@ -67,16 +98,24 @@ const mockFloors: FloorData[] = [
         floor: 1,
         project: 'Έργο Κέντρο',
         buildingId: 'building-1',
-        floorId: 'floor-1',
-      }
+        floorId: 'floor-3',
+      },
+      {
+        id: "prop-5_level2",
+        parentPropertyId: "prop-5",
+        name: "Μεζονέτα E1 - 1ος όροφος",
+        type: "Μεζονέτα",
+        status: "reserved",
+        price: 145000,
+        area: 35,
+        building: 'Κτίριο Epsilon',
+        floor: 1,
+        project: 'Έργο Κέντρο',
+        buildingId: 'building-1',
+        floorId: 'floor-3',
+        vertices: [{x: 280, y: 50}, {x: 480, y: 50}, {x: 480, y: 180}, {x: 280, y: 180}],
+      },
     ]
-  },
-  {
-    id: "floor-2",
-    name: "Ισόγειο",
-    level: 0,
-    buildingId: "building-1",
-    properties: []
   }
 ];
 
@@ -107,6 +146,7 @@ export interface FloorPlanViewerProps {
   setIsConnecting: React.Dispatch<React.SetStateAction<boolean>>;
   firstConnectionPoint: Property | null;
   setFirstConnectionPoint: React.Dispatch<React.SetStateAction<Property | null>>;
+  properties: Property[];
 }
 
 
@@ -136,15 +176,15 @@ export function FloorPlanViewer({
   setIsConnecting,
   firstConnectionPoint,
   setFirstConnectionPoint,
+  properties,
 }: FloorPlanViewerProps) {
   const [zoom, setZoom] = useState(1);
   const [showLabels, setShowLabels] = useState(true);
-  const [floors, setFloors] = useState<FloorData[]>(mockFloors);
   
   // State for layer visibility and opacity, managed here
   const [layerStates, setLayerStates] = useState<Record<string, LayerState>>(() => {
     const initialStates: Record<string, LayerState> = {};
-    mockFloors.flatMap(f => f.properties).forEach(property => {
+    properties.forEach(property => {
       initialStates[property.id] = {
         visible: true,
         locked: false,
@@ -154,7 +194,11 @@ export function FloorPlanViewer({
     return initialStates;
   });
 
-  const currentFloor = floors.find(f => f.id === selectedFloorId) || floors[0];
+  const currentFloor = mockFloors.find(f => f.id === selectedFloorId) || mockFloors[0];
+  
+  // Update floor data with properties from the main state
+  currentFloor.properties = properties.filter(p => p.floorId === currentFloor.id);
+
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -167,7 +211,7 @@ export function FloorPlanViewer({
     <div className="h-full flex flex-col bg-card rounded-lg overflow-hidden">
       <ViewerToolbar 
         currentFloor={currentFloor}
-        floors={floors}
+        floors={mockFloors}
         zoom={zoom}
         setZoom={setZoom}
         showLabels={showLabels}

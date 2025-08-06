@@ -764,6 +764,7 @@ export default function PropertyViewerPage() {
           <Card className="flex-1 h-full">
             <CardContent className="p-0 h-full">
               <FloorPlanViewer
+                properties={properties}
                 selectedPropertyIds={selectedProperties}
                 selectedFloorId={selectedFloor}
                 onSelectFloor={setSelectedFloor}
@@ -811,7 +812,11 @@ export default function PropertyViewerPage() {
                   <h3 className="text-sm font-semibold">Επιλεγμένο Ακίνητο</h3>
                 </CardHeader>
                 <CardContent>
-                  <PropertyDetailsPanel propertyIds={selectedProperties} />
+                  <PropertyDetailsPanel 
+                    propertyIds={selectedProperties} 
+                    onSelectFloor={setSelectedFloor}
+                    properties={properties}
+                  />
                 </CardContent>
               </Card>
               

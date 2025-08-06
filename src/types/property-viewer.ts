@@ -13,5 +13,8 @@ export interface Property {
     buildingId: string;
     floorId: string;
     vertices: Array<{x: number, y: number}>;
+    isMultiLevel?: boolean;
+    levels?: { floorId: string; name: string; }[];
+    parentPropertyId?: string;
   }
   

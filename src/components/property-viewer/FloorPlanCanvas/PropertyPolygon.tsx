@@ -4,6 +4,7 @@
 import { cn } from "@/lib/utils";
 import type { Property } from '@/types/property-viewer';
 import { PolygonMeasurementInfo } from './PolygonMeasurementInfo';
+import { ChevronsUpDown } from 'lucide-react';
 
 interface PropertyPolygonProps {
   property: Property;
@@ -82,6 +83,8 @@ export function PropertyPolygon({
       strokeDasharray = isNodeEditMode && isSelected ? "5,5" : "none";
   }
 
+  const isMultiLevel = property.type === 'Μεζονέτα';
+
   return (
     <g className="property-polygon">
       <path
@@ -130,7 +133,7 @@ export function PropertyPolygon({
           fill="#374151"
           className="pointer-events-none select-none font-medium"
         >
-          {property.name}
+          {property.name.replace(/ - .*/, '')}
         </text>
         <text
           x={centroid.x}
@@ -143,6 +146,31 @@ export function PropertyPolygon({
           {property.type}
         </text>
       </g>
+      
+      {isMultiLevel && (
+        <g className="multi-level-indicator pointer-events-none">
+           <rect
+            x={centroid.x - 30}
+            y={centroid.y + 22}
+            width={60}
+            height={16}
+            fill="#3b82f6"
+            fillOpacity={0.8}
+            rx={2}
+          />
+          <ChevronsUpDown className="h-3 w-3 text-white" x={centroid.x - 28} y={centroid.y + 24} />
+           <text
+            x={centroid.x - 12}
+            y={centroid.y + 33}
+            textAnchor="start"
+            fontSize="8"
+            fill="white"
+            className="font-bold"
+           >
+             {property.name.includes("Ισόγειο") ? "Ισόγειο" : "1ος Όροφος"}
+           </text>
+        </g>
+      )}
 
       {isHovered && !isNodeEditMode && (
         <g className="hover-tooltip">

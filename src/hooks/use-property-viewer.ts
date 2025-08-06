@@ -73,14 +73,14 @@ const mockFloors: Floor[] = [
     name: "Ισόγειο",
     level: 0,
     buildingId: "building-1",
-    properties: ["prop-4"]
+    properties: ["prop-4", "prop-5_level1"]
   },
   {
     id: "floor-3",
     name: "1ος Όροφος",
     level: 1,
     buildingId: "building-1",
-    properties: ["prop-2", "prop-6"]
+    properties: ["prop-2", "prop-5_level2"]
   },
   {
     id: "floor-4",
@@ -177,16 +177,47 @@ const mockProperties: Property[] = [
     id: "prop-5",
     name: "Μεζονέτα E1",
     type: "Μεζονέτα",
-    building: "Κτίριο Beta",
-    floor: 3,
+    building: "Κτίριο Epsilon",
+    floor: 0, // Base floor
     project: "Έργο Κέντρο",
     status: "reserved",
     price: 145000,
     area: 85,
     description: "Πολυτελής μεζονέτα",
-    buildingId: "building-2",
-    floorId: "floor-5",
+    buildingId: "building-1",
+    floorId: 'floor-2', // Represents the main entry
+    vertices: [], // The parent property might not have vertices itself
+    isMultiLevel: true,
+    levels: [
+      { floorId: 'floor-2', name: 'Ισόγειο' },
+      { floorId: 'floor-3', name: '1ος Όροφος' }
+    ]
+  },
+  {
+    id: "prop-5_level1",
+    parentPropertyId: "prop-5",
+    name: "Μεζονέτα E1 - Ισόγειο",
+    type: "Μεζονέτα",
+    status: "reserved",
+    building: "Κτίριο Epsilon",
+    floor: 0,
+    project: "Έργο Κέντρο",
+    buildingId: "building-1",
+    floorId: "floor-2",
     vertices: [{x: 280, y: 220}, {x: 480, y: 220}, {x: 480, y: 350}, {x: 280, y: 350}],
+  },
+   {
+    id: "prop-5_level2",
+    parentPropertyId: "prop-5",
+    name: "Μεζονέτα E1 - 1ος Όροφος",
+    type: "Μεζονέτα",
+    status: "reserved",
+    building: "Κτίριο Epsilon",
+    floor: 1,
+    project: "Έργο Κέντρο",
+    buildingId: "building-1",
+    floorId: "floor-3",
+    vertices: [{x: 280, y: 50}, {x: 480, y: 50}, {x: 480, y: 180}, {x: 280, y: 180}],
   },
   {
     id: "prop-6",
@@ -303,7 +334,7 @@ export function usePropertyViewer(): UsePropertyViewerReturn {
 
   const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
   const [hoveredProperty, setHoveredProperty] = useState<string | null>(null);
-  const [selectedFloor, setSelectedFloor] = useState<string | null>("floor-1");
+  const [selectedFloor, setSelectedFloor] = useState<string | null>("floor-2");
   const [selectedBuilding, setSelectedBuilding] = useState<string | null>("building-1");
   const [selectedProject, setSelectedProject] = useState<string | null>("project-1");
 
