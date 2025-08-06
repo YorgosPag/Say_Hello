@@ -72,7 +72,7 @@ export default function AnalyticsFinancial({ building }: AnalyticsFinancialProps
                                         Σωρευτικό: {monthlyProgress.slice(0, index + 1).reduce((sum, m) => sum + m.cost, 0).toLocaleString('el-GR')}€
                                     </div>
                                     <div className={cn(`text-sm px-2 py-1 rounded`,
-                                        month.cost < 95000 ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'
+                                        month.cost < 95000 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
                                     )}>
                                         {month.cost < 95000 ? 'Εντός budget' : 'Προσοχή'}
                                     </div>

@@ -28,8 +28,8 @@ export default function AnalyticsComparison() {
                                 </div>
                                 <div className={cn(`px-3 py-1 rounded text-sm`,
                                     item.status === 'better'
-                                        ? 'bg-green-50 text-green-600'
-                                        : 'bg-red-50 text-red-600'
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                                 )}>
                                     {item.status === 'better' ? '↗️ Καλύτερα' : '↘️ Χειρότερα'}
                                 </div>
