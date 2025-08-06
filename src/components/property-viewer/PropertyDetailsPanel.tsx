@@ -25,124 +25,14 @@ import {
 import { cn } from "@/lib/utils";
 import { formatFloorLabel } from "../building-management/BuildingCard/BuildingCardUtils";
 import type { Property } from '@/types/property-viewer';
+import type { ExtendedPropertyDetails } from '@/types/property-viewer';
 
-interface PropertyDetailsProps {
+interface PropertyDetailsPanelProps {
   propertyIds: string[];
   onSelectFloor: (floorId: string | null) => void;
   properties: Property[];
+  onUpdateProperty: (propertyId: string, updates: Partial<Property>) => void;
 }
-
-interface PropertyDetails extends Property {
-  // Overriding with more detailed mock data
-  rooms?: number;
-  bathrooms?: number;
-  features?: string[];
-  owner?: {
-    name: string;
-    phone?: string;
-    email?: string;
-  };
-  agent?: {
-    name: string;
-    phone?: string;
-    email?: string;
-  };
-  dates?: {
-    created: string;
-    updated: string;
-    available?: string;
-  };
-  documents?: Array<{
-    id: string;
-    name: string;
-    type: string;
-    url: string;
-  }>;
-}
-
-// Mock data - θα αντικατασταθεί με πραγματικά δεδομένα
-const mockPropertyDetails: Record<string, PropertyDetails> = {
-  "prop-1": {
-    id: "prop-1",
-    name: "Αποθήκη A1",
-    type: "Αποθήκη",
-    building: "Κτίριο Alpha",
-    floor: -1,
-    project: "Έργο Κέντρο",
-    status: "for-sale",
-    price: 25000,
-    area: 15,
-    description: "Ευρύχωρη αποθήκη με εύκολη πρόσβαση.",
-    features: ["Κλιματισμός", "Ασφάλεια", "Εύκολη Πρόσβαση"],
-    owner: {
-      name: "Γιάννης Παπαδόπουλος",
-      phone: "6944123456",
-      email: "giannis@example.com"
-    },
-    agent: {
-      name: "Μαρία Κωνσταντίνου",
-      phone: "6955987654",
-      email: "maria@realestate.com"
-    },
-    dates: {
-      created: "2024-01-15",
-      updated: "2024-02-20",
-      available: "2024-03-01"
-    },
-    documents: [
-      {
-        id: "doc-1",
-        name: "Ενεργειακή Κλάση",
-        type: "PDF",
-        url: "/documents/energy-class.pdf"
-      },
-      {
-        id: "doc-2",
-        name: "Κάτοψη",
-        type: "DWG",
-        url: "/documents/floor-plan.dwg"
-      }
-    ],
-    buildingId: "building-1",
-    floorId: "floor-1",
-    vertices: [{x: 50, y: 50}, {x: 150, y: 50}, {x: 150, y: 120}, {x: 50, y: 120}],
-  },
-  "prop-2": {
-    id: "prop-2",
-    name: "Στούντιο B1",
-    type: "Στούντιο",
-    building: "Κτίριο Beta",
-    floor: 1,
-    project: "Έργο Νότος",
-    status: "sold",
-    price: 85000,
-    area: 35,
-    rooms: 1,
-    bathrooms: 1,
-    description: "Μοντέρνο στούντιο με μεγάλο μπαλκόνι και θέα στη θάλασσα.",
-    features: ["Μπαλκόνι", "Θέα Θάλασσα", "Ανακαινισμένο", "Ηλιόλουστο"],
-    owner: {
-      name: "Ελένη Γεωργίου",
-      phone: "6933456789",
-      email: "eleni@example.com"
-    },
-    dates: {
-      created: "2024-01-10",
-      updated: "2024-02-15"
-    },
-    documents: [
-      {
-        id: "doc-3",
-        name: "Τίτλος Ιδιοκτησίας",
-        type: "PDF",
-        url: "/documents/title-deed.pdf"
-      }
-    ],
-     buildingId: "building-1",
-    floorId: "floor-3",
-    vertices: [{x: 180, y: 50}, {x: 300, y: 50}, {x: 300, y: 150}, {x: 180, y: 150}],
-  }
-};
 
 const statusConfig = {
   'for-sale': {
@@ -194,12 +84,26 @@ function MultiLevelNavigation({ property, onSelectFloor, currentFloorId }: { pro
   )
 }
 
-function PropertyDetailsContent({ property, onSelectFloor, properties, currentFloorId }: { property: PropertyDetails; onSelectFloor: (floorId: string | null) => void; properties: Property[], currentFloorId: string | null }) {
+function PropertyDetailsContent({ property, onSelectFloor, properties, currentFloorId }: { property: ExtendedPropertyDetails; onSelectFloor: (floorId: string | null) => void; properties: Property[], currentFloorId: string | null }) {
   const statusInfo = statusConfig[property.status] || {
     label: property.status,
     color: 'bg-gray-100 text-gray-900 border-gray-200',
   };
-  const isMultiLevel = property.type === "Μεζονέτα";
+  
+  // Use a fallback for multilevel check
+  const isMultiLevel = property.isMultiLevel || property.type === "Μεζονέτα";
+
+  const handleEditClick = () => {
+    // In a real app, this would open a modal or navigate to an edit page.
+    // For now, we can log to the console or use a prompt for demonstration.
+    const newName = prompt("Εισάγετε νέο όνομα για το ακίνητο:", property.name);
+    if (newName && newName !== property.name) {
+      // This is where we would call an update function passed via props
+      console.log(`Updating property ${property.id} name to: ${newName}`);
+      // onUpdateProperty(property.id, { name: newName });
+    }
+  };
+
 
   return (
     <ScrollArea className="h-full">
@@ -386,8 +290,8 @@ function PropertyDetailsContent({ property, onSelectFloor, properties, currentFl
                     Ημερομηνίες
                 </h4>
                 <div className="space-y-1 text-xs text-muted-foreground">
-                    <div>Δημιουργία: {new Date(property.dates.created).toLocaleDateString('el-GR')}</div>
-                    <div>Ενημέρωση: {new Date(property.dates.updated).toLocaleDateString('el-GR')}</div>
+                    {property.dates.created && <div>Δημιουργία: {new Date(property.dates.created).toLocaleDateString('el-GR')}</div>}
+                    {property.dates.updated && <div>Ενημέρωση: {new Date(property.dates.updated).toLocaleDateString('el-GR')}</div>}
                     {property.dates.available && (
                     <div>Διαθεσιμότητα: {new Date(property.dates.available).toLocaleDateString('el-GR')}</div>
                     )}
@@ -404,7 +308,7 @@ function PropertyDetailsContent({ property, onSelectFloor, properties, currentFl
             <Eye className="h-3 w-3 mr-1" />
             Προβολή
           </Button>
-          <Button variant="outline" size="sm" className="flex-1">
+          <Button variant="outline" size="sm" className="flex-1" onClick={handleEditClick}>
             <Edit3 className="h-3 w-3 mr-1" />
             Επεξ.
           </Button>
@@ -414,7 +318,7 @@ function PropertyDetailsContent({ property, onSelectFloor, properties, currentFl
   );
 }
 
-export function PropertyDetailsPanel({ propertyIds, onSelectFloor, properties }: PropertyDetailsProps) {
+export function PropertyDetailsPanel({ propertyIds, onSelectFloor, properties, onUpdateProperty }: PropertyDetailsPanelProps) {
   if (propertyIds.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
@@ -448,10 +352,5 @@ export function PropertyDetailsPanel({ propertyIds, onSelectFloor, properties }:
     );
   }
 
-  const detailedProperty: PropertyDetails = {
-    ...property,
-    ...mockPropertyDetails[property.id],
-  };
-
-  return <PropertyDetailsContent property={detailedProperty} onSelectFloor={onSelectFloor} properties={properties} currentFloorId={property.floorId} />;
+  return <PropertyDetailsContent property={property as ExtendedPropertyDetails} onSelectFloor={onSelectFloor} properties={properties} currentFloorId={property.floorId} />;
 }

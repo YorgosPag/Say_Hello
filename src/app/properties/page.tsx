@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useTransition, useCallback } from 'react';
@@ -408,6 +409,12 @@ export default function PropertyViewerPage() {
   } = usePropertyViewer();
 
   const [clipboard, setClipboard] = useState<Property | null>(null);
+  
+  const handleUpdateProperty = useCallback((propertyId: string, updates: Partial<Property>) => {
+    const newProperties = properties.map(p => p.id === propertyId ? { ...p, ...updates } : p);
+    setProperties(newProperties, `Ενημέρωση ${updates.name || 'ιδιότητας'}`);
+  }, [properties, setProperties]);
+
 
   const handlePropertySelect = useCallback((propertyId: string, isShiftClick: boolean) => {
       const property = properties.find(p => p.id === propertyId);
@@ -823,6 +830,7 @@ export default function PropertyViewerPage() {
                     propertyIds={selectedProperties} 
                     onSelectFloor={setSelectedFloor}
                     properties={properties}
+                    onUpdateProperty={handleUpdateProperty}
                   />
                 </CardContent>
               </Card>
