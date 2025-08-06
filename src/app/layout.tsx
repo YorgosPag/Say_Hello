@@ -40,11 +40,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SidebarProvider>
-            <div className="flex h-screen w-full">
+            <div className="flex h-screen w-full overflow-hidden">
               <AppSidebar />
               <SidebarInset className="flex flex-1 flex-col">
                 <AppHeader />
-                <main className="flex-1 overflow-y-auto bg-background/95 p-4 md:p-6 lg:p-8">
+                <main className="flex-1 overflow-y-auto bg-background/95">
                     {children}
                 </main>
               </SidebarInset>

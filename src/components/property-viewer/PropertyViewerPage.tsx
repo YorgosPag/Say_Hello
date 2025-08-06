@@ -233,43 +233,47 @@ export function PropertyViewerPage() {
   }, [selectedFloorId, floors]);
 
   return (
-    <div className="h-full flex flex-col p-4 gap-4 bg-muted/30">
+    <div className="h-full flex flex-col gap-4 bg-muted/30">
         <PropertyViewerHeader 
             viewMode={viewMode} 
             setViewMode={setViewMode}
         />
         
-        <Collapsible className="border bg-card rounded-lg">
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
-              <Filter className="w-4 h-4 mr-2"/>
-              Φίλτρα Αναζήτησης
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
-          </CollapsibleContent>
-        </Collapsible>
+        <div className="px-4">
+            <Collapsible className="border bg-card rounded-lg">
+                <CollapsibleTrigger asChild>
+                    <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
+                    <Filter className="w-4 h-4 mr-2"/>
+                    Φίλτρα Αναζήτησης
+                    </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+                </CollapsibleContent>
+            </Collapsible>
+        </div>
 
 
-        <ViewerTools 
-            activeTool={activeTool}
-            setActiveTool={setActiveTool}
-            showGrid={showGrid}
-            setShowGrid={setShowGrid}
-            snapToGrid={snapToGrid}
-            setSnapToGrid={setSnapToGrid}
-            showMeasurements={showMeasurements}
-            setShowMeasurements={setShowMeasurements}
-            scale={scale}
-            setScale={setScale}
-            undo={undo}
-            redo={redo}
-            canUndo={canUndo}
-            canRedo={canRedo}
-        />
+        <div className="px-4">
+            <ViewerTools 
+                activeTool={activeTool}
+                setActiveTool={setActiveTool}
+                showGrid={showGrid}
+                setShowGrid={setShowGrid}
+                snapToGrid={snapToGrid}
+                setSnapToGrid={setSnapToGrid}
+                showMeasurements={showMeasurements}
+                setShowMeasurements={setShowMeasurements}
+                scale={scale}
+                setScale={setScale}
+                undo={undo}
+                redo={redo}
+                canUndo={canUndo}
+                canRedo={canRedo}
+            />
+        </div>
         
-        <main className="flex-1 flex gap-4 min-h-0">
+        <main className="flex-1 flex gap-4 min-h-0 px-4 pb-4">
           {viewMode === 'list' ? (
               <div className="flex-1 flex gap-4 min-h-0">
                   <div className="w-[320px] shrink-0 flex flex-col gap-4">
