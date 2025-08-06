@@ -166,7 +166,7 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
 
       {/* Τύποι Ακινήτων */}
       {Object.keys(stats.propertiesByType).length > 0 && (
-        <Card className="md:col-span-2 lg:col-span-3">
+        <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Τύποι Ακινήτων</CardTitle>
             <Building className="h-4 w-4 text-muted-foreground" />
@@ -184,24 +184,22 @@ export function PropertyDashboard({ stats }: PropertyDashboardProps) {
       )}
 
       {/* Όροφοι */}
-      {Object.keys(stats.propertiesByFloor).length > 0 && (
-        <Card className="md:col-span-2 lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Κατανομή ανά Όροφο</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {Object.entries(stats.propertiesByFloor).slice(0, 5).map(([floor, count]) => (
-                <div key={floor} className="flex items-center justify-between">
-                  <span className="text-xs truncate flex-1">{floor}</span>
-                  <Badge variant="outline" className="ml-2">{count}</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Κατανομή ανά Όροφο</CardTitle>
+          <MapPin className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {Object.entries(stats.propertiesByFloor).slice(0, 5).map(([floor, count]) => (
+              <div key={floor} className="flex items-center justify-between">
+                <span className="text-xs truncate flex-1">{floor}</span>
+                <Badge variant="outline" className="ml-2">{count}</Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Αποθήκες */}
       <Card>
