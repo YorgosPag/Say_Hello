@@ -20,6 +20,8 @@ import { Button } from '@/components/ui/button';
 import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PropertyGrid } from './PropertyGrid';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Filter } from 'lucide-react';
 
 function PropertyViewerHeader({
   viewMode,
@@ -29,47 +31,43 @@ function PropertyViewerHeader({
   setViewMode: (mode: 'list' | 'grid') => void;
 }) {
     return (
-        <div className="border-b bg-card">
-            <div className="p-4 flex items-start justify-between">
-              <div className="flex-1 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h1 className="text-2xl font-bold text-foreground">Ευρετήριο Ακινήτων</h1>
-                      <p className="text-sm text-muted-foreground">
-                          Οπτική διαχείριση και ανάλυση ακινήτων σε κάτοψη.
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                            <Button
-                                variant={viewMode === 'list' ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setViewMode('list')}
-                            >
-                                <List className="w-4 h-4" />
-                            </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Προβολή Λίστας</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                            <Button
-                                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setViewMode('grid')}
-                            >
-                                <LayoutGrid className="w-4 h-4" />
-                            </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Προβολή Πλέγματος</TooltipContent>
-                        </Tooltip>
-                        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Νέο Ακίνητο
-                        </Button>
-                    </div>
-                  </div>
+        <div className="border-b bg-card p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Ευρετήριο Ακινήτων</h1>
+                <p className="text-sm text-muted-foreground">
+                    Οπτική διαχείριση και ανάλυση ακινήτων σε κάτοψη.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                      <Button
+                          variant={viewMode === 'list' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setViewMode('list')}
+                      >
+                          <List className="w-4 h-4" />
+                      </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Προβολή Λίστας</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                      <Button
+                          variant={viewMode === 'grid' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setViewMode('grid')}
+                      >
+                          <LayoutGrid className="w-4 h-4" />
+                      </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Προβολή Πλέγματος</TooltipContent>
+                  </Tooltip>
+                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Νέο Ακίνητο
+                  </Button>
               </div>
             </div>
         </div>
@@ -240,7 +238,19 @@ export function PropertyViewerPage() {
             viewMode={viewMode} 
             setViewMode={setViewMode}
         />
-        <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+        
+        <Collapsible className="border bg-card rounded-lg">
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
+              <Filter className="w-4 h-4 mr-2"/>
+              Φίλτρα Αναζήτησης
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <PropertyViewerFilters filters={filters} onFiltersChange={setFilters} />
+          </CollapsibleContent>
+        </Collapsible>
+
 
         <ViewerTools 
             activeTool={activeTool}

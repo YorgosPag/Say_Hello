@@ -94,11 +94,11 @@ export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyView
   return (
     <Card className="w-full bg-card/50 border-none shadow-none">
       <CardContent className="space-y-4 p-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             {/* Search */}
-             <div className="space-y-1">
-                <Label htmlFor="search" className="text-xs font-medium">Αναζήτηση</Label>
-                <div className="relative">
+             <div className="flex items-center gap-2">
+                <Label htmlFor="search" className="text-xs font-medium shrink-0">Αναζήτηση</Label>
+                <div className="relative w-full">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         id="search"
@@ -111,54 +111,50 @@ export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyView
             </div>
 
             {/* Price Range */}
-            <div className="space-y-1">
-                <Label className="text-xs font-medium">Εύρος Τιμής (€)</Label>
-                <div className="flex items-center gap-2">
-                    <Input
-                        type="number"
-                        placeholder="Από"
-                        className="h-9"
-                        value={filters.priceRange.min ?? ''}
-                        onChange={(e) => handleRangeChange('priceRange', 'min', e.target.value)}
-                    />
-                    <Input
-                        type="number"
-                        placeholder="Έως"
-                        className="h-9"
-                        value={filters.priceRange.max ?? ''}
-                        onChange={(e) => handleRangeChange('priceRange', 'max', e.target.value)}
-                    />
-                </div>
+            <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium shrink-0">Εύρος Τιμής (€)</Label>
+                <Input
+                    type="number"
+                    placeholder="Από"
+                    className="h-9"
+                    value={filters.priceRange.min ?? ''}
+                    onChange={(e) => handleRangeChange('priceRange', 'min', e.target.value)}
+                />
+                <Input
+                    type="number"
+                    placeholder="Έως"
+                    className="h-9"
+                    value={filters.priceRange.max ?? ''}
+                    onChange={(e) => handleRangeChange('priceRange', 'max', e.target.value)}
+                />
             </div>
 
             {/* Area Range */}
-             <div className="space-y-1">
-                <Label className="text-xs font-medium">Εύρος Εμβαδού (m²)</Label>
-                <div className="flex items-center gap-2">
-                    <Input
-                        type="number"
-                        placeholder="Από"
-                        className="h-9"
-                        value={filters.areaRange.min ?? ''}
-                        onChange={(e) => handleRangeChange('areaRange', 'min', e.target.value)}
-                    />
-                    <Input
-                        type="number"
-                        placeholder="Έως"
-                        className="h-9"
-                         value={filters.areaRange.max ?? ''}
-                        onChange={(e) => handleRangeChange('areaRange', 'max', e.target.value)}
-                    />
-                </div>
+             <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium shrink-0">Εύρος Εμβαδού (m²)</Label>
+                <Input
+                    type="number"
+                    placeholder="Από"
+                    className="h-9"
+                    value={filters.areaRange.min ?? ''}
+                    onChange={(e) => handleRangeChange('areaRange', 'min', e.target.value)}
+                />
+                <Input
+                    type="number"
+                    placeholder="Έως"
+                    className="h-9"
+                     value={filters.areaRange.max ?? ''}
+                    onChange={(e) => handleRangeChange('areaRange', 'max', e.target.value)}
+                />
             </div>
             
-             <div className="space-y-1">
-                <Label className="text-xs font-medium">Κατάσταση</Label>
+             <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium shrink-0">Κατάσταση</Label>
                  <Select
                   onValueChange={(value) => handleFilterChange('status', value === 'all' ? [] : [value])}
                   value={filters.status.length === 1 ? filters.status[0] : 'all'}
                  >
-                    <SelectTrigger className="h-9">
+                    <SelectTrigger className="h-9 w-full">
                         <SelectValue placeholder="Επιλογή κατάστασης..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -173,36 +169,36 @@ export function PropertyViewerFilters({ filters, onFiltersChange }: PropertyView
             </div>
         </div>
         
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
               {/* Project Filter */}
-              <div className="space-y-1">
-                <Label className="text-xs font-medium">Έργο</Label>
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium shrink-0">Έργο</Label>
                 <Select>
-                    <SelectTrigger className="h-9"><SelectValue placeholder="Επιλογή Έργου" /></SelectTrigger>
+                    <SelectTrigger className="h-9 w-full"><SelectValue placeholder="Επιλογή Έργου" /></SelectTrigger>
                     <SelectContent><SelectItem value="all">Όλα τα έργα</SelectItem></SelectContent>
                 </Select>
               </div>
               {/* Building Filter */}
-              <div className="space-y-1">
-                <Label className="text-xs font-medium">Κτίριο</Label>
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium shrink-0">Κτίριο</Label>
                 <Select>
-                    <SelectTrigger className="h-9"><SelectValue placeholder="Επιλογή Κτιρίου" /></SelectTrigger>
+                    <SelectTrigger className="h-9 w-full"><SelectValue placeholder="Επιλογή Κτιρίου" /></SelectTrigger>
                     <SelectContent><SelectItem value="all">Όλα τα κτίρια</SelectItem></SelectContent>
                 </Select>
               </div>
               {/* Floor Filter */}
-              <div className="space-y-1">
-                <Label className="text-xs font-medium">Όροφος</Label>
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium shrink-0">Όροφος</Label>
                 <Select>
-                    <SelectTrigger className="h-9"><SelectValue placeholder="Επιλογή Ορόφου" /></SelectTrigger>
+                    <SelectTrigger className="h-9 w-full"><SelectValue placeholder="Επιλογή Ορόφου" /></SelectTrigger>
                     <SelectContent><SelectItem value="all">Όλοι οι όροφοι</SelectItem></SelectContent>
                 </Select>
               </div>
               {/* Property Type Filter */}
-              <div className="space-y-1">
-                <Label className="text-xs font-medium">Τύπος Ακινήτου</Label>
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium shrink-0">Τύπος Ακινήτου</Label>
                 <Select>
-                    <SelectTrigger className="h-9"><SelectValue placeholder="Επιλογή Τύπου" /></SelectTrigger>
+                    <SelectTrigger className="h-9 w-full"><SelectValue placeholder="Επιλογή Τύπου" /></SelectTrigger>
                     <SelectContent><SelectItem value="all">Όλοι οι τύποι</SelectItem></SelectContent>
                 </Select>
               </div>
