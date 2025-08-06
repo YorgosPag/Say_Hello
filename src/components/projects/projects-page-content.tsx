@@ -107,18 +107,16 @@ export function ProjectsPageContent() {
         
         {showDashboard && <ProjectsDashboard stats={stats} />}
 
-        <main className="flex-1 flex overflow-hidden p-4">
+        <main className="flex-1 flex overflow-hidden p-4 gap-4">
           {viewMode === 'list' ? (
-            <div className="flex flex-1 gap-4 overflow-hidden">
+            <>
               <ProjectsList
                   projects={filteredProjects}
                   selectedProject={selectedProject}
                   onSelectProject={setSelectedProject}
               />
-              <div className="flex-1 overflow-auto">
-                <ProjectDetails project={selectedProject} />
-              </div>
-            </div>
+              <ProjectDetails project={selectedProject} />
+            </>
           ) : (
             <ProjectsGridView
               projects={filteredProjects}
