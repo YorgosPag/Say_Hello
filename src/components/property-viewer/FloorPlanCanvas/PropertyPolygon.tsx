@@ -62,6 +62,7 @@ export function PropertyPolygon({
   let fillOpacity = opacity;
   let strokeWidth = 1;
   let strokeColor = fillColor;
+  let strokeDasharray: string | undefined;
 
   // Visual states
   if (isSelected) {
