@@ -23,12 +23,6 @@ export const mainMenuItems: MenuItem[] = [
     badge: "Νέο",
   },
   {
-    title: "Ακίνητα",
-    icon: Archive,
-    href: "/property-management",
-    badge: null,
-  },
-  {
     title: "Επαφές",
     icon: Users,
     href: "/contacts",
