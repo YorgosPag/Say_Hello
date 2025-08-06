@@ -233,13 +233,13 @@ export function PropertyViewerPage() {
   }, [selectedFloorId, floors]);
 
   return (
-    <div className="h-full flex flex-col gap-4 bg-muted/30">
+    <div className="h-full flex flex-col bg-muted/30">
         <PropertyViewerHeader 
             viewMode={viewMode} 
             setViewMode={setViewMode}
         />
         
-        <div className="px-4">
+        <div className="px-4 shrink-0">
             <Collapsible className="border bg-card rounded-lg">
                 <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="w-full justify-start p-4 text-sm font-semibold">
@@ -254,7 +254,7 @@ export function PropertyViewerPage() {
         </div>
 
 
-        <div className="px-4">
+        <div className="px-4 shrink-0">
             <ViewerTools 
                 activeTool={activeTool}
                 setActiveTool={setActiveTool}
@@ -277,8 +277,8 @@ export function PropertyViewerPage() {
           {viewMode === 'list' ? (
               <div className="flex-1 flex gap-4 min-h-0">
                   <div className="w-[320px] shrink-0 flex flex-col gap-4">
-                      <Card className="flex-1 flex flex-col">
-                          <CardHeader className="pb-4">
+                      <Card className="flex-1 flex flex-col min-h-0">
+                          <CardHeader className="pb-4 shrink-0">
                               <CardTitle className="text-base">Λίστα Ακινήτων</CardTitle>
                           </CardHeader>
                           <CardContent className="flex-1 p-0 overflow-hidden">

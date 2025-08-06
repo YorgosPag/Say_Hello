@@ -171,15 +171,17 @@ export function PropertyList({
   }
 
   return (
-    <div className="space-y-2 p-2">
-      {properties.map((property) => (
-        <PropertyListItem
-          key={property.id}
-          property={property}
-          isSelected={selectedPropertyIds.includes(property.id)}
-          onSelect={(isShiftClick) => onSelectProperty(property.id, isShiftClick)}
-        />
-      ))}
+    <div className="p-2">
+      <div className="space-y-2">
+        {properties.map((property) => (
+          <PropertyListItem
+            key={property.id}
+            property={property}
+            isSelected={selectedPropertyIds.includes(property.id)}
+            onSelect={(isShiftClick) => onSelectProperty(property.id, isShiftClick)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
