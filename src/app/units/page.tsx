@@ -14,11 +14,11 @@ import { ViewerTools } from '@/components/property-viewer/ViewerTools';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Plus, LayoutGrid, List, BarChart3, FolderOpen, CheckSquare, Eye } from 'lucide-react';
+import { Plus, LayoutGrid, List, BarChart3, FolderOpen, CheckSquare, Eye, Home } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PropertyGrid } from '@/components/property-viewer/PropertyGrid';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { Filter, Briefcase, FileText, Camera, Video, Users, Building, File, Home } from 'lucide-react';
+import { Filter, Briefcase, FileText, Camera, Video, Users, Building, File } from 'lucide-react';
 import { VersionHistoryPanel } from '@/components/property-viewer/VersionHistoryPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PropertyGridView } from '@/components/property-viewer/PropertyGridView';
@@ -28,7 +28,24 @@ import { cn } from '@/lib/utils';
 import { getStatusColor, getStatusLabel } from '@/components/building-management/BuildingCard/BuildingCardUtils';
 
 
-function UnitDetailsHeader({ unit }: { unit: Property }) {
+function UnitDetailsHeader({ unit }: { unit: Property | null }) {
+    if (!unit) {
+        return (
+            <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-t-lg h-[81px] flex items-center">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm">
+                    <Home className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                    <h3 className="text-lg font-semibold text-foreground line-clamp-1">
+                        Επιλέξτε μια μονάδα
+                    </h3>
+                    <p className="text-sm text-muted-foreground">Δεν έχει επιλεγεί μονάδα</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-t-lg">
             <div className="flex items-center justify-between">
@@ -380,8 +397,8 @@ export default function UnitsPage() {
                     </div>
 
                     <div className="flex-1 flex flex-col min-h-0 gap-4">
-                       <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
-                            {selectedUnit && <UnitDetailsHeader unit={selectedUnit}/> }
+                        <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0">
+                           <UnitDetailsHeader unit={selectedUnit} />
                              <div className="shrink-0 border-b">
                                 <TabsList>
                                     <TabsTrigger value="general">Γενικά</TabsTrigger>
