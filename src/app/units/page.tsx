@@ -286,7 +286,7 @@ export default function UnitsPage() {
                                     onShowHistory={() => setShowHistoryPanel(true)}
                                 />
                             </div>
-                           <div className="flex-1 flex flex-col min-h-0 basis-[700px]">
+                           <div className="flex-1 flex flex-col min-h-0">
                              <FloorPlanViewer
                                   selectedPropertyIds={selectedPropertyIds}
                                   selectedFloorId={selectedFloorId}
