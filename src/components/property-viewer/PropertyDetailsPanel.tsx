@@ -36,7 +36,7 @@ interface PropertyDetails extends Property {
   // Overriding with more detailed mock data
   rooms?: number;
   bathrooms?: number;
-  features: string[];
+  features?: string[];
   owner?: {
     name: string;
     phone?: string;
@@ -47,12 +47,12 @@ interface PropertyDetails extends Property {
     phone?: string;
     email?: string;
   };
-  dates: {
+  dates?: {
     created: string;
     updated: string;
     available?: string;
   };
-  documents: Array<{
+  documents?: Array<{
     id: string;
     name: string;
     type: string;
@@ -278,7 +278,7 @@ function PropertyDetailsContent({ property, onSelectFloor, properties, currentFl
         )}
 
         {/* Features */}
-        {property.features.length > 0 && (
+        {property.features && property.features.length > 0 && (
           <>
             <Separator />
             <div className="space-y-2">
@@ -351,7 +351,7 @@ function PropertyDetailsContent({ property, onSelectFloor, properties, currentFl
         )}
 
         {/* Documents */}
-        {property.documents.length > 0 && (
+        {property.documents && property.documents.length > 0 && (
           <>
             <Separator />
             <div className="space-y-2">
@@ -374,20 +374,25 @@ function PropertyDetailsContent({ property, onSelectFloor, properties, currentFl
         )}
 
         {/* Dates */}
-        <Separator />
-        <div className="space-y-1">
-          <h4 className="text-xs font-medium flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            Ημερομηνίες
-          </h4>
-          <div className="space-y-1 text-xs text-muted-foreground">
-            <div>Δημιουργία: {new Date(property.dates.created).toLocaleDateString('el-GR')}</div>
-            <div>Ενημέρωση: {new Date(property.dates.updated).toLocaleDateString('el-GR')}</div>
-            {property.dates.available && (
-              <div>Διαθεσιμότητα: {new Date(property.dates.available).toLocaleDateString('el-GR')}</div>
-            )}
-          </div>
-        </div>
+        {property.dates && (
+            <>
+                <Separator />
+                <div className="space-y-1">
+                <h4 className="text-xs font-medium flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    Ημερομηνίες
+                </h4>
+                <div className="space-y-1 text-xs text-muted-foreground">
+                    <div>Δημιουργία: {new Date(property.dates.created).toLocaleDateString('el-GR')}</div>
+                    <div>Ενημέρωση: {new Date(property.dates.updated).toLocaleDateString('el-GR')}</div>
+                    {property.dates.available && (
+                    <div>Διαθεσιμότητα: {new Date(property.dates.available).toLocaleDateString('el-GR')}</div>
+                    )}
+                </div>
+                </div>
+            </>
+        )}
+
 
         {/* Actions */}
         <Separator />
