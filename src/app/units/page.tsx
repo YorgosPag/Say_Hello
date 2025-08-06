@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -259,7 +258,7 @@ export default function UnitsPage() {
                     </Card>
                 </div>
 
-                <div className="flex-1 flex flex-col gap-4 min-w-0">
+                <div className="flex-1 flex flex-col gap-4 min-h-0">
                     <Tabs defaultValue="general" className="w-full h-full flex flex-col">
                         <TabsList className="shrink-0">
                             <TabsTrigger value="general"><Home className="w-4 h-4 mr-2" />Γενικά</TabsTrigger>
@@ -287,39 +286,43 @@ export default function UnitsPage() {
                                     onShowHistory={() => setShowHistoryPanel(true)}
                                 />
                             </div>
-                           <FloorPlanViewer
-                                selectedPropertyIds={selectedPropertyIds}
-                                selectedFloorId={selectedFloorId}
-                                onSelectFloor={onSelectFloor}
-                                hoveredPropertyId={hoveredPropertyId}
-                                onHoverProperty={onHoverProperty}
-                                activeTool={activeTool}
-                                onSelectProperty={handlePolygonSelect}
-                                onPolygonCreated={handlePolygonCreated}
-                                onPolygonUpdated={handlePolygonUpdated}
-                                onDuplicate={handleDuplicate}
-                                onDelete={handleDelete}
-                                showGrid={showGrid}
-                                snapToGrid={snapToGrid}
-                                gridSize={gridSize}
-                                showMeasurements={showMeasurements}
-                                scale={scale}
-                                suggestionToDisplay={suggestionToDisplay}
-                                connections={connections}
-                                setConnections={setConnections}
-                                groups={groups}
-                                setGroups={setGroups}
-                                isConnecting={isConnecting}
-                                setIsConnecting={setIsConnecting}
-                                firstConnectionPoint={firstConnectionPoint}
-                                setFirstConnectionPoint={setFirstConnectionPoint}
-                                properties={filteredProperties}
-                            />
-                            <SmartSuggestionsPanel 
-                                properties={properties}
-                                onShowSuggestion={setSuggestionToDisplay}
-                                onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
-                            />
+                           <div className="flex-1 flex flex-col min-h-0">
+                             <FloorPlanViewer
+                                  selectedPropertyIds={selectedPropertyIds}
+                                  selectedFloorId={selectedFloorId}
+                                  onSelectFloor={onSelectFloor}
+                                  hoveredPropertyId={hoveredPropertyId}
+                                  onHoverProperty={onHoverProperty}
+                                  activeTool={activeTool}
+                                  onSelectProperty={handlePolygonSelect}
+                                  onPolygonCreated={handlePolygonCreated}
+                                  onPolygonUpdated={handlePolygonUpdated}
+                                  onDuplicate={handleDuplicate}
+                                  onDelete={handleDelete}
+                                  showGrid={showGrid}
+                                  snapToGrid={snapToGrid}
+                                  gridSize={gridSize}
+                                  showMeasurements={showMeasurements}
+                                  scale={scale}
+                                  suggestionToDisplay={suggestionToDisplay}
+                                  connections={connections}
+                                  setConnections={setConnections}
+                                  groups={groups}
+                                  setGroups={setGroups}
+                                  isConnecting={isConnecting}
+                                  setIsConnecting={setIsConnecting}
+                                  firstConnectionPoint={firstConnectionPoint}
+                                  setFirstConnectionPoint={setFirstConnectionPoint}
+                                  properties={filteredProperties}
+                              />
+                           </div>
+                           <div className="shrink-0 mt-4">
+                              <SmartSuggestionsPanel 
+                                  properties={properties}
+                                  onShowSuggestion={setSuggestionToDisplay}
+                                  onAcceptSuggestion={(suggestion) => console.log("Accepting", suggestion)}
+                              />
+                           </div>
                         </TabsContent>
                         <TabsContent value="documents" className="flex-1 flex flex-col gap-4 min-h-0 mt-2">
                             <p>Documents tab content</p>
