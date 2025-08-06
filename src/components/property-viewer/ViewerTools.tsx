@@ -115,7 +115,7 @@ export function ViewerTools({
                     checked={showMeasurements}
                     onCheckedChange={setShowMeasurements}
                 />
-                 {showMeasurements && (
+                 {activeTool === 'measure' && (
                     <div className="flex items-center gap-1 text-xs">
                         <Label htmlFor="scale-input" className="text-xs text-muted-foreground">Κλίμακα:</Label>
                         <Input
