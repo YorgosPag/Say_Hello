@@ -37,7 +37,7 @@ export function PropertyViewerPage() {
     canRedo,
   } = usePropertyViewer();
   
-  const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | null>(null);
+  const [activeTool, setActiveTool] = useState<'create' | 'edit_nodes' | 'measure' | 'polyline' | null>(null);
   const [showGrid, setShowGrid] = useState(true);
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [gridSize, setGridSize] = useState(10);

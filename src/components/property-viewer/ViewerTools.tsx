@@ -19,13 +19,14 @@ import {
   Layers,
   Link,
   BrainCircuit,
-  Settings
+  Settings,
+  Spline
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ViewerToolsProps {
   activeTool: string | null;
-  setActiveTool: (tool: 'create' | 'edit_nodes' | 'measure' | null) => void;
+  setActiveTool: (tool: 'create' | 'edit_nodes' | 'measure' | 'polyline' | null) => void;
   showGrid: boolean;
   setShowGrid: (show: boolean) => void;
   snapToGrid: boolean;
@@ -43,6 +44,7 @@ const tools = [
   { id: 'create', icon: PenSquare, label: "Δημιουργία" },
   { id: 'edit_nodes', icon: Maximize, label: "Επεξεργασία Κόμβων" },
   { id: 'measure', icon: Ruler, label: "Μέτρηση" },
+  { id: 'polyline', icon: Spline, label: 'Γραμμή' },
 ];
 
 export function ViewerTools({
@@ -65,7 +67,7 @@ export function ViewerTools({
         <CardTitle className="text-sm">Εργαλεία & Ρυθμίσεις</CardTitle>
       </CardHeader>
       <CardContent className="p-3 space-y-4">
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-5 gap-1">
           {tools.map((tool) => (
             <Button
               key={tool.label}
